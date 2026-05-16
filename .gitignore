@@ -13,6 +13,7 @@
 !/tmp/pids/.keep
 /config/master.key
 /public/assets
+/vendor/bundle/
 
 # Private install data stays local or in a separate private repo.
 /.private/

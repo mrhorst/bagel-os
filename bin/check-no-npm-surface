@@ -28,6 +28,7 @@ ignored_dirs = %w[
   log
   storage
   tmp
+  vendor/bundle
 ]
 
 command_files = [
