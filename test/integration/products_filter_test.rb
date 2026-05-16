@@ -45,9 +45,38 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{edit_receipt_line_item_path(line)}']", text: "Edit"
   end
 
+  test "product index paginates large product lists" do
+    supplier = Supplier.primary
+    category = ProductCategory.find_by!(name: "Dry goods")
+    60.times do |index|
+      supplier.products.create!(
+        canonical_name: "Pagination Product #{index.to_s.rjust(2, '0')}",
+        product_category: category,
+        needs_review: false
+      )
+    end
+
+    get products_path(per_page: 25)
+
+    assert_response :success
+    assert_select "[data-async-frame='products'] tbody tr", count: 25
+    assert_select ".pagination"
+    assert_select ".pagination a", text: "Next"
+    assert_select ".pagination .active", text: "1"
+    assert_select "[data-async-frame='products'] .muted", text: /Showing 25 of 62 products/
+
+    get products_path(per_page: 25, page: 3)
+
+    assert_response :success
+    assert_select "[data-async-frame='products'] tbody tr", count: 12
+    assert_select ".pagination .active", text: "3"
+    assert_select "[data-async-frame='products'] .muted", text: /Page 3 of 3/
+  end
+
   test "stylesheet preserves hidden option panels" do
     stylesheet = Rails.root.join("app/assets/stylesheets/application.css").read
 
     assert_match(/\[hidden\]\s*\{\s*display:\s*none\s*!important;\s*\}/m, stylesheet)
+    assert_match(/\.grid\s*\{\s*align-items:\s*start;/m, stylesheet)
   end
 end

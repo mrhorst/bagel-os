@@ -127,6 +127,11 @@ small {
   justify-content: space-between;
 }
 
+.panel-heading h2,
+.panel-heading p {
+  margin: 0;
+}
+
 .metric-grid {
   display: grid;
   gap: 12px;
@@ -155,6 +160,7 @@ small {
 }
 
 .grid {
+  align-items: start;
   display: grid;
   gap: 18px;
 }
@@ -219,10 +225,35 @@ input[type="submit"].primary {
   padding: 6px 10px;
 }
 
+.button.disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.button.active {
+  background: #173844;
+  border-color: #173844;
+  color: #fff;
+  cursor: default;
+}
+
 .button-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.pagination {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.pagination-gap {
+  color: #66727c;
+  padding: 0 2px;
 }
 
 .badge {

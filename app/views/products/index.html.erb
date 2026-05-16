@@ -14,6 +14,10 @@
     <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] } %>
     <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] } %>
     <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] } %>
+    <label>
+      Per page
+      <%= form.select :per_page, [[25, 25], [50, 50], [100, 100]], { selected: @per_page } %>
+    </label>
     <label class="check"><%= form.check_box :needs_review, { checked: params[:needs_review] == "1" }, "1", "0" %> Needs review</label>
     <label class="check"><%= form.check_box :no_standard_unit_price, { checked: params[:no_standard_unit_price] == "1" }, "1", "0" %> No standard unit price</label>
     <label class="check"><%= form.check_box :missing_category, { checked: params[:missing_category] == "1" }, "1", "0" %> Missing category</label>
@@ -22,6 +26,41 @@
 </article>
 
 <article class="panel" data-async-frame="products">
+  <div class="panel-heading">
+    <p class="muted">
+      Showing <%= @products.size %> of <%= @total_products %> products
+      <% if @total_pages > 1 %>
+        · Page <%= @page %> of <%= @total_pages %>
+      <% end %>
+    </p>
+    <% if @total_pages > 1 %>
+      <nav class="pagination" aria-label="Products pages">
+        <% pagination_params = request.query_parameters.except("page") %>
+        <% if @page > 1 %>
+          <%= link_to "Previous", products_path(pagination_params.merge(page: @page - 1)), class: "button small" %>
+        <% else %>
+          <span class="button small disabled">Previous</span>
+        <% end %>
+        <% page_numbers = ([ 1, @page - 1, @page, @page + 1, @total_pages ].select { |page| page.between?(1, @total_pages) }).uniq.sort %>
+        <% page_numbers.each_with_index do |page_number, index| %>
+          <% if index.positive? && page_number > page_numbers[index - 1] + 1 %>
+            <span class="pagination-gap">...</span>
+          <% end %>
+          <% if page_number == @page %>
+            <span class="button small active"><%= page_number %></span>
+          <% else %>
+            <%= link_to page_number, products_path(pagination_params.merge(page: page_number)), class: "button small" %>
+          <% end %>
+        <% end %>
+        <% if @page < @total_pages %>
+          <%= link_to "Next", products_path(pagination_params.merge(page: @page + 1)), class: "button small" %>
+        <% else %>
+          <span class="button small disabled">Next</span>
+        <% end %>
+      </nav>
+    <% end %>
+  </div>
+
   <table>
     <thead>
       <tr>
