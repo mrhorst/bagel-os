@@ -14,12 +14,12 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_select "form[data-async-frame='products']"
     assert_select "[data-async-frame='products'] table"
     assert_select "input[data-filter-submit]"
-    assert_select "td a", text: "Tuna"
+    assert_select "td a", text: "Tongol Tuna"
     assert_select "td", text: "TUNA TONGOL CQ 66Z", count: 0
   end
 
   test "product chart modes render as client-switchable panels" do
-    product = Product.find_by!(canonical_name: "Tuna")
+    product = Product.find_by!(canonical_name: "Tongol Tuna")
     line = product.receipt_line_items.order(:id).first
 
     get product_path(product)

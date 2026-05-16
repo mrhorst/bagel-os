@@ -44,6 +44,7 @@ module Purchasing
           stats[:reviews_auto_resolved] += auto_resolve_name_reviews!(line_item, product)
         end
 
+        stats[:stale_aliases_removed] = remove_stale_aliases!
         stats[:stale_products_removed] = remove_stale_products!
         PriceSpikeFlagger.new.flag_all!
       end
@@ -104,6 +105,22 @@ module Purchasing
         detach_reviews_from(product)
         product.product_aliases.destroy_all
         product.destroy!
+        removed += 1
+      end
+
+      removed
+    end
+
+    def remove_stale_aliases!
+      removed = 0
+
+      ProductAlias.includes(:product).find_each do |product_alias|
+        next if product_alias.product.receipt_line_items.exists?(
+          raw_name: product_alias.raw_name,
+          raw_sku: product_alias.raw_sku
+        )
+
+        product_alias.destroy!
         removed += 1
       end
 

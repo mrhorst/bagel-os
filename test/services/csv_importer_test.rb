@@ -29,19 +29,23 @@ class CsvImporterTest < ActiveSupport::TestCase
     assert_equal 1, NormalizationReview.where(issue_type: "coupon").count
   end
 
-  test "groups raw vendor receipt variations under a simple canonical product" do
+  test "keeps raw vendor receipt product specifications separate" do
     path = Rails.root.join("test/fixtures/files/vendor_receipt_tuna_variations.csv")
 
     Purchasing::CsvImporter.new.import_file(path)
 
-    product = Product.find_by!(canonical_name: "Tuna")
-    assert_equal 1, Product.count
-    assert_nil product.supplier_sku
-    assert_not product.needs_review?
-    assert_equal 2, product.product_aliases.count
-    assert_equal [ "TUNA CHUNK LT CQ 66Z", "TUNA TONGOL CQ 66Z" ], product.product_aliases.order(:raw_name).pluck(:raw_name)
-    assert_includes product.notes, "Codex inference"
-    assert_includes product.notes, "TUNA TONGOL CQ 66Z"
-    assert_equal 2, product.price_observations.count
+    chunk_light = Product.find_by!(canonical_name: "Chunk Light Tuna")
+    tongol = Product.find_by!(canonical_name: "Tongol Tuna")
+    assert_equal 2, Product.count
+    assert_nil chunk_light.supplier_sku
+    assert_nil tongol.supplier_sku
+    assert_not chunk_light.needs_review?
+    assert_not tongol.needs_review?
+    assert_equal [ "TUNA CHUNK LT CQ 66Z" ], chunk_light.product_aliases.pluck(:raw_name)
+    assert_equal [ "TUNA TONGOL CQ 66Z" ], tongol.product_aliases.pluck(:raw_name)
+    assert_includes chunk_light.notes, "Codex inference"
+    assert_includes tongol.notes, "TUNA TONGOL CQ 66Z"
+    assert_equal 1, chunk_light.price_observations.count
+    assert_equal 1, tongol.price_observations.count
   end
 end
