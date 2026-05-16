@@ -1,0 +1,93 @@
+<% content_for :title, "Edit purchase line" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Edit purchase line</h1>
+    <p>
+      <%= @line_item.raw_name %>
+      · Receipt <%= @line_item.receipt.receipt_number %>
+      · <%= @line_item.receipt.purchased_at&.to_date || "n/a" %>
+    </p>
+  </div>
+  <div class="button-row">
+    <%= link_to "Open receipt", import_batch_path(@line_item.import_batch, anchor: dom_id(@line_item)), class: "button" %>
+    <% if @line_item.product %>
+      <%= link_to "Back to product", product_path(@line_item.product, anchor: dom_id(@line_item)), class: "button" %>
+    <% end %>
+  </div>
+</section>
+
+<section class="metric-grid">
+  <article class="metric"><span>Unit Qty</span><strong><%= compact_decimal(@line_item.unit_quantity) %></strong></article>
+  <article class="metric"><span>Case Qty</span><strong><%= compact_decimal(@line_item.case_quantity) %></strong></article>
+  <article class="metric"><span>Line total</span><strong><%= money(@line_item.line_total) %></strong></article>
+  <article class="metric"><span>Package price</span><strong><%= money(@line_item.package_price) %></strong></article>
+  <article class="metric"><span>Comparable price</span><strong><%= @line_item.price_observation&.standard_unit_price ? "#{money(@line_item.price_observation.standard_unit_price)} / #{@line_item.price_observation.standard_unit}" : "n/a" %></strong></article>
+</section>
+
+<section class="grid two">
+  <article class="panel">
+    <h2>Receipt line</h2>
+    <dl class="details">
+      <dt>Product</dt><dd><%= @line_item.product ? link_to(@line_item.product.canonical_name, @line_item.product) : "Unassigned" %></dd>
+      <dt>Raw product</dt><dd><%= @line_item.raw_name %></dd>
+      <dt>SKU</dt><dd><%= @line_item.raw_sku.presence || "n/a" %></dd>
+      <dt>Purchase</dt><dd><%= @line_item.purchase_kind %></dd>
+      <dt>Parsed package</dt><dd><%= compact_decimal(@line_item.parsed_package_size) %> <%= @line_item.parsed_unit_of_measure %></dd>
+      <dt>Source</dt><dd><%= @line_item.import_batch.source_filename %></dd>
+      <dt>Review</dt><dd><%= review_badge(@line_item) %></dd>
+    </dl>
+  </article>
+
+  <article class="panel">
+    <h2>Case pack</h2>
+    <% if @case_pack.errors.any? %>
+      <div class="flash flash-alert"><%= @case_pack.errors.full_messages.to_sentence %></div>
+    <% end %>
+
+    <% if @line_item.purchase_kind == "case" %>
+      <%= form_with url: receipt_line_item_path(@line_item), method: :patch, class: "stack" do |form| %>
+        <%= fields_for :supplier_product_pack, @case_pack do |pack_form| %>
+          <div class="form-grid">
+            <div>
+              <%= pack_form.label :units_per_case, "Units per case" %>
+              <%= pack_form.number_field :units_per_case, step: "0.0001", min: "0.0001", required: true %>
+            </div>
+            <div>
+              <%= pack_form.label :inner_unit_label, "Inner unit label" %>
+              <%= pack_form.text_field :inner_unit_label, required: true, placeholder: "pack" %>
+            </div>
+            <div>
+              <%= pack_form.label :inner_package_size, "Inner package size" %>
+              <%= pack_form.number_field :inner_package_size, step: "0.0001", min: "0.0001" %>
+            </div>
+            <div>
+              <%= pack_form.label :inner_unit_of_measure, "Inner unit" %>
+              <%= pack_form.text_field :inner_unit_of_measure, placeholder: "lb" %>
+            </div>
+            <div>
+              <%= pack_form.label :standard_unit, "Comparable unit" %>
+              <%= pack_form.text_field :standard_unit, placeholder: "lb" %>
+            </div>
+          </div>
+          <div>
+            <%= pack_form.label :notes %>
+            <%= pack_form.text_area :notes, rows: 3 %>
+          </div>
+        <% end %>
+
+        <div class="actions">
+          <%= form.submit "Save line pricing", class: "button primary" %>
+          <%= link_to "Cancel", @line_item.product ? product_path(@line_item.product, anchor: dom_id(@line_item)) : import_batch_path(@line_item.import_batch, anchor: dom_id(@line_item)), class: "button" %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="muted">No case quantity on this line.</p>
+      <div class="actions">
+        <% if @line_item.product %>
+          <%= link_to "Edit product", edit_product_path(@line_item.product), class: "button" %>
+        <% end %>
+      </div>
+    <% end %>
+  </article>
+</section>

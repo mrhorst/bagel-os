@@ -108,7 +108,9 @@ module Purchasing
     end
 
     def purchase_unit_for(line_item)
-      line_item.raw_case_quantity.to_d.positive? ? "case" : "unit"
+      return line_item.purchase_kind if %w[unit case].include?(line_item.purchase_kind)
+
+      nil
     end
 
     def flag_possible_match!(product, line_item, interpretation)

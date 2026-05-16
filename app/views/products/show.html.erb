@@ -93,35 +93,66 @@
 
 <article class="panel">
   <h2>Purchase history</h2>
-  <table>
+  <table class="purchase-history-table">
     <thead>
       <tr>
         <th>Date</th>
         <th>Receipt</th>
-        <th>Raw product</th>
-        <th class="numeric">Qty</th>
-        <th class="numeric">Package price</th>
-        <th>Presentation</th>
-        <th class="numeric">Comparable qty</th>
-        <th class="numeric">Line total</th>
-        <th class="numeric">Std unit price</th>
-        <th>Source</th>
+        <th>Item</th>
+        <th>Bought</th>
+        <th class="numeric">Package</th>
+        <th class="numeric">Comparable</th>
+        <th class="numeric">Total</th>
+        <th>Review</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       <% @observations.each do |observation| %>
         <% line = observation.receipt_line_item %>
-        <tr class="<%= "warning-row" if observation.possible_price_spike? %>">
+        <tr id="<%= dom_id(line) %>" class="<%= "warning-row" if observation.possible_price_spike? %>">
           <td><%= observation.observed_at.to_date %></td>
           <td><%= line.receipt.receipt_number %></td>
-          <td><%= line.raw_name %></td>
-          <td class="numeric"><%= compact_decimal(observation.quantity) %></td>
+          <td class="purchase-item">
+            <strong><%= line.raw_name %></strong>
+            <small>
+              <%= [
+                (line.raw_sku.present? ? "SKU #{line.raw_sku}" : nil),
+                observation.presentation_label.presence
+              ].compact.join(" · ") %>
+            </small>
+            <details class="purchase-details">
+              <summary>Details</summary>
+              <dl class="details details-grid">
+                <dt>Unit qty</dt><dd><%= compact_decimal(observation.unit_quantity) %></dd>
+                <dt>Case qty</dt><dd><%= compact_decimal(observation.case_quantity) %></dd>
+                <dt>Purchase kind</dt><dd><%= observation.purchase_kind.presence || line.purchase_kind %></dd>
+                <dt>Comparable qty</dt><dd><%= observation.standard_quantity.present? ? "#{compact_decimal(observation.standard_quantity)} #{observation.standard_unit}" : "n/a" %></dd>
+                <dt>Inner qty</dt><dd><%= observation.inner_quantity.present? ? "#{compact_decimal(observation.inner_quantity)} #{observation.inner_unit_label}" : "n/a" %></dd>
+                <dt>Inner price</dt><dd><%= observation.inner_unit_price.present? ? "#{money(observation.inner_unit_price)} / #{observation.inner_unit_label}" : "n/a" %></dd>
+                <dt>Source file</dt><dd><%= observation.source_filename %></dd>
+                <dt>Line</dt><dd><%= line.line_number %></dd>
+                <dt>Review issues</dt><dd><%= line.normalization_reviews.select { |review| review.status == "pending" }.map(&:issue_type).presence&.to_sentence || "None" %></dd>
+              </dl>
+            </details>
+          </td>
+          <td><%= line.display_quantity %></td>
           <td class="numeric"><%= money(observation.package_price) %></td>
-          <td><%= observation.presentation_label.presence || line.raw_name %></td>
-          <td class="numeric"><%= observation.standard_quantity.present? ? "#{compact_decimal(observation.standard_quantity)} #{observation.standard_unit}" : "n/a" %></td>
+          <td class="numeric">
+            <% if observation.standard_unit_price.present? %>
+              <%= money(observation.standard_unit_price) %> / <%= observation.standard_unit %>
+            <% else %>
+              <span class="muted">n/a</span>
+            <% end %>
+          </td>
           <td class="numeric"><%= money(observation.line_total) %></td>
-          <td class="numeric"><%= observation.standard_unit_price ? "#{money(observation.standard_unit_price)} / #{observation.standard_unit}" : "n/a" %></td>
-          <td><%= observation.source_filename %></td>
+          <td><%= review_badge(line) %></td>
+          <td>
+            <div class="button-row">
+              <%= link_to "View", import_batch_path(line.import_batch, anchor: dom_id(line)), class: "button small" %>
+              <%= link_to "Edit", edit_receipt_line_item_path(line), class: "button small" %>
+            </div>
+          </td>
         </tr>
       <% end %>
     </tbody>

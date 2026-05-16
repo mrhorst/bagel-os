@@ -2,14 +2,12 @@ require "digest"
 
 module Purchasing
   class OrderGuideImporter
-    AUTO_LINK_THRESHOLD = 0.9
-
     Result = Struct.new(:skipped, :message, :rows_imported, :import, keyword_init: true)
 
-    def initialize(extractor: OrderGuideTextExtractor.new, parser: OrderGuideTextParser.new, matcher: ProductNameMatcher.new)
+    def initialize(extractor: OrderGuideTextExtractor.new, parser: OrderGuideTextParser.new, matcher: ProductNameMatcher.new, linking: nil)
       @extractor = extractor
       @parser = parser
-      @matcher = matcher
+      @linking = linking || OrderGuideLinking.new(matcher: matcher)
     end
 
     def import_file(path, guide_type: nil)
@@ -52,7 +50,7 @@ module Purchasing
 
     private
 
-    attr_reader :extractor, :parser, :matcher
+    attr_reader :extractor, :parser, :linking
 
     def skipped_result(existing_import)
       Result.new(
@@ -72,64 +70,7 @@ module Purchasing
     end
 
     def import_row!(import, row)
-      section = section_for(row[:section_name])
-      match = matcher.match(row[:item_name], context: row)
-      product = match.confident? ? match.product : nil
-      inventory_item = inventory_item_for(row, section, product)
-      raw_data = {
-        "match_basis" => match.basis,
-        "suggested_product_id" => match.suggested_product&.id,
-        "suggested_product_name" => match.suggested_product&.canonical_name
-      }.compact
-
-      inventory_item.update!(
-        name: inventory_item.name.presence || row[:item_name],
-        inventory_section: section,
-        product: product || inventory_item.product,
-        preferred_supplier: (product&.supplier || inventory_item.preferred_supplier),
-        category: row[:section_name],
-        subcategory: row[:subcategory],
-        pack_size: inventory_item.pack_size.presence || row[:pack_quantity],
-        count_unit: inventory_item.count_unit.presence || row[:pack_quantity],
-        position: row[:position],
-        active: true,
-        needs_review: product.blank?,
-        raw_data: inventory_item.raw_data.merge(raw_data)
-      )
-
-      import.order_guide_items.create!(
-        inventory_item: inventory_item,
-        guide_type: row[:guide_type],
-        section_name: row[:section_name],
-        subcategory: row[:subcategory],
-        item_name: row[:item_name],
-        guide_sku: row[:guide_sku],
-        par_text: row[:par_text],
-        pack_quantity: row[:pack_quantity],
-        sunday_target: row[:sunday_target],
-        thursday_target: row[:thursday_target],
-        raw_line: row[:raw_line],
-        position: row[:position],
-        active: true,
-        needs_review: product.blank?,
-        match_confidence: match.confidence,
-        raw_data: raw_data
-      )
-    end
-
-    def section_for(section_name)
-      InventorySection.find_or_create_by!(name: section_name) do |section|
-        section.position = InventorySection.count + 1
-      end
-    end
-
-    def inventory_item_for(row, section, product)
-      return InventoryItem.find_by(product: product) if product && InventoryItem.exists?(product: product)
-
-      key_source = product ? product.canonical_name : [ section.name, row[:subcategory], row[:item_name] ].compact.join(" ")
-      InventoryItem.find_or_initialize_by(key: InventoryItem.key_for(key_source)) do |item|
-        item.name = row[:item_name]
-      end
+      linking.link_row!(import: import, row: row)
     end
 
     def refresh_inventory_item_frequencies!

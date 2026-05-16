@@ -25,8 +25,11 @@ The current parser supports receipt CSVs with:
 ## Conservative Fields
 
 - package size and unit are parsed only when visible in the item description.
-- standard unit prices are calculated only when package size, unit, quantity, and line price are reliable.
+- unit quantity and case quantity are stored separately; they are not collapsed into one source value.
+- standard unit prices are calculated only when package size, unit, purchase kind, quantity, and line price are reliable.
 - case-pack rows are imported but standard unit price is left blank unless the case contents are explicit.
+- approved case-pack facts can supply reviewed case contents, such as four packs per case, so the app can calculate price per inner unit and, when the inner size is known, price per comparable unit.
+- rows with both unit and case quantities are imported for traceability, but per-unit/per-case pricing is left blank because the line total cannot be safely allocated.
 
 ## Data Quality Rules
 

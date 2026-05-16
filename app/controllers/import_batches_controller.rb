@@ -23,7 +23,7 @@ class ImportBatchesController < ApplicationController
   end
 
   def show
-    @import_batch = ImportBatch.find(params[:id])
+    @import_batch = ImportBatch.includes(:supplier, :receipt).find(params[:id])
     @receipt = @import_batch.receipt
     @line_items = @import_batch.receipt_line_items.includes(:product).order(:line_number)
   end

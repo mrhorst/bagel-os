@@ -24,6 +24,7 @@ Rails.application.routes.draw do
     end
   end
   resources :products, only: %i[index show edit update]
+  resources :receipt_line_items, only: %i[edit update]
   resources :normalization_reviews, only: %i[index] do
     member do
       patch :assign_product

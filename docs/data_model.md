@@ -53,8 +53,14 @@ Important fields:
 - `raw_sku`
 - `raw_quantity`
 - `raw_case_quantity`
+- `unit_quantity`
+- `case_quantity`
 - `quantity`
 - `package_price`
+- `case_pack_id`
+- `inner_quantity`
+- `inner_unit_price`
+- `inner_unit_label`
 - `line_total`
 - `parsed_package_size`
 - `parsed_unit_of_measure`
@@ -104,6 +110,32 @@ Approved aliases are used for future exact matching and to show the receipt vari
 
 Human-readable reporting buckets, seeded with restaurant purchasing categories such as dairy, eggs, meat, produce, packaging, paper goods, cleaning supplies, and other/unknown.
 
+`raw_quantity` and `raw_case_quantity` preserve the exact CSV text. `unit_quantity` and `case_quantity` store the parsed numeric values separately. `quantity` is the pricing quantity only when the line is clearly a unit purchase or a case purchase. If an approved `SupplierProductPack` fact says how many inner units are in a case, `inner_quantity` and `inner_unit_price` store the price per reviewed inner unit. If both unit and case quantities appear on the same row, the row is treated as mixed, package/comparable pricing is left blank, and the row is flagged for review because the line total cannot be safely split.
+
+## SupplierProductPack
+
+Stores reviewed facts about supplier case presentations. This table is intentionally separate from receipt imports because receipt CSV rows do not reliably state how many inner units are in a case.
+
+Important fields:
+
+- `supplier_id`
+- `product_id`
+- `raw_sku`
+- `raw_name`
+- `units_per_case`
+- `inner_unit_label`
+- `inner_package_size`
+- `inner_unit_of_measure`
+- `standard_unit`
+- `source`
+- `source_label`
+- `source_snapshot_at`
+- `approved`
+- `confidence_score`
+- `raw_data`
+
+Only approved case-pack facts are used for automatic pricing. For example, if an approved fact says a cheese case contains four five-pound packs, the app can calculate price per case, price per pack, and price per pound from a case receipt line. Suggested or unapproved facts stay out of pricing calculations.
+
 ## PriceObservation
 
 Critical historical price table. Each normal purchased item line creates one price observation.
@@ -114,6 +146,13 @@ Important fields:
 - `receipt_line_item_id`
 - `observed_at`
 - `package_price`
+- `case_pack_id`
+- `unit_quantity`
+- `case_quantity`
+- `purchase_kind`
+- `inner_quantity`
+- `inner_unit_price`
+- `inner_unit_label`
 - `quantity`
 - `line_total`
 - `unit_price`
@@ -125,7 +164,7 @@ Important fields:
 - `source_filename`
 - `possible_price_spike`
 
-This table powers product history, dashboards, price movement, and exports. `presentation_key` keeps exact purchased forms separate for package-price charts, while `standard_unit_price` lets the app compare different presentations when they share a reliable comparable unit.
+This table powers product history, dashboards, price movement, and exports. `purchase_kind` is `unit`, `case`, `mixed`, or `unknown`. `presentation_key` keeps exact purchased forms separate for package-price charts, including whether the row was bought by unit or by case, while `standard_unit_price` lets the app compare different presentations when they share a reliable comparable unit.
 
 ## NormalizationReview
 

@@ -20,6 +20,11 @@ class CsvImporterTest < ActiveSupport::TestCase
     assert_equal 2, Product.count
     assert_equal 2, ProductAlias.count
     assert_equal 2, PriceObservation.count
+    eggs_line = ReceiptLineItem.find_by!(raw_name: "EGGS XLG LS GRD A 15DZ")
+    assert_equal BigDecimal("1"), eggs_line.unit_quantity
+    assert_equal BigDecimal("0"), eggs_line.case_quantity
+    assert_equal "unit", eggs_line.purchase_kind
+    assert_equal "unit", eggs_line.price_observation.purchase_kind
     assert_equal BigDecimal("15"), PriceObservation.find_by!(standard_unit: "dozen").standard_quantity
     assert_equal 1, NormalizationReview.where(issue_type: "coupon").count
   end

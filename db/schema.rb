@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_16_152000) do
   create_table "import_batches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "file_checksum", null: false
@@ -160,7 +160,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
   end
 
   create_table "price_observations", force: :cascade do |t|
+    t.integer "case_pack_id"
+    t.decimal "case_quantity", precision: 12, scale: 4
     t.datetime "created_at", null: false
+    t.decimal "inner_quantity", precision: 12, scale: 4
+    t.string "inner_unit_label"
+    t.decimal "inner_unit_price", precision: 12, scale: 4
     t.decimal "line_total", precision: 12, scale: 2
     t.boolean "needs_unit_review", default: false, null: false
     t.text "notes"
@@ -173,6 +178,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
     t.string "presentation_label"
     t.string "price_basis", default: "presentation", null: false
     t.integer "product_id", null: false
+    t.string "purchase_kind"
     t.decimal "quantity", precision: 12, scale: 4
     t.integer "receipt_line_item_id", null: false
     t.string "source_filename", null: false
@@ -183,11 +189,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
     t.decimal "unit_confidence", precision: 5, scale: 2
     t.string "unit_of_measure"
     t.decimal "unit_price", precision: 12, scale: 4
+    t.decimal "unit_quantity", precision: 12, scale: 4
     t.datetime "updated_at", null: false
+    t.index ["case_pack_id"], name: "index_price_observations_on_case_pack_id"
     t.index ["needs_unit_review"], name: "index_price_observations_on_needs_unit_review"
     t.index ["possible_price_spike"], name: "index_price_observations_on_possible_price_spike"
     t.index ["product_id", "observed_at"], name: "index_price_observations_on_product_id_and_observed_at"
     t.index ["product_id", "presentation_key", "observed_at"], name: "idx_price_obs_product_presentation_date"
+    t.index ["product_id", "purchase_kind", "observed_at"], name: "idx_price_obs_product_purchase_kind_date"
     t.index ["product_id", "standard_unit", "observed_at"], name: "idx_price_obs_product_standard_unit_date"
     t.index ["product_id"], name: "index_price_observations_on_product_id"
     t.index ["receipt_line_item_id"], name: "index_price_observations_on_receipt_line_item_id", unique: true
@@ -239,9 +248,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
   end
 
   create_table "receipt_line_items", force: :cascade do |t|
+    t.integer "case_pack_id"
+    t.decimal "case_quantity", precision: 12, scale: 4
     t.decimal "confidence_score", precision: 5, scale: 2, default: "0.0", null: false
     t.datetime "created_at", null: false
     t.integer "import_batch_id", null: false
+    t.decimal "inner_quantity", precision: 12, scale: 4
+    t.string "inner_unit_label"
+    t.decimal "inner_unit_price", precision: 12, scale: 4
     t.integer "line_number", null: false
     t.decimal "line_total", precision: 12, scale: 2
     t.string "line_type", default: "item", null: false
@@ -261,7 +275,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
     t.integer "receipt_id", null: false
     t.string "row_checksum", null: false
     t.integer "supplier_id", null: false
+    t.decimal "unit_quantity", precision: 12, scale: 4
     t.datetime "updated_at", null: false
+    t.index ["case_pack_id"], name: "index_receipt_line_items_on_case_pack_id"
     t.index ["import_batch_id", "line_number"], name: "index_receipt_line_items_on_import_batch_id_and_line_number", unique: true
     t.index ["import_batch_id"], name: "index_receipt_line_items_on_import_batch_id"
     t.index ["line_type"], name: "index_receipt_line_items_on_line_type"
@@ -290,6 +306,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
     t.index ["supplier_id"], name: "index_receipts_on_supplier_id"
   end
 
+  create_table "supplier_product_packs", force: :cascade do |t|
+    t.boolean "approved", default: false, null: false
+    t.decimal "confidence_score", precision: 5, scale: 2, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.decimal "inner_package_size", precision: 12, scale: 4
+    t.string "inner_unit_label", default: "unit", null: false
+    t.string "inner_unit_of_measure"
+    t.text "notes"
+    t.integer "product_id"
+    t.string "purchase_kind", default: "case", null: false
+    t.json "raw_data", default: {}, null: false
+    t.string "raw_name"
+    t.string "raw_sku"
+    t.string "source", default: "manual", null: false
+    t.string "source_label"
+    t.datetime "source_snapshot_at"
+    t.string "standard_unit"
+    t.integer "supplier_id", null: false
+    t.decimal "units_per_case", precision: 12, scale: 4, null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id", "approved"], name: "index_supplier_product_packs_on_product_id_and_approved"
+    t.index ["product_id"], name: "index_supplier_product_packs_on_product_id"
+    t.index ["supplier_id", "raw_name"], name: "index_supplier_product_packs_on_supplier_id_and_raw_name"
+    t.index ["supplier_id", "raw_sku"], name: "index_supplier_product_packs_on_supplier_id_and_raw_sku"
+    t.index ["supplier_id"], name: "index_supplier_product_packs_on_supplier_id"
+  end
+
   create_table "suppliers", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -311,6 +354,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
   add_foreign_key "order_guide_items", "order_guide_imports"
   add_foreign_key "price_observations", "products"
   add_foreign_key "price_observations", "receipt_line_items"
+  add_foreign_key "price_observations", "supplier_product_packs", column: "case_pack_id"
   add_foreign_key "price_observations", "suppliers"
   add_foreign_key "product_aliases", "products"
   add_foreign_key "products", "product_categories"
@@ -318,7 +362,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_231500) do
   add_foreign_key "receipt_line_items", "import_batches"
   add_foreign_key "receipt_line_items", "products"
   add_foreign_key "receipt_line_items", "receipts"
+  add_foreign_key "receipt_line_items", "supplier_product_packs", column: "case_pack_id"
   add_foreign_key "receipt_line_items", "suppliers"
   add_foreign_key "receipts", "import_batches"
   add_foreign_key "receipts", "suppliers"
+  add_foreign_key "supplier_product_packs", "products"
+  add_foreign_key "supplier_product_packs", "suppliers"
 end

@@ -94,6 +94,7 @@ The PDF importer uses `pdftotext -layout`. It keeps raw guide text and does not 
 ```sh
 bin/rails purchasing:import_all
 bin/rails purchasing:export_reports
+bin/rails purchasing:import_case_pack_facts
 bin/rails purchasing:recalculate_price_observations
 bin/rails purchasing:renormalize_products
 bin/rails purchasing:flag_reviews
@@ -101,6 +102,8 @@ bin/rails inventory:import_order_guides
 bin/rails inventory:refresh_order_guide_matches
 bin/rails inventory:guide_gaps
 ```
+
+Case-pack facts are reviewed supplier presentation facts, such as a case containing four inner packs. By default the importer reads `.private/case_pack_facts.csv`, or pass `CASE_PACK_FACTS=/path/to/file.csv`. Keep these files private when they contain real vendor/product data.
 
 ## Quality Checks
 

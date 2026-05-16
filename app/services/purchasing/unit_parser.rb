@@ -95,7 +95,7 @@ module Purchasing
     def case_package_likely_total?(package_size, unit)
       case unit
       when "lb"
-        package_size >= 5
+        package_size >= 20
       when "oz"
         package_size >= 160
       when "dozen"

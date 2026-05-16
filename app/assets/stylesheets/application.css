@@ -213,6 +213,18 @@ input[type="submit"].primary {
   color: #fff;
 }
 
+.button.small {
+  font-size: 0.86rem;
+  min-height: 34px;
+  padding: 6px 10px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .badge {
   background: #e8eef0;
   border-radius: 999px;
@@ -464,6 +476,16 @@ textarea {
   font-size: 13px;
 }
 
+.chart-point-label {
+  fill: #293743;
+  font-size: 12px;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: #fbfaf7;
+  stroke-linejoin: round;
+  stroke-width: 4px;
+}
+
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
@@ -488,6 +510,49 @@ textarea {
 
 .warning-row {
   background: #fff8e0;
+}
+
+tr:target {
+  background: #e9f4f7;
+}
+
+.purchase-history-table th,
+.purchase-history-table td {
+  vertical-align: top;
+}
+
+.purchase-item {
+  min-width: 280px;
+}
+
+.purchase-item strong,
+.purchase-item small {
+  display: block;
+}
+
+.purchase-item small {
+  margin-top: 4px;
+}
+
+.purchase-details {
+  margin-top: 8px;
+}
+
+.purchase-details summary {
+  color: #175f73;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 34px;
+  padding-top: 7px;
+}
+
+.details-grid {
+  background: #fbfaf7;
+  border: 1px solid #ebe7df;
+  border-radius: 8px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  margin-top: 8px;
+  padding: 10px;
 }
 
 .review-list {
@@ -566,6 +631,11 @@ textarea {
   .hero-actions .button {
     text-align: center;
     width: 100%;
+  }
+
+  .button-row .button {
+    flex: 1;
+    text-align: center;
   }
 
   .sticky-actions {

@@ -9,8 +9,15 @@ module Purchasing
       observation.assign_attributes(
         product: line_item.product,
         supplier: line_item.supplier,
+        case_pack: line_item.case_pack,
         observed_at: line_item.receipt.purchased_at || line_item.import_batch.imported_at,
         package_price: line_item.package_price,
+        unit_quantity: line_item.unit_quantity,
+        case_quantity: line_item.case_quantity,
+        purchase_kind: purchase_kind_for(line_item),
+        inner_quantity: line_item.inner_quantity,
+        inner_unit_price: line_item.inner_unit_price,
+        inner_unit_label: line_item.inner_unit_label,
         quantity: line_item.quantity,
         line_total: line_item.line_total,
         unit_price: line_item.package_price,
@@ -44,7 +51,9 @@ module Purchasing
     end
 
     def standard_unit_for(line_item)
-      line_item.raw_data.dig("parsed_unit", "standard_unit") ||
+      line_item.raw_data.dig("calculated", "standard_unit") ||
+        line_item.raw_data.dig(:calculated, :standard_unit) ||
+        line_item.raw_data.dig("parsed_unit", "standard_unit") ||
         line_item.raw_data.dig(:parsed_unit, :standard_unit) ||
         line_item.product&.standard_unit
     end
@@ -55,6 +64,7 @@ module Purchasing
 
     def presentation_key_for(line_item)
       [
+        purchase_kind_for(line_item),
         line_item.raw_sku.presence || "no-sku",
         normalize_key_part(line_item.raw_name),
         line_item.parsed_package_size&.to_d&.to_s("F"),
@@ -68,8 +78,9 @@ module Purchasing
         line_item.parsed_unit_of_measure
       ].compact_blank.join(" ")
       sku = line_item.raw_sku.present? ? "SKU #{line_item.raw_sku}" : "no SKU"
+      kind = purchase_kind_for(line_item).presence
 
-      [ line_item.raw_name, sku, package.presence ].compact_blank.join(" · ")
+      [ line_item.raw_name, kind, sku, package.presence ].compact_blank.join(" · ")
     end
 
     def compact_decimal(value)
@@ -80,6 +91,16 @@ module Purchasing
 
     def normalize_key_part(value)
       value.to_s.upcase.scan(/[A-Z0-9]+/).join(" ")
+    end
+
+    def purchase_kind_for(line_item)
+      line_item.raw_data.dig("calculated", "purchase_kind") ||
+        line_item.raw_data.dig(:calculated, :purchase_kind) ||
+        inferred_purchase_kind_for(line_item)
+    end
+
+    def inferred_purchase_kind_for(line_item)
+      line_item.purchase_kind
     end
   end
 end

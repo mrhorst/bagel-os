@@ -33,6 +33,15 @@ class UnitParserTest < ActiveSupport::TestCase
     assert_equal "lb", parsed.standard_unit
   end
 
+  test "does not treat a five pound case row as the full case weight" do
+    parsed = Purchasing::UnitParser.new.parse("CHS AM YL 160SL JF 5LB", raw_quantity: "0", raw_case_quantity: "1")
+
+    assert parsed.needs_review
+    assert_equal BigDecimal("5"), parsed.package_size
+    assert_equal "lb", parsed.standard_unit
+    assert_operator parsed.confidence, :<, BigDecimal("0.9")
+  end
+
   test "flags case quantities when package size is not explicit" do
     parsed = Purchasing::UnitParser.new.parse("UNKNOWN CASE ITEM", raw_quantity: "0", raw_case_quantity: "1")
 

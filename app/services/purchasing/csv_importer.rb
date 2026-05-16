@@ -1,15 +1,13 @@
-require "digest"
-
 module Purchasing
   class CsvImporter
-    attr_reader :supplier, :parser, :unit_parser, :price_calculator, :observation_builder
+    attr_reader :supplier, :parser, :line_normalizer, :observation_builder, :review_workflow
 
     def initialize(supplier: Supplier.primary)
       @supplier = supplier
       @parser = ReceiptCsvParser.new
-      @unit_parser = UnitParser.new
-      @price_calculator = PriceCalculator.new
+      @line_normalizer = ReceiptLineNormalizer.new
       @observation_builder = PriceObservationBuilder.new
+      @review_workflow = NormalizationReviewWorkflow.new
     end
 
     def import_file(path, source_filename: File.basename(path))
@@ -18,7 +16,7 @@ module Purchasing
       return result(existing_batch, skipped: true, message: "Already imported by checksum.") if existing_batch
 
       parsed = parser.parse(path, source_filename: source_filename)
-      normalizer = ProductNormalizer.new(supplier: supplier)
+      product_normalizer = ProductNormalizer.new(supplier: supplier)
 
       ActiveRecord::Base.transaction do
         batch = supplier.import_batches.create!(
@@ -51,16 +49,15 @@ module Purchasing
         imported_count = 0
 
         parsed[:line_items].each do |line_data|
-          parsed_unit = unit_parser.parse(
-            line_data[:raw_name],
-            raw_quantity: line_data[:raw_quantity],
-            raw_case_quantity: line_data[:raw_case_quantity]
-          )
-          calculated = price_calculator.calculate(line_data, parsed_unit)
-          line_item = create_line_item!(receipt, batch, line_data, parsed_unit, calculated)
-          product = normalizer.match_or_create!(line_item, parsed_unit)
-          line_item.update!(product: product) if product
-          create_reviews!(line_item, parsed_unit, calculated)
+          line_data = line_data.merge(supplier: supplier)
+          normalized_line = line_normalizer.normalize(line_data: line_data)
+          line_item = create_line_item!(receipt, batch, normalized_line)
+          product = product_normalizer.match_or_create!(line_item, normalized_line.parsed_unit)
+          if product
+            normalized_line = line_normalizer.normalize(line_data: line_data, existing_raw_data: line_item.raw_data, product: product)
+            line_item.update!(product: product, **normalized_line.normalized_attributes)
+          end
+          create_reviews!(line_item, normalized_line)
           observation_builder.create_for!(line_item)
           imported_count += 1
         end
@@ -112,60 +109,19 @@ module Purchasing
       )
     end
 
-    def create_line_item!(receipt, batch, line_data, parsed_unit, calculated)
-      needs_review = line_data[:line_type] != "item" ||
-        parsed_unit.needs_review ||
-        calculated[:standard_unit_price].blank?
-
+    def create_line_item!(receipt, batch, normalized_line)
       receipt.receipt_line_items.create!(
         supplier: supplier,
         import_batch: batch,
-        line_number: line_data[:line_number],
-        line_type: line_data[:line_type],
-        raw_name: line_data[:raw_name],
-        raw_sku: line_data[:raw_sku],
-        raw_quantity: line_data[:raw_quantity],
-        raw_case_quantity: line_data[:raw_case_quantity],
-        raw_unit: parsed_unit.unit_of_measure,
-        raw_package_description: line_data[:raw_name],
-        quantity: calculated[:quantity],
-        package_price: calculated[:package_price],
-        line_total: line_data[:line_total],
-        parsed_package_size: parsed_unit.package_size,
-        parsed_unit_of_measure: parsed_unit.unit_of_measure,
-        confidence_score: parsed_unit.confidence || 0,
-        needs_review: needs_review,
-        row_checksum: Digest::SHA256.hexdigest(line_data[:raw_data].to_json),
-        raw_data: line_data[:raw_data].merge(
-          parsed_unit: parsed_unit.to_h,
-          calculated: calculated
-        )
+        **normalized_line.line_item_attributes
       )
     end
 
-    def create_reviews!(line_item, parsed_unit, calculated)
-      if line_item.line_type == "coupon"
-        create_review!(line_item, "coupon", "Coupon/discount row imported for traceability but not mapped to a product price.")
-      end
-
-      if parsed_unit.needs_review
-        create_review!(line_item, "unit_parse", parsed_unit.notes || "Package size or unit needs review.")
-      end
-
-      if line_item.product&.product_category&.name == "Other / unknown"
-        create_review!(line_item, "missing_category", "Product category could not be classified confidently.")
-      end
-
-      if line_item.raw_case_quantity.to_d.positive? && calculated[:standard_unit_price].blank?
-        create_review!(line_item, "case_pack", "Case quantity is present, but case pack size/unit is not clear enough to calculate comparable unit price.")
-      end
-    end
-
-    def create_review!(line_item, issue_type, description)
-      line_item.normalization_reviews.find_or_create_by!(issue_type: issue_type, status: "pending") do |review|
-        review.product = line_item.product
-        review.description = description
-      end
+    def create_reviews!(line_item, normalized_line)
+      review_workflow.sync_pending_reviews!(
+        line_item: line_item,
+        intents: normalized_line.review_intents(product: line_item.product)
+      )
     end
 
     def summary_for(parsed)

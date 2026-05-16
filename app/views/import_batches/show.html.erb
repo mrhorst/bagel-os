@@ -3,16 +3,23 @@
 <section class="page-heading">
   <div>
     <h1><%= @import_batch.source_filename %></h1>
-    <p>Status: <strong><%= @import_batch.status %></strong></p>
+    <p>
+      Vendor: <strong><%= @receipt&.raw_data&.fetch("store_name", nil).presence || @import_batch.supplier.name %></strong>
+      · Status: <strong><%= @import_batch.status %></strong>
+    </p>
   </div>
   <%= link_to "All imports", import_batches_path, class: "button" %>
 </section>
 
 <section class="metric-grid">
+  <article class="metric"><span>Receipt date</span><strong><%= @receipt&.purchased_at&.strftime("%Y-%m-%d %I:%M %p") || "n/a" %></strong></article>
+  <article class="metric"><span>Receipt number</span><strong><%= @receipt&.receipt_number || "n/a" %></strong></article>
+  <article class="metric"><span>Subtotal</span><strong><%= money(@receipt&.subtotal) %></strong></article>
+  <article class="metric"><span>Tax paid</span><strong><%= money(@receipt&.tax) %></strong></article>
+  <article class="metric"><span>Grand total</span><strong><%= money(@receipt&.total) %></strong></article>
   <article class="metric"><span>Rows processed</span><strong><%= @import_batch.rows_processed %></strong></article>
   <article class="metric"><span>Rows imported</span><strong><%= @import_batch.rows_imported %></strong></article>
   <article class="metric"><span>Rows failed</span><strong><%= @import_batch.rows_failed %></strong></article>
-  <article class="metric"><span>Receipt</span><strong><%= @receipt&.receipt_number || "n/a" %></strong></article>
 </section>
 
 <article class="panel">
@@ -23,18 +30,26 @@
         <th>Line</th>
         <th>Raw item</th>
         <th>Product</th>
-        <th class="numeric">Qty</th>
+        <th class="numeric">Unit Qty</th>
+        <th class="numeric">Case Qty</th>
+        <th>Purchase</th>
+        <th class="numeric">Inner qty</th>
+        <th class="numeric">Inner price</th>
         <th class="numeric">Line total</th>
         <th>Review</th>
       </tr>
     </thead>
     <tbody>
       <% @line_items.each do |line| %>
-        <tr>
+        <tr id="<%= dom_id(line) %>">
           <td><%= line.line_number %></td>
           <td><%= line.raw_name %><br><small><%= line.raw_sku %></small></td>
           <td><%= line.product ? link_to(line.product.canonical_name, line.product) : "Unassigned" %></td>
-          <td class="numeric"><%= compact_decimal(line.quantity) %></td>
+          <td class="numeric"><%= compact_decimal(line.unit_quantity) %></td>
+          <td class="numeric"><%= compact_decimal(line.case_quantity) %></td>
+          <td><%= line.purchase_kind %></td>
+          <td class="numeric"><%= line.inner_quantity.present? ? "#{compact_decimal(line.inner_quantity)} #{line.inner_unit_label}" : "n/a" %></td>
+          <td class="numeric"><%= line.inner_unit_price.present? ? "#{money(line.inner_unit_price)} / #{line.inner_unit_label}" : "n/a" %></td>
           <td class="numeric"><%= money(line.line_total) %></td>
           <td><%= review_badge(line) %></td>
         </tr>

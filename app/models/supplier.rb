@@ -4,6 +4,7 @@ class Supplier < ApplicationRecord
   has_many :receipt_line_items, dependent: :restrict_with_error
   has_many :products, dependent: :restrict_with_error
   has_many :price_observations, dependent: :restrict_with_error
+  has_many :supplier_product_packs, dependent: :restrict_with_error
   has_many :preferred_inventory_items, class_name: "InventoryItem", foreign_key: :preferred_supplier_id, dependent: :nullify
 
   validates :name, presence: true, uniqueness: true

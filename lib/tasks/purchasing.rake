@@ -45,6 +45,14 @@ namespace :purchasing do
     stats.each { |key, value| puts "#{key}: #{value}" }
   end
 
+  desc "Import reviewed case-pack facts from CASE_PACK_FACTS or .private/case_pack_facts.csv"
+  task import_case_pack_facts: :environment do
+    path = ENV.fetch("CASE_PACK_FACTS", Rails.root.join(".private", "case_pack_facts.csv").to_s)
+    stats = Purchasing::CasePackFactImporter.new.import_file(path)
+    puts "Imported case-pack facts from #{path}"
+    stats.each { |key, value| puts "#{key}: #{value}" }
+  end
+
   desc "Normalize raw supplier receipt names into simpler master products"
   task renormalize_products: :environment do
     stats = Purchasing::ProductCatalogNormalizer.new.normalize_all!

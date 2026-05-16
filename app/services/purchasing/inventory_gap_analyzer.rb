@@ -15,14 +15,18 @@ module Purchasing
       keyword_init: true
     )
 
+    def initialize(linking: OrderGuideLinking.new)
+      @linking = linking
+    end
+
     def missing_products(limit: nil)
-      guide_product_ids = covered_product_ids
+      guide_product_ids = linking.covered_product_ids
 
       rows = Product
         .active
         .includes(:product_aliases, :product_category, :price_observations)
         .where.not(id: guide_product_ids)
-        .select { |product| product.price_observations.any? && !covered_by_guide_name?(product) }
+        .select { |product| product.price_observations.any? && !linking.covered_by_guide_name?(product) }
         .map { |product| row_for(product) }
         .sort_by { |row| [ priority_for(row), -row.total_spend.to_d, row.product.canonical_name ] }
 
@@ -41,41 +45,7 @@ module Purchasing
 
     private
 
-    def covered_by_guide_name?(product)
-      active_guide_items.any? do |guide_item|
-        normalized_product_names(product).include?(matcher.normalize(guide_item.item_name))
-      end
-    end
-
-    def normalized_product_names(product)
-      [
-        matcher.normalize(product.canonical_name),
-        *product.product_aliases.map { |product_alias| matcher.normalize(product_alias.raw_name) }
-      ].uniq
-    end
-
-    def active_guide_items
-      @active_guide_items ||= OrderGuideItem.active.to_a
-    end
-
-    def covered_product_ids
-      linked_ids = InventoryItem.active.where.not(product_id: nil).pluck(:product_id)
-      matched_ids = active_guide_items.filter_map do |guide_item|
-        matcher.match(
-          guide_item.item_name,
-          context: {
-            section_name: guide_item.section_name,
-            subcategory: guide_item.subcategory
-          }
-        ).product&.id
-      end
-
-      (linked_ids + matched_ids).uniq
-    end
-
-    def matcher
-      @matcher ||= ProductNameMatcher.new
-    end
+    attr_reader :linking
 
     def row_for(product)
       observations = product.price_observations

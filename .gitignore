@@ -4,6 +4,7 @@
 /coverage
 /log/*
 /storage/*.sqlite3
+/storage/*.sqlite3_*
 /storage/*.sqlite3-*
 /tmp/*
 !/log/.keep

@@ -20,6 +20,7 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
 
   test "product chart modes render as client-switchable panels" do
     product = Product.find_by!(canonical_name: "Tuna")
+    line = product.receipt_line_items.order(:id).first
 
     get product_path(product)
 
@@ -30,9 +31,18 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     standard_unit_path = product_path(product, chart_mode: "standard_unit_price")
     assert_select "a[data-chart-mode='standard_unit_price'][href='#{standard_unit_path}']", text: "Comparable unit price"
     assert_select "[data-chart-panel='package_price'] svg.price-chart"
+    assert_select "svg.price-chart .chart-date-label", text: "2026-05-13"
+    assert_select "svg.price-chart .chart-axis-title[text-anchor='middle']", text: "Purchase date"
+    assert_select "svg.price-chart circle[data-purchase-date='2026-05-13']"
+    assert_select "svg.price-chart .chart-point-label[text-anchor]", minimum: 1
     assert_select "[data-chart-panel='standard_unit_price']"
     assert_select "[data-chart-summary='line_total']"
     assert_select "[data-chart-summary='quantity']"
+    assert_select "table.purchase-history-table"
+    assert_select "table.purchase-history-table th", text: "Inner price", count: 0
+    assert_select "table.purchase-history-table details.purchase-details"
+    assert_select "a[href='#{import_batch_path(line.import_batch, anchor: "receipt_line_item_#{line.id}")}']", text: "View"
+    assert_select "a[href='#{edit_receipt_line_item_path(line)}']", text: "Edit"
   end
 
   test "stylesheet preserves hidden option panels" do

@@ -12,6 +12,10 @@ module Purchasing
       items_needing_review
     ].freeze
 
+    def initialize(price_intelligence: PriceIntelligence.new)
+      @price_intelligence = price_intelligence
+    end
+
     def export_all(directory: Rails.root.join("tmp", "reports"))
       FileUtils.mkdir_p(directory)
       REPORTS.index_with do |report|
@@ -24,34 +28,13 @@ module Purchasing
     def master_products
       CSV.generate(headers: true) do |csv|
         csv << %w[id canonical_name category supplier supplier_sku latest_price average_price lowest_price highest_price latest_standard_unit_price average_standard_unit_price total_times_purchased total_quantity_purchased total_spend first_purchase_date last_purchase_date needs_review]
-        Product.includes(:supplier, :product_category, :product_aliases, :price_observations).by_name.find_each do |product|
-          stats = product.price_stats
-          csv << [
-            product.id,
-            product.canonical_name,
-            product.category_name,
-            product.supplier.name,
-            product.supplier_sku_summary,
-            stats[:latest_price],
-            stats[:average_price],
-            stats[:lowest_price],
-            stats[:highest_price],
-            stats[:latest_standard_unit_price],
-            stats[:average_standard_unit_price],
-            stats[:total_times_purchased],
-            stats[:total_quantity_purchased],
-            stats[:total_spend],
-            stats[:first_purchase_date],
-            stats[:last_purchase_date],
-            product.needs_review
-          ]
-        end
+        price_intelligence.master_product_rows.each { |row| csv << row }
       end
     end
 
     def normalized_purchases
       CSV.generate(headers: true) do |csv|
-        csv << %w[receipt_number purchased_at product category raw_name raw_sku quantity package_price presentation standard_quantity line_total standard_unit_price standard_unit source_filename needs_review]
+        csv << %w[receipt_number purchased_at product category raw_name raw_sku unit_quantity case_quantity purchase_kind quantity package_price inner_quantity inner_unit_price inner_unit_label presentation standard_quantity line_total standard_unit_price standard_unit source_filename needs_review]
         ReceiptLineItem.includes(:receipt, :product, :supplier, :import_batch, product: :product_category).order(:created_at).find_each do |line|
           csv << [
             line.receipt.receipt_number,
@@ -60,8 +43,14 @@ module Purchasing
             line.product&.category_name,
             line.raw_name,
             line.raw_sku,
+            line.unit_quantity,
+            line.case_quantity,
+            line.purchase_kind,
             line.quantity,
             line.package_price,
+            line.inner_quantity,
+            line.inner_unit_price,
+            line.inner_unit_label,
             line.price_observation&.presentation_label,
             line.price_observation&.standard_quantity,
             line.line_total,
@@ -76,15 +65,21 @@ module Purchasing
 
     def price_history
       CSV.generate(headers: true) do |csv|
-        csv << %w[product supplier_sku observed_at presentation package_price quantity standard_quantity line_total standard_unit_price standard_unit price_basis source_filename possible_price_spike]
+        csv << %w[product supplier_sku observed_at presentation purchase_kind unit_quantity case_quantity package_price quantity inner_quantity inner_unit_price inner_unit_label standard_quantity line_total standard_unit_price standard_unit price_basis source_filename possible_price_spike]
         PriceObservation.includes(product: :product_aliases).chronological.find_each do |observation|
           csv << [
             observation.product.canonical_name,
             observation.product.supplier_sku_summary,
             observation.observed_at,
             observation.presentation_label,
+            observation.purchase_kind,
+            observation.unit_quantity,
+            observation.case_quantity,
             observation.package_price,
             observation.quantity,
+            observation.inner_quantity,
+            observation.inner_unit_price,
+            observation.inner_unit_label,
             observation.standard_quantity,
             observation.line_total,
             observation.standard_unit_price,
@@ -110,10 +105,7 @@ module Purchasing
     def frequent_items
       CSV.generate(headers: true) do |csv|
         csv << %w[product category times_purchased total_spend last_purchased]
-        Product.left_joins(:price_observations).group("products.id").order(Arel.sql("COUNT(price_observations.id) DESC")).limit(100).each do |product|
-          stats = product.price_stats
-          csv << [ product.canonical_name, product.category_name, stats[:total_times_purchased], stats[:total_spend], stats[:last_purchase_date] ]
-        end
+        price_intelligence.frequent_item_rows.each { |row| csv << row }
       end
     end
 
@@ -150,5 +142,9 @@ module Purchasing
         end
       end
     end
+
+    private
+
+    attr_reader :price_intelligence
   end
 end

@@ -21,7 +21,7 @@
           <p><%= review.issue_type.humanize %>: <%= review.description %></p>
           <p class="muted">
             Receipt <%= line.receipt.receipt_number %> · SKU <%= line.raw_sku.presence || "n/a" %> ·
-            qty <%= compact_decimal(line.quantity) %> · <%= money(line.line_total) %> ·
+            <%= line.display_quantity %> · <%= money(line.line_total) %> ·
             <%= line.import_batch.source_filename %>
           </p>
         </div>

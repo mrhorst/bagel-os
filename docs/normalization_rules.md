@@ -100,7 +100,9 @@ If `Case Qty` is greater than zero and the receipt text clearly exposes what app
 
 Example: two `25LB` cases for `$45.00` becomes `50 lb` at `$0.90/lb`.
 
-If `Case Qty` is greater than zero and the visible package size may be an inner pack rather than the full case, standard unit price is left blank and the row is flagged for review. For example, a case row that says `1LB` or `32Z` may represent a case of many one-pound or quart packages, so the app will not pretend that the whole case was only one pound or one quart.
+If `Case Qty` is greater than zero and the visible package size may be an inner pack rather than the full case, standard unit price is left blank and the row is flagged for review. For example, a case row that says `1LB`, `5LB`, or `32Z` may represent a case of many one-pound, five-pound, or quart packages, so the app will not pretend that the whole case was only one pound, five pounds, or one quart.
+
+If an approved `SupplierProductPack` fact exists for the supplier product, raw SKU, or exact raw receipt name, that reviewed fact may supply the missing case contents. For example, a cheese case fact with `units_per_case = 4`, `inner_unit_label = pack`, `inner_package_size = 5`, and `standard_unit = lb` lets the app calculate price per case, price per pack, and price per pound. Unapproved facts are ignored.
 
 ## Random Weight / Decimal Quantity
 
@@ -113,11 +115,18 @@ Standard unit price remains blank unless the unit is explicit. These rows are fl
 Stored values:
 
 - `line_total`: the CSV `Price` value.
-- `quantity`: `Unit Qty` when positive, otherwise `Case Qty` when positive.
+- `unit_quantity`: parsed numeric value from CSV `Unit Qty`.
+- `case_quantity`: parsed numeric value from CSV `Case Qty`.
+- `purchase_kind`: `unit` when only `Unit Qty` is positive, `case` when only `Case Qty` is positive, `mixed` when both are positive, and `unknown` when neither is positive.
+- `quantity`: the pricing quantity only for clear `unit` or `case` rows.
 - `package_price`: `line_total / quantity` when quantity is positive. This is the price for that exact purchased presentation.
+- `inner_quantity`: `case_quantity * units_per_case` when an approved case-pack fact is matched.
+- `inner_unit_price`: `line_total / inner_quantity` when an approved case-pack fact is matched.
 - `standard_quantity`: `quantity * package_size` when package size/unit is explicit.
 - `standard_unit_price`: `line_total / standard_quantity` when package size/unit is explicit, quantity is positive, and line total is positive.
-- `presentation_key`: exact purchased form used to keep package-price chart lines separate.
+- `presentation_key`: exact purchased form, including unit-vs-case purchase kind, used to keep package-price chart lines separate.
+
+If both `Unit Qty` and `Case Qty` are positive on one row, the importer stores both values but does not allocate the line price between them. `quantity`, `package_price`, and comparable unit price are left blank, and the row is flagged for review.
 
 Coupons are imported for traceability but do not create product price observations.
 
@@ -125,7 +134,9 @@ Coupons are imported for traceability but do not create product price observatio
 
 Product price history defaults to comparable unit price when reliable standard unit prices exist.
 
-Package/presentation price charts do not connect different purchased forms. For example, a `25 lb` banana case and a `1 lb` banana purchase appear as separate presentation series. The comparable unit chart may compare them if both rows confidently calculate to the same standard unit, such as dollars per pound.
+When no comparable unit price exists but approved case-pack facts provide an inner-unit price, product price history can chart `inner_unit_price` as a separate mode. This is useful for movements such as price per pack inside a case.
+
+Package/presentation price charts do not connect different purchased forms. Unit purchases and case purchases are separate presentation series even when the SKU and visible package text match. For example, a `25 lb` banana case and a `1 lb` banana purchase appear as separate presentation series. The comparable unit chart may compare them if both rows confidently calculate to the same standard unit, such as dollars per pound.
 
 ## Review Flags
 
@@ -134,6 +145,7 @@ Rows can be flagged for:
 - `coupon`
 - `unit_parse`
 - `case_pack`
+- `mixed_quantity`
 - `missing_category`
 - `possible_alias_match`
 
