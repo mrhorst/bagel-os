@@ -1,0 +1,80 @@
+<% content_for :title, "Dashboard" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Purchasing dashboard</h1>
+    <p>Spending, recurring products, review flags, and price movement from imported receipt lines.</p>
+  </div>
+  <%= link_to "Import CSV", new_import_batch_path, class: "button primary" %>
+</section>
+
+<section class="metric-grid">
+  <article class="metric"><span>Total spend</span><strong><%= money(@total_spend) %></strong></article>
+  <article class="metric"><span>Receipts imported</span><strong><%= @receipt_count %></strong></article>
+  <article class="metric"><span>Products tracked</span><strong><%= @product_count %></strong></article>
+  <article class="metric"><span>Average receipt</span><strong><%= money(@average_receipt_total) %></strong></article>
+</section>
+
+<section class="grid two">
+  <article class="panel">
+    <h2>Spend by month</h2>
+    <table>
+      <thead><tr><th>Month</th><th class="numeric">Spend</th></tr></thead>
+      <tbody>
+        <% @monthly_spend.each do |month, total| %>
+          <tr><td><%= month.strftime("%B %Y") %></td><td class="numeric"><%= money(total) %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="panel">
+    <h2>Spend by category</h2>
+    <table>
+      <thead><tr><th>Category</th><th class="numeric">Spend</th></tr></thead>
+      <tbody>
+        <% @category_spend.each do |category, total| %>
+          <tr><td><%= category %></td><td class="numeric"><%= money(total) %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<section class="grid three">
+  <article class="panel">
+    <h2>Top recurring products</h2>
+    <%= render "product_list", products: @top_by_frequency %>
+  </article>
+  <article class="panel">
+    <h2>Top spend</h2>
+    <%= render "product_list", products: @top_by_spend %>
+  </article>
+  <article class="panel">
+    <h2>Needs review</h2>
+    <%= render "product_list", products: @needs_review %>
+  </article>
+</section>
+
+<section class="grid two">
+  <article class="panel">
+    <h2>Possible price spikes</h2>
+    <table>
+      <thead><tr><th>Product</th><th>Date</th><th class="numeric">Price</th></tr></thead>
+      <tbody>
+        <% @spikes.each do |observation| %>
+          <tr>
+            <td><%= link_to observation.product.canonical_name, observation.product %></td>
+            <td><%= observation.observed_at.to_date %></td>
+            <td class="numeric"><%= money(observation.package_price) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="panel">
+    <h2>Missing standard unit price</h2>
+    <%= render "product_list", products: @missing_standard %>
+  </article>
+</section>

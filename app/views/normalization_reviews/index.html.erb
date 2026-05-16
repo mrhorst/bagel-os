@@ -1,0 +1,60 @@
+<% content_for :title, "Review Queue" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Review queue</h1>
+    <p>Rows here need human judgment before they should be treated as fully normalized purchasing data.</p>
+  </div>
+</section>
+
+<% if @reviews.empty? %>
+  <article class="panel empty-state">No pending reviews right now.</article>
+<% end %>
+
+<section class="review-list">
+  <% @reviews.each do |review| %>
+    <% line = review.receipt_line_item %>
+    <article class="panel review-card">
+      <div class="review-main">
+        <div>
+          <h2><%= line.raw_name %></h2>
+          <p><%= review.issue_type.humanize %>: <%= review.description %></p>
+          <p class="muted">
+            Receipt <%= line.receipt.receipt_number %> · SKU <%= line.raw_sku.presence || "n/a" %> ·
+            qty <%= compact_decimal(line.quantity) %> · <%= money(line.line_total) %> ·
+            <%= line.import_batch.source_filename %>
+          </p>
+        </div>
+        <%= link_to "Open import", import_batch_path(line.import_batch), class: "button" %>
+      </div>
+
+      <div class="grid three review-actions">
+        <div>
+          <h3>Assign to existing product</h3>
+          <%= form_with url: assign_product_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
+            <%= select_tag :product_id, options_from_collection_for_select(@products, :id, :canonical_name), prompt: "Choose product" %>
+            <%= form.submit "Assign", class: "button" %>
+          <% end %>
+        </div>
+
+        <div>
+          <h3>Create product</h3>
+          <%= form_with url: create_product_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
+            <%= text_field_tag :canonical_name, line.raw_name, placeholder: "Canonical name" %>
+            <%= select_tag :product_category_id, options_from_collection_for_select(@categories, :id, :name), prompt: "Choose category" %>
+            <%= form.submit "Create", class: "button" %>
+          <% end %>
+        </div>
+
+        <div>
+          <h3>Resolve or ignore</h3>
+          <%= form_with url: resolve_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
+            <%= select_tag :review_status, options_for_select([["Resolved", "resolved"], ["Ignored", "ignored"]]) %>
+            <%= text_field_tag :resolution_notes, nil, placeholder: "Resolution note" %>
+            <%= form.submit "Update", class: "button" %>
+          <% end %>
+        </div>
+      </div>
+    </article>
+  <% end %>
+</section>

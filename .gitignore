@@ -1,0 +1,24 @@
+/.bundle
+/.ruby-lsp
+/.yardoc
+/coverage
+/log/*
+/storage/*.sqlite3
+/storage/*.sqlite3-*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+!/tmp/pids
+/tmp/pids/*
+!/tmp/pids/.keep
+/config/master.key
+/public/assets
+
+# Private install data stays local or in a separate private repo.
+/.private/
+
+# Real vendor exports and order guides must not be committed.
+/data/receipts/
+/data/order_guides/
+
+# Keep sample fixtures sanitized. Do not commit real receipts, PDFs, or vendor exports.

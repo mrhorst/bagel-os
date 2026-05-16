@@ -1,0 +1,103 @@
+<% content_for :title, "Inventory Items" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Master Inventory</h1>
+    <p>Operational inventory items created from the current daily and weekly guides.</p>
+  </div>
+  <div class="actions">
+    <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
+    <%= link_to "Order guides", order_guides_path, class: "button" %>
+  </div>
+</div>
+
+<% if @items_needing_review.any? %>
+  <section class="panel">
+    <h2>Items Needing Receipt Link Review</h2>
+    <p class="muted">These are on the guide but were not confidently matched to a receipt product.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Guide item</th>
+          <th>Section</th>
+          <th>Pack / count note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @items_needing_review.first(20).each do |item| %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.inventory_section&.name || "Unsectioned" %></td>
+            <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
+
+<% @sections.each do |section| %>
+  <% items = section.inventory_items.select(&:active?) %>
+  <% next if items.empty? %>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2><%= section.name %></h2>
+        <p class="muted"><%= pluralize(items.size, "active item") %></p>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Guide</th>
+          <th>Receipt product</th>
+          <th>Pack / count note</th>
+          <th class="numeric">Latest price</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% items.sort_by { |item| [item.position, item.name] }.each do |item| %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><span class="badge"><%= item.guide_frequency_label %></span></td>
+            <td>
+              <% if item.product.present? %>
+                <%= link_to item.product.canonical_name, product_path(item.product) %>
+              <% else %>
+                <span class="muted">Unlinked</span>
+              <% end %>
+            </td>
+            <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
+            <td class="numeric"><%= item.latest_price.present? ? number_to_currency(item.latest_price) : "n/a" %></td>
+            <td>
+              <% if item.needs_review? %>
+                <span class="badge badge-warning">Review</span>
+              <% else %>
+                <span class="badge badge-ok">Linked</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
+
+<% if @unsectioned_items.any? %>
+  <section class="panel">
+    <h2>Unsectioned Items</h2>
+    <table>
+      <tbody>
+        <% @unsectioned_items.each do |item| %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.linked_product_name %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>

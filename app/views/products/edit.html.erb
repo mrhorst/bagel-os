@@ -1,0 +1,54 @@
+<% content_for :title, "Edit #{@product.canonical_name}" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Edit product</h1>
+    <p>Use this screen to clean up canonical names, categories, and review status.</p>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= form_with model: @product, class: "stack" do |form| %>
+    <% if @product.errors.any? %>
+      <div class="flash flash-alert"><%= @product.errors.full_messages.to_sentence %></div>
+    <% end %>
+
+    <div>
+      <%= form.label :canonical_name %>
+      <%= form.text_field :canonical_name, required: true %>
+    </div>
+    <div>
+      <%= form.label :product_category_id, "Category" %>
+      <%= form.collection_select :product_category_id, @categories, :id, :name, include_blank: "Missing category" %>
+    </div>
+    <div class="form-grid">
+      <div>
+        <%= form.label :purchase_unit %>
+        <%= form.text_field :purchase_unit %>
+      </div>
+      <div>
+        <%= form.label :package_size %>
+        <%= form.number_field :package_size, step: "0.0001" %>
+      </div>
+      <div>
+        <%= form.label :unit_of_measure %>
+        <%= form.text_field :unit_of_measure %>
+      </div>
+      <div>
+        <%= form.label :standard_unit %>
+        <%= form.text_field :standard_unit %>
+      </div>
+    </div>
+    <div>
+      <%= form.label :notes %>
+      <%= form.text_area :notes, rows: 4 %>
+    </div>
+    <label class="check"><%= form.check_box :active %> Active</label>
+    <label class="check"><%= form.check_box :needs_review %> Needs review</label>
+
+    <div class="actions">
+      <%= form.submit "Save product", class: "button primary" %>
+      <%= link_to "Cancel", @product, class: "button" %>
+    </div>
+  <% end %>
+</article>

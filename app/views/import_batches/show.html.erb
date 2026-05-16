@@ -1,0 +1,44 @@
+<% content_for :title, @import_batch.source_filename %>
+
+<section class="page-heading">
+  <div>
+    <h1><%= @import_batch.source_filename %></h1>
+    <p>Status: <strong><%= @import_batch.status %></strong></p>
+  </div>
+  <%= link_to "All imports", import_batches_path, class: "button" %>
+</section>
+
+<section class="metric-grid">
+  <article class="metric"><span>Rows processed</span><strong><%= @import_batch.rows_processed %></strong></article>
+  <article class="metric"><span>Rows imported</span><strong><%= @import_batch.rows_imported %></strong></article>
+  <article class="metric"><span>Rows failed</span><strong><%= @import_batch.rows_failed %></strong></article>
+  <article class="metric"><span>Receipt</span><strong><%= @receipt&.receipt_number || "n/a" %></strong></article>
+</section>
+
+<article class="panel">
+  <h2>Receipt lines</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Line</th>
+        <th>Raw item</th>
+        <th>Product</th>
+        <th class="numeric">Qty</th>
+        <th class="numeric">Line total</th>
+        <th>Review</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @line_items.each do |line| %>
+        <tr>
+          <td><%= line.line_number %></td>
+          <td><%= line.raw_name %><br><small><%= line.raw_sku %></small></td>
+          <td><%= line.product ? link_to(line.product.canonical_name, line.product) : "Unassigned" %></td>
+          <td class="numeric"><%= compact_decimal(line.quantity) %></td>
+          <td class="numeric"><%= money(line.line_total) %></td>
+          <td><%= review_badge(line) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</article>

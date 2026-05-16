@@ -1,0 +1,19 @@
+<table>
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Category</th>
+      <th class="numeric">Spend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% products.each do |product| %>
+      <% stats = product.price_stats %>
+      <tr>
+        <td><%= link_to product.canonical_name, product %></td>
+        <td><%= product.category_name %></td>
+        <td class="numeric"><%= money(stats[:total_spend]) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

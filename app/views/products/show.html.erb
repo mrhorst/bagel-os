@@ -1,0 +1,129 @@
+<% content_for :title, @product.canonical_name %>
+
+<section class="page-heading">
+  <div>
+    <h1><%= @product.canonical_name %></h1>
+    <p><%= @product.category_name %> · <%= @product.supplier.name %> · SKU <%= @product.supplier_sku_summary %></p>
+  </div>
+  <%= link_to "Edit product", edit_product_path(@product), class: "button" %>
+</section>
+
+<section class="metric-grid">
+  <article class="metric"><span>Total spend</span><strong><%= money(@stats[:total_spend]) %></strong></article>
+  <article class="metric"><span>Times purchased</span><strong><%= @stats[:total_times_purchased] %></strong></article>
+  <article class="metric"><span>Latest package price</span><strong><%= money(@stats[:latest_price]) %></strong></article>
+  <article class="metric"><span>Avg package price</span><strong><%= money(@stats[:average_price]) %></strong></article>
+  <article class="metric"><span>Lowest package price</span><strong><%= money(@stats[:lowest_price]) %></strong></article>
+  <article class="metric"><span>Highest package price</span><strong><%= money(@stats[:highest_price]) %></strong></article>
+  <article class="metric"><span>Latest comparable unit</span><strong><%= money(@stats[:latest_standard_unit_price]) %></strong></article>
+  <article class="metric"><span>Avg comparable unit</span><strong><%= money(@stats[:average_standard_unit_price]) %></strong></article>
+</section>
+
+<section class="grid two">
+  <article class="panel">
+    <h2>Product summary</h2>
+    <dl class="details">
+      <dt>Package size</dt><dd><%= compact_decimal(@product.package_size) %> <%= @product.unit_of_measure %></dd>
+      <dt>Purchase unit</dt><dd><%= @product.purchase_unit.presence || "n/a" %></dd>
+      <dt>Standard unit</dt><dd><%= @product.standard_unit.presence || "n/a" %></dd>
+      <dt>First purchased</dt><dd><%= @stats[:first_purchase_date]&.to_date || "n/a" %></dd>
+      <dt>Last purchased</dt><dd><%= @stats[:last_purchase_date]&.to_date || "n/a" %></dd>
+      <dt>Status</dt><dd><%= review_badge(@product) %></dd>
+    </dl>
+    <% if @product.notes.present? %>
+      <div class="note-block"><%= simple_format(@product.notes) %></div>
+    <% end %>
+  </article>
+
+  <article class="panel">
+    <h2>Receipt variations</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Raw receipt name</th>
+          <th>SKU</th>
+          <th class="numeric">Times</th>
+          <th class="numeric">Latest</th>
+          <th>Package</th>
+          <th>Review</th>
+        </tr>
+      </thead>
+      <tbody>
+      <% @variation_summaries.each do |variation| %>
+        <tr>
+          <td><%= variation[:raw_name] %></td>
+          <td><%= variation[:raw_sku].presence || "n/a" %></td>
+          <td class="numeric"><%= variation[:purchases_count] %></td>
+          <td class="numeric"><%= money(variation[:latest_package_price]) %></td>
+          <td><%= variation[:package_label] %></td>
+          <td><%= variation[:needs_review] ? tag.span("Needs line review", class: "badge badge-warning") : tag.span("Reviewed", class: "badge badge-ok") %></td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<article class="panel" data-chart-switcher data-initial-chart-mode="<%= @chart_mode %>">
+  <div class="panel-heading">
+    <div>
+      <h2>Product Price History</h2>
+      <p class="muted">Comparable unit price is the default when reliable. Presentation price lines are separated by exact purchased form.</p>
+    </div>
+    <div class="segmented" role="tablist" aria-label="Product price history mode">
+      <% PriceChartHelper::CHART_MODES.each do |mode, label| %>
+        <% fallback_path = product_path(@product, chart_mode: mode) %>
+        <%= link_to label, fallback_path, class: mode == @chart_mode ? "active" : nil, role: "tab", aria: { selected: mode == @chart_mode }, data: { chart_mode: mode } %>
+      <% end %>
+    </div>
+  </div>
+
+  <% @chart_summaries.each do |mode, summary| %>
+    <section class="metric-grid compact" data-chart-summary="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
+      <article class="metric"><span>First to latest</span><strong><%= summary[:recent_change] ? "#{summary[:recent_change]}%" : "n/a" %></strong></article>
+      <article class="metric"><span>Last 30 days</span><strong><%= summary[:change_30_days] ? "#{summary[:change_30_days]}%" : "n/a" %></strong></article>
+      <article class="metric"><span>Last 60 days</span><strong><%= summary[:change_60_days] ? "#{summary[:change_60_days]}%" : "n/a" %></strong></article>
+      <article class="metric"><span>Last 90 days</span><strong><%= summary[:change_90_days] ? "#{summary[:change_90_days]}%" : "n/a" %></strong></article>
+    </section>
+    <div data-chart-panel="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
+      <%= price_history_svg(summary[:observations], mode: mode) %>
+    </div>
+  <% end %>
+</article>
+
+<article class="panel">
+  <h2>Purchase history</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Receipt</th>
+        <th>Raw product</th>
+        <th class="numeric">Qty</th>
+        <th class="numeric">Package price</th>
+        <th>Presentation</th>
+        <th class="numeric">Comparable qty</th>
+        <th class="numeric">Line total</th>
+        <th class="numeric">Std unit price</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @observations.each do |observation| %>
+        <% line = observation.receipt_line_item %>
+        <tr class="<%= "warning-row" if observation.possible_price_spike? %>">
+          <td><%= observation.observed_at.to_date %></td>
+          <td><%= line.receipt.receipt_number %></td>
+          <td><%= line.raw_name %></td>
+          <td class="numeric"><%= compact_decimal(observation.quantity) %></td>
+          <td class="numeric"><%= money(observation.package_price) %></td>
+          <td><%= observation.presentation_label.presence || line.raw_name %></td>
+          <td class="numeric"><%= observation.standard_quantity.present? ? "#{compact_decimal(observation.standard_quantity)} #{observation.standard_unit}" : "n/a" %></td>
+          <td class="numeric"><%= money(observation.line_total) %></td>
+          <td class="numeric"><%= observation.standard_unit_price ? "#{money(observation.standard_unit_price)} / #{observation.standard_unit}" : "n/a" %></td>
+          <td><%= observation.source_filename %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</article>

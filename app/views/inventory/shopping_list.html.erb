@@ -1,0 +1,55 @@
+<% content_for :title, "Shopping List" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Shopping List</h1>
+    <p>Generated from counted on-hand quantities and par levels. Blank par levels are left alone.</p>
+  </div>
+  <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
+</div>
+
+<section class="panel">
+  <h2>Buy Now</h2>
+  <% if @buy_now.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Section</th>
+          <th class="numeric">On hand</th>
+          <th class="numeric">Par</th>
+          <th class="numeric">Buy</th>
+          <th>Receipt product</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @buy_now.each do |row| %>
+          <% item = row.inventory_item %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.inventory_section&.name || "Unsectioned" %></td>
+            <td class="numeric"><%= number_with_precision(row.quantity_on_hand, precision: 2, strip_insignificant_zeros: true) %></td>
+            <td class="numeric"><%= number_with_precision(item.current_par, precision: 2, strip_insignificant_zeros: true) %></td>
+            <td class="numeric"><strong><%= number_with_precision(row.buy_quantity, precision: 2, strip_insignificant_zeros: true) %></strong></td>
+            <td><%= item.product ? link_to(item.product.canonical_name, product_path(item.product)) : "Unlinked" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No buy-now rows yet. Add par levels and save counts first.</p>
+  <% end %>
+</section>
+
+<section class="panel">
+  <h2>Not Counted Yet</h2>
+  <% if @not_counted.any? %>
+    <div class="pill-list">
+      <% @not_counted.first(80).each do |row| %>
+        <span class="badge"><%= row.inventory_item.name %></span>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">Every active inventory item has at least one saved count.</p>
+  <% end %>
+</section>

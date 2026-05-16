@@ -1,0 +1,58 @@
+<% content_for :title, "Master Products" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Master products</h1>
+    <p>Canonical purchased products with spend, purchase frequency, latest prices, and review flags.</p>
+  </div>
+  <%= link_to "Review queue", normalization_reviews_path, class: "button" %>
+</section>
+
+<article class="panel">
+  <%= form_with url: products_path, method: :get, class: "filters", data: { auto_submit_form: true, async_frame: "products" } do |form| %>
+    <%= form.search_field :q, value: params[:q], placeholder: "Search products" %>
+    <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] } %>
+    <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] } %>
+    <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] } %>
+    <label class="check"><%= form.check_box :needs_review, { checked: params[:needs_review] == "1" }, "1", "0" %> Needs review</label>
+    <label class="check"><%= form.check_box :no_standard_unit_price, { checked: params[:no_standard_unit_price] == "1" }, "1", "0" %> No standard unit price</label>
+    <label class="check"><%= form.check_box :missing_category, { checked: params[:missing_category] == "1" }, "1", "0" %> Missing category</label>
+    <%= form.submit "Apply", class: "button", data: { filter_submit: true } %>
+  <% end %>
+</article>
+
+<article class="panel" data-async-frame="products">
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Category</th>
+        <th>SKU</th>
+        <th class="numeric">Latest</th>
+        <th class="numeric">Avg</th>
+        <th class="numeric">Low</th>
+        <th class="numeric">High</th>
+        <th class="numeric">Times</th>
+        <th class="numeric">Spend</th>
+        <th>Review</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @products.each do |product| %>
+        <% stats = product.price_stats %>
+        <tr>
+          <td><%= link_to product.canonical_name, product %></td>
+          <td><%= product.category_name %></td>
+          <td><%= product.supplier_sku_summary %></td>
+          <td class="numeric"><%= money(stats[:latest_price]) %></td>
+          <td class="numeric"><%= money(stats[:average_price]) %></td>
+          <td class="numeric"><%= money(stats[:lowest_price]) %></td>
+          <td class="numeric"><%= money(stats[:highest_price]) %></td>
+          <td class="numeric"><%= stats[:total_times_purchased] %></td>
+          <td class="numeric"><%= money(stats[:total_spend]) %></td>
+          <td><%= review_badge(product) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</article>

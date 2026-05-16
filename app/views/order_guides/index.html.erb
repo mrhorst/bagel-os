@@ -1,0 +1,144 @@
+<% content_for :title, "Order Guides" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Order Guides</h1>
+    <p>Current daily/weekly guide PDFs cross-referenced against receipt products.</p>
+  </div>
+  <div class="actions">
+    <%= button_to "Import current PDFs", import_current_order_guides_path, method: :post, class: "primary" %>
+    <%= link_to "Inventory", inventory_path, class: "button" %>
+  </div>
+</div>
+
+<section class="metric-grid">
+  <div class="metric">
+    <span>Daily guide rows</span>
+    <strong><%= @daily_items.size %></strong>
+  </div>
+  <div class="metric">
+    <span>Weekly guide rows</span>
+    <strong><%= @weekly_items.size %></strong>
+  </div>
+  <div class="metric">
+    <span>Guide rows needing review</span>
+    <strong><%= OrderGuideItem.active.needs_review.count %></strong>
+  </div>
+  <div class="metric">
+    <span>Receipt products not on guide</span>
+    <strong><%= @missing_products.size %></strong>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Receipt Products Not On Current Guides</h2>
+      <p class="muted">This is the list to review after updating the spreadsheet and exporting fresh PDFs.</p>
+    </div>
+  </div>
+
+  <% if @missing_products.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Review signal</th>
+          <th class="numeric">Buys</th>
+          <th class="numeric">Spend</th>
+          <th>Last bought</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @missing_products.each do |row| %>
+          <tr>
+            <td><%= link_to row.product.canonical_name, product_path(row.product) %></td>
+            <td><%= row.product.category_name %></td>
+            <td>
+              <span class="badge <%= row.classification == 'review_for_guide' ? 'badge-warning' : '' %>">
+                <%= row.classification.humanize %>
+              </span>
+              <small><%= row.reason %></small>
+            </td>
+            <td class="numeric"><%= row.purchase_count %></td>
+            <td class="numeric"><%= number_to_currency(row.total_spend) %></td>
+            <td><%= row.last_purchased_at&.to_date || "n/a" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No missing receipt products found for the current guide import.</p>
+  <% end %>
+</section>
+
+<section class="grid two">
+  <div class="panel">
+    <h2>Guide Items Needing Link Review</h2>
+    <% if @guide_items_needing_review.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Guide item</th>
+            <th>Guide</th>
+            <th>Section</th>
+            <th>Suggested receipt product</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @guide_items_needing_review.each do |item| %>
+            <tr>
+              <td><%= item.item_name %></td>
+              <td><%= item.guide_type.humanize %></td>
+              <td><%= item.section_name %></td>
+              <td><%= item.raw_data["suggested_product_name"].presence || "n/a" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-state">Every current guide row has a confident receipt-product link.</p>
+    <% end %>
+  </div>
+
+  <div class="panel">
+    <h2>Recent Guide Imports</h2>
+    <% if @imports.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Type</th>
+            <th class="numeric">Rows</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @imports.each do |import| %>
+            <tr>
+              <td><%= import.source_filename %></td>
+              <td><%= import.guide_type.humanize %></td>
+              <td class="numeric"><%= import.rows_imported %></td>
+              <td><span class="badge"><%= import.status.humanize %></span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-state">No guide PDFs imported yet.</p>
+    <% end %>
+  </div>
+</section>
+
+<section class="grid two">
+  <div class="panel">
+    <h2>Daily Guide</h2>
+    <%= render "guide_table", items: @daily_items %>
+  </div>
+
+  <div class="panel">
+    <h2>Weekly Guide</h2>
+    <%= render "guide_table", items: @weekly_items %>
+  </div>
+</section>

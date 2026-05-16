@@ -1,0 +1,16 @@
+"Wholesale Supplier #1",,"Customer #0000000000"
+"100 Example Ave",,"Demo Restaurant"
+"Example City, ST 00000",,"1 Demo Way"
+"(555) 000-0000",,"Example City, ST 00000"
+
+"Invoice: 99999","Terminal: 12","2026/05/12 12:39 pm"
+UPC,Description,"Unit Qty","Case Qty",Price
+-2,"Previous Balance",0,0,$0.00
+760695010776,"EGGS XLG LS GRD A  15DZ  ",1,0,$11.01
+76069501090,"CHS CREAM BULK JF  30LB  ",1,0,$57.94
+104462,"(Coupon) Splenda Sweetener 400ct",0,4,$0.00
+0,Sub-Total,0,0,$68.95
+0,Tax,0,0,$0.00
+0,Total,0,0,$68.95
+0,"MC/VISA 0165",0,0,$68.95
+0,Balance,0,0,$0.00

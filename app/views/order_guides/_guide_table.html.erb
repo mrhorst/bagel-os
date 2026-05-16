@@ -1,0 +1,35 @@
+<% if items.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Section</th>
+        <th>Par / pack</th>
+        <th>Receipt link</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% items.each do |item| %>
+        <tr>
+          <td>
+            <%= item.item_name %>
+            <% if item.subcategory.present? %>
+              <small><%= item.subcategory %></small>
+            <% end %>
+          </td>
+          <td><%= item.section_name %></td>
+          <td><%= [item.par_text, item.pack_quantity].compact_blank.join(" / ").presence || "n/a" %></td>
+          <td>
+            <% if item.linked_product.present? %>
+              <%= link_to item.linked_product.canonical_name, product_path(item.linked_product) %>
+            <% else %>
+              <span class="badge badge-warning">Review</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No rows imported yet.</p>
+<% end %>

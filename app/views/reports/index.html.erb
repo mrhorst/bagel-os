@@ -1,0 +1,29 @@
+<% content_for :title, "Reports" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Reports / exports</h1>
+    <p>Download normalized purchasing data as CSV files for review, spreadsheets, or accounting support.</p>
+  </div>
+</section>
+
+<article class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Report</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @reports.each do |report| %>
+        <tr>
+          <td><%= report %>.csv</td>
+          <td><%= report.humanize %></td>
+          <td class="numeric"><%= link_to "Download", report_path(report), class: "button" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</article>

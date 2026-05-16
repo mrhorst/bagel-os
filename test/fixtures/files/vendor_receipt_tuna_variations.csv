@@ -1,0 +1,15 @@
+"Wholesale Supplier #1",,"Customer #0000000000"
+"100 Example Ave",,"Demo Restaurant"
+"Example City, ST 00000",,"1 Demo Way"
+"(555) 000-0000",,"Example City, ST 00000"
+
+"Invoice: 99998","Terminal: 12","2026/05/13 12:39 pm"
+UPC,Description,"Unit Qty","Case Qty",Price
+-2,"Previous Balance",0,0,$0.00
+76069500016,"TUNA CHUNK LT CQ 66Z",1,0,$9.49
+76069500254,"TUNA TONGOL CQ 66Z",2,0,$21.98
+0,Sub-Total,0,0,$31.47
+0,Tax,0,0,$0.00
+0,Total,0,0,$31.47
+0,"MC/VISA 0165",0,0,$31.47
+0,Balance,0,0,$0.00

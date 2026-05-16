@@ -1,0 +1,40 @@
+<% content_for :title, "New Inventory Count" %>
+
+<div class="page-heading">
+  <div>
+    <h1>New Inventory Count</h1>
+    <p>Enter only what you counted. Blank rows are skipped.</p>
+  </div>
+  <%= link_to "Count history", inventory_counts_path, class: "button" %>
+</div>
+
+<%= form_with url: inventory_counts_path, method: :post, class: "count-form" do %>
+  <section class="panel">
+    <label for="notes"><strong>Count notes</strong></label>
+    <%= text_area_tag :notes, nil, rows: 2, placeholder: "Optional notes about this count" %>
+  </section>
+
+  <% @sections.each do |section| %>
+    <% items = section.inventory_items.select(&:active?) %>
+    <% next if items.empty? %>
+
+    <section class="panel">
+      <h2><%= section.name %></h2>
+      <div class="count-grid">
+        <% items.sort_by { |item| [item.position, item.name] }.each do |item| %>
+          <label class="count-row">
+            <span>
+              <strong><%= item.name %></strong>
+              <small><%= item.pack_size.presence || item.count_unit.presence || item.linked_product_name %></small>
+            </span>
+            <%= number_field_tag "counts[#{item.id}]", nil, min: 0, step: "any", inputmode: "decimal" %>
+          </label>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <div class="sticky-actions">
+    <%= submit_tag "Save count", class: "primary" %>
+  </div>
+<% end %>

@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+require "find"
+require "pathname"
+
+root = Pathname.new(__dir__).parent.expand_path
+
+blocked_files = %w[
+  package.json
+  package-lock.json
+  npm-shrinkwrap.json
+  yarn.lock
+  pnpm-lock.yaml
+  bun.lock
+  bun.lockb
+  .npmrc
+  .yarnrc
+]
+
+blocked_dirs = %w[
+  node_modules
+  .yarn
+  .pnpm-store
+]
+
+ignored_dirs = %w[
+  .git
+  .bundle
+  log
+  storage
+  tmp
+]
+
+command_files = [
+  root.join("Dockerfile"),
+  root.join("config/ci.rb"),
+  *Dir[root.join(".github/workflows/*")],
+  *Dir[root.join("bin/*")],
+  *Dir[root.join("script/*")]
+].map { |path| Pathname.new(path).expand_path }.uniq
+
+violations = []
+
+Find.find(root.to_s) do |path|
+  relative = Pathname.new(path).relative_path_from(root).to_s
+  basename = File.basename(path)
+
+  if File.directory?(path)
+    if ignored_dirs.include?(relative) || blocked_dirs.include?(basename)
+      violations << "Blocked JavaScript package directory: #{relative}" if blocked_dirs.include?(basename)
+      Find.prune
+    end
+    next
+  end
+
+  violations << "Blocked JavaScript package file: #{relative}" if blocked_files.include?(basename)
+end
+
+command_files.each do |path|
+  next unless path.file?
+  next if path.basename.to_s == File.basename(__FILE__)
+
+  path.each_line.with_index(1) do |line, number|
+    candidate = line
+    if path.extname.match?(/ya?ml/)
+      next unless line.match?(/^\s*-?\s*run:\s*/)
+
+      candidate = line.sub(/^\s*-?\s*run:\s*/, "")
+    end
+    candidate = line.split(",", 2).last.to_s if path.basename.to_s == "ci.rb" && line.include?("step ")
+    next if candidate.lstrip.start_with?("#")
+    next unless candidate.match?(/(?:^|[;&|({\s])(?:npm|npx|yarn|pnpm|bun)(?:\s|$)/)
+
+    relative = path.relative_path_from(root)
+    violations << "Blocked JavaScript package-manager command in #{relative}:#{number}: #{line.strip}"
+  end
+end
+
+if violations.any?
+  warn "This Rails app is intentionally npm-free."
+  warn "Recent npm supply-chain attacks execute during install/build and target developer or CI secrets."
+  warn "Remove the npm surface, or document and review a deliberate exception before changing this guard."
+  warn
+  violations.each { |violation| warn "- #{violation}" }
+  exit 1
+end
+
+puts "No npm/yarn/pnpm/bun package surface detected."

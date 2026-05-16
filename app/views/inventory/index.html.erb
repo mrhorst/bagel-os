@@ -1,0 +1,135 @@
+<% content_for :title, "Inventory" %>
+
+<section class="hero-panel">
+  <div>
+    <p class="eyebrow">Inventory + purchasing</p>
+    <h1>Order-guide intelligence</h1>
+    <p>
+      Current guide items, receipt-backed products, and manual counts now live together.
+      Anything uncertain stays visible for review instead of being guessed into place.
+    </p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to "Start count", new_inventory_count_path, class: "button primary" %>
+    <%= link_to "Guide gaps", order_guides_path, class: "button" %>
+  </div>
+</section>
+
+<section class="metric-grid">
+  <div class="metric">
+    <span>Inventory items</span>
+    <strong><%= @inventory_item_count %></strong>
+  </div>
+  <div class="metric">
+    <span>Linked to receipt products</span>
+    <strong><%= @linked_inventory_item_count %></strong>
+  </div>
+  <div class="metric">
+    <span>Active guide rows</span>
+    <strong><%= @guide_item_count %></strong>
+  </div>
+  <div class="metric">
+    <span>Guide rows needing review</span>
+    <strong><%= @guide_items_needing_review %></strong>
+  </div>
+</section>
+
+<section class="grid two">
+  <div class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Next Buy List</h2>
+        <p class="muted">Based on manual counts and par levels when available.</p>
+      </div>
+      <%= link_to "View all", inventory_shopping_list_path, class: "button" %>
+    </div>
+
+    <% if @buy_now.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="numeric">On hand</th>
+            <th class="numeric">Buy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @buy_now.each do |row| %>
+            <tr>
+              <td><%= row.inventory_item.name %></td>
+              <td class="numeric"><%= number_with_precision(row.quantity_on_hand, precision: 2, strip_insignificant_zeros: true) %></td>
+              <td class="numeric"><%= number_with_precision(row.buy_quantity, precision: 2, strip_insignificant_zeros: true) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-state">No buy recommendations yet. Add par levels and save a count to generate the list.</p>
+    <% end %>
+  </div>
+
+  <div class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Receipt Products Not On Guide</h2>
+        <p class="muted">Top items to review against the current daily and weekly guides.</p>
+      </div>
+      <%= link_to "Review", order_guides_path, class: "button" %>
+    </div>
+
+    <% if @missing_products.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Signal</th>
+            <th class="numeric">Spend</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @missing_products.each do |row| %>
+            <tr>
+              <td><%= link_to row.product.canonical_name, product_path(row.product) %></td>
+              <td>
+                <span class="badge <%= row.classification == 'review_for_guide' ? 'badge-warning' : '' %>">
+                  <%= row.classification.humanize %>
+                </span>
+                <small><%= row.purchase_count %> buys</small>
+              </td>
+              <td class="numeric"><%= number_to_currency(row.total_spend) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-state">No receipt-backed gaps found after the latest guide import.</p>
+    <% end %>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Inventory Workflow</h2>
+      <p class="muted">Simple operating screens pulled into this purchasing app.</p>
+    </div>
+  </div>
+  <div class="action-grid">
+    <%= link_to inventory_items_path, class: "action-card" do %>
+      <strong>Master inventory</strong>
+      <span>Guide rows, receipt links, pack notes, and review status.</span>
+    <% end %>
+    <%= link_to new_inventory_count_path, class: "action-card" do %>
+      <strong>Manual count</strong>
+      <span>Fast count sheet grouped by order-guide section.</span>
+    <% end %>
+    <%= link_to inventory_counts_path, class: "action-card" do %>
+      <strong>Count history</strong>
+      <span>Past manual counts for traceability.</span>
+    <% end %>
+    <%= link_to order_guides_path, class: "action-card" do %>
+      <strong>Guide cross-check</strong>
+      <span>See guide items and products missing from the guide.</span>
+    <% end %>
+  </div>
+</section>

@@ -1,0 +1,18 @@
+<% content_for :title, "Upload CSV" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Upload receipt CSV</h1>
+    <p>Upload one vendor receipt export. Duplicate checks use file checksum and receipt number.</p>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= form_with url: import_batches_path, multipart: true, class: "stack" do |form| %>
+    <div>
+      <%= form.label :csv_file, "CSV file" %>
+      <%= form.file_field :csv_file, accept: ".csv,text/csv", required: true %>
+    </div>
+    <%= form.submit "Import receipt", class: "button primary" %>
+  <% end %>
+</article>

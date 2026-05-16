@@ -1,0 +1,36 @@
+<% content_for :title, "Inventory Counts" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Inventory Counts</h1>
+    <p>Manual count history for traceability.</p>
+  </div>
+  <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
+</div>
+
+<section class="panel">
+  <% if @counts.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Counted at</th>
+          <th>Status</th>
+          <th class="numeric">Lines</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @counts.each do |count| %>
+          <tr>
+            <td><%= count.counted_at.to_fs(:long) %></td>
+            <td><span class="badge"><%= count.status.humanize %></span></td>
+            <td class="numeric"><%= count.inventory_count_lines.size %></td>
+            <td><%= count.notes.presence || "n/a" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No inventory counts saved yet.</p>
+  <% end %>
+</section>

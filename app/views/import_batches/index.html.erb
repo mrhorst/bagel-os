@@ -1,0 +1,38 @@
+<% content_for :title, "Imports" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Imports</h1>
+    <p>Every upload/import batch is tracked with filename, checksum, status, and validation counts.</p>
+  </div>
+  <%= link_to "Upload CSV", new_import_batch_path, class: "button primary" %>
+</section>
+
+<article class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Supplier</th>
+        <th>Status</th>
+        <th class="numeric">Rows</th>
+        <th class="numeric">Imported</th>
+        <th class="numeric">Failed</th>
+        <th>Imported at</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @import_batches.each do |batch| %>
+        <tr>
+          <td><%= link_to batch.source_filename, batch %></td>
+          <td><%= batch.supplier.name %></td>
+          <td><span class="badge"><%= batch.status %></span></td>
+          <td class="numeric"><%= batch.rows_processed %></td>
+          <td class="numeric"><%= batch.rows_imported %></td>
+          <td class="numeric"><%= batch.rows_failed %></td>
+          <td><%= batch.imported_at&.strftime("%Y-%m-%d %I:%M %p") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</article>
