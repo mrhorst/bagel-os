@@ -8,6 +8,31 @@ module PriceChartHelper
   }.freeze
   CHART_COLORS = %w[#d04f2f #175f73 #6e4c00 #1e5b35 #6b4bb8 #9b2c2c #2f6f4e #7a4f01].freeze
 
+  def price_history_chart(observations, mode:)
+    series = price_history_chart_series(observations, mode: mode)
+    return tag.div("Not enough data for this chart mode yet.", class: "empty-state") if series.empty?
+
+    line_chart(
+      series,
+      id: "product-price-history-#{mode}",
+      height: "360px",
+      colors: CHART_COLORS,
+      points: true,
+      curve: false,
+      legend: "bottom",
+      xtitle: "Purchase date",
+      ytitle: CHART_MODES.fetch(mode, "Price history"),
+      prefix: chart_value_prefix(mode),
+      library: {
+        interaction: { mode: "nearest", intersect: false },
+        scales: {
+          x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
+          y: { beginAtZero: false }
+        }
+      }
+    )
+  end
+
   def price_history_svg(observations, mode:)
     points = observations.filter_map do |observation|
       value = observation.chart_value(mode)
@@ -82,6 +107,31 @@ module PriceChartHelper
   end
 
   private
+
+  def price_history_chart_series(observations, mode:)
+    points = observations.filter_map do |observation|
+      value = observation.chart_value(mode)
+      next if value.blank?
+
+      [ observation, value.to_d ]
+    end
+
+    points
+      .group_by { |observation, _value| observation.chart_series_key(mode) }
+      .map do |_key, series_points|
+        first_observation = series_points.first.first
+        {
+          name: first_observation.chart_series_label(mode),
+          data: series_points.map do |observation, value|
+            [ observation.observed_at.to_date.iso8601, value.to_f ]
+          end
+        }
+      end
+  end
+
+  def chart_value_prefix(mode)
+    mode == "quantity" ? nil : "$"
+  end
 
   def x_coordinate(observed_time:, min_time:, time_range:, plot_left:, plot_width:)
     return plot_left + (plot_width / 2.0) if time_range.zero?

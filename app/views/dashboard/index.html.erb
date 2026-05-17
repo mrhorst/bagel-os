@@ -23,6 +23,7 @@
         <span class="muted">Latest 8 of <%= @monthly_spend.size %></span>
       <% end %>
     </div>
+    <%= line_chart @monthly_spend.to_a.last(8).to_h.transform_keys { |month| month.strftime("%Y-%m") }, id: "monthly-spend-chart", height: "260px", colors: ["#d04f2f"], prefix: "$", curve: false, points: true, xtitle: "Month", ytitle: "Spend" %>
     <table>
       <thead><tr><th>Month</th><th class="numeric">Spend</th></tr></thead>
       <tbody>
@@ -40,6 +41,7 @@
         <span class="muted">Top 10 of <%= @category_spend.size %></span>
       <% end %>
     </div>
+    <%= pie_chart @category_spend.first(10).to_h, id: "category-spend-chart", height: "260px", colors: PriceChartHelper::CHART_COLORS, prefix: "$", legend: "bottom" %>
     <table>
       <thead><tr><th>Category</th><th class="numeric">Spend</th></tr></thead>
       <tbody>

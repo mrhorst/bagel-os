@@ -89,7 +89,7 @@
       <p class="chart-insight" data-chart-switcher-target="insight" data-chart-insight="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>><%= insight_text %></p>
     <% end %>
     <div data-chart-switcher-target="panel" data-chart-panel="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
-      <%= price_history_svg(summary[:observations], mode: mode) %>
+      <%= price_history_chart(summary[:observations], mode: mode) %>
     </div>
   <% end %>
 </article>

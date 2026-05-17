@@ -30,11 +30,9 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_select "a[data-chart-mode='package_price'][href='#{package_path}']", text: "Presentation price"
     standard_unit_path = product_path(product, chart_mode: "standard_unit_price")
     assert_select "a[data-chart-mode='standard_unit_price'][href='#{standard_unit_path}']", text: "Comparable unit price"
-    assert_select "[data-chart-panel='package_price'] svg.price-chart"
-    assert_select "svg.price-chart .chart-date-label", text: "2026-05-13"
-    assert_select "svg.price-chart .chart-axis-title[text-anchor='middle']", text: "Purchase date"
-    assert_select "svg.price-chart circle[data-purchase-date='2026-05-13']"
-    assert_select "svg.price-chart .chart-point-label[text-anchor]", minimum: 1
+    assert_select "[data-chart-panel='package_price'] #product-price-history-package_price"
+    assert_select "script", text: /new Chartkick\["LineChart"\]\("product-price-history-package_price"/
+    assert_select "script", text: /2026-05-13/
     assert_select "[data-chart-panel='standard_unit_price']"
     assert_select "[data-chart-summary='line_total']"
     assert_select "[data-chart-summary='quantity']"

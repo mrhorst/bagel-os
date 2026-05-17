@@ -32,6 +32,8 @@ export default class extends Controller {
       panel.hidden = panel.dataset.chartMode !== mode
     })
 
+    if (window.Chartkick) window.Chartkick.eachChart((chart) => chart.redraw())
+
     if (href) window.history.replaceState({}, "", href)
   }
 }
