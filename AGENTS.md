@@ -29,6 +29,16 @@ bin/rubocop
 bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
 ```
 
+## Checkpoint Commits
+
+- Create a focused git commit for every completed bug fix, refactor, feature, UI change, documentation update, or other meaningful repo change.
+- Do not leave finished work as uncommitted changes unless explicitly told not to commit.
+- Keep checkpoint commits small and scoped to the work just completed.
+- Before committing, inspect `git status` and the staged diff so unrelated dirty files are not included.
+- If the worktree already contains unrelated changes, leave them alone and stage only the files that belong to the current task.
+- Use clear commit messages that describe the actual checkpoint, for example `Fix receipt line review flow` or `Improve product edit layout`.
+- If verification cannot be run before a checkpoint commit, say so in the final response and explain why.
+
 ## Agent skills
 
 ### Issue tracker
