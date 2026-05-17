@@ -1,5 +1,6 @@
 /.bundle
 /.ruby-lsp
+/.worktrees/
 /.yardoc
 /coverage
 /log/*
