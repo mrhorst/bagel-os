@@ -64,7 +64,7 @@
   </article>
 </section>
 
-<article class="panel" data-chart-switcher data-initial-chart-mode="<%= @chart_mode %>">
+<article class="panel" data-controller="chart-switcher" data-chart-switcher data-initial-chart-mode="<%= @chart_mode %>" data-chart-switcher-initial-mode-value="<%= @chart_mode %>">
   <div class="panel-heading">
     <div>
       <h2>Product Price History</h2>
@@ -73,22 +73,22 @@
     <div class="segmented" role="tablist" aria-label="Product price history mode">
       <% PriceChartHelper::CHART_MODES.each do |mode, label| %>
         <% fallback_path = product_path(@product, chart_mode: mode) %>
-        <%= link_to label, fallback_path, class: mode == @chart_mode ? "active" : nil, role: "tab", aria: { selected: mode == @chart_mode }, data: { chart_mode: mode } %>
+        <%= link_to label, fallback_path, class: mode == @chart_mode ? "active" : nil, role: "tab", aria: { selected: mode == @chart_mode }, data: { chart_switcher_target: "control", chart_mode: mode, action: "chart-switcher#setMode" } %>
       <% end %>
     </div>
   </div>
 
   <% @chart_summaries.each do |mode, summary| %>
-    <section class="metric-grid compact" data-chart-summary="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
+    <section class="metric-grid compact" data-chart-switcher-target="summary" data-chart-summary="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
       <article class="metric"><span>First to latest</span><strong><%= summary[:recent_change] ? "#{summary[:recent_change]}%" : "n/a" %></strong></article>
       <article class="metric"><span>Last 30 days</span><strong><%= summary[:change_30_days] ? "#{summary[:change_30_days]}%" : "n/a" %></strong></article>
       <article class="metric"><span>Last 60 days</span><strong><%= summary[:change_60_days] ? "#{summary[:change_60_days]}%" : "n/a" %></strong></article>
       <article class="metric"><span>Last 90 days</span><strong><%= summary[:change_90_days] ? "#{summary[:change_90_days]}%" : "n/a" %></strong></article>
     </section>
     <% if (insight_text = chart_insight_text(summary[:insight])).present? %>
-      <p class="chart-insight" data-chart-insight="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>><%= insight_text %></p>
+      <p class="chart-insight" data-chart-switcher-target="insight" data-chart-insight="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>><%= insight_text %></p>
     <% end %>
-    <div data-chart-panel="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
+    <div data-chart-switcher-target="panel" data-chart-panel="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
       <%= price_history_svg(summary[:observations], mode: mode) %>
     </div>
   <% end %>

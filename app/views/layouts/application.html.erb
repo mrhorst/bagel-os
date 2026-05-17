@@ -19,37 +19,57 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app %>
-    <%= javascript_include_tag "application", defer: true %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <header class="app-header">
-      <div>
-        <%= link_to app_branding.app_name, root_path, class: "brand" %>
-        <p><%= app_branding.description %></p>
+  <body class="min-h-screen bg-slate-50 text-slate-950 antialiased">
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <div class="sidebar-brand">
+          <%= link_to root_path, class: "brand-lockup" do %>
+            <span class="brand-mark">IO</span>
+            <span>
+              <strong><%= app_branding.app_name %></strong>
+              <small><%= app_branding.short_name %></small>
+            </span>
+          <% end %>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Primary navigation">
+          <% app_nav_items.each do |item| %>
+            <%= link_to item[:path], class: ["nav-link", ("active" if active_nav_item?(item))] do %>
+              <%= nav_icon(item[:icon]) %>
+              <span><%= item[:label] %></span>
+            <% end %>
+          <% end %>
+        </nav>
+
+        <div class="sidebar-footer">
+          <strong>Generic workspace</strong>
+          <span>No private restaurant data in tracked files.</span>
+        </div>
+      </aside>
+
+      <div class="app-content">
+        <header class="topbar">
+          <div>
+            <p class="topbar-kicker">Restaurant purchasing system</p>
+            <p class="topbar-description"><%= app_branding.description %></p>
+          </div>
+        </header>
+
+        <main class="app-main">
+          <% if notice.present? %>
+            <div class="flash flash-notice"><%= notice %></div>
+          <% end %>
+          <% if alert.present? %>
+            <div class="flash flash-alert"><%= alert %></div>
+          <% end %>
+
+          <%= yield %>
+        </main>
       </div>
-      <nav>
-        <%= link_to "Dashboard", root_path %>
-        <%= link_to "Inventory", inventory_path %>
-        <%= link_to "Order Guides", order_guides_path %>
-        <%= link_to "Imports", import_batches_path %>
-        <%= link_to "Products", products_path %>
-        <%= link_to "Review", normalization_reviews_path %>
-        <%= link_to "Reports", reports_path %>
-      </nav>
-    </header>
-
-    <main class="app-main">
-      <% if notice.present? %>
-        <div class="flash flash-notice"><%= notice %></div>
-      <% end %>
-      <% if alert.present? %>
-        <div class="flash flash-alert"><%= alert %></div>
-      <% end %>
-
-      <%= yield %>
-    </main>
+    </div>
   </body>
 </html>

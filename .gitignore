@@ -25,3 +25,6 @@
 /data/order_guides/
 
 # Keep sample fixtures sanitized. Do not commit real receipts, PDFs, or vendor exports.
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
