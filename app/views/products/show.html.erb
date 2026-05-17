@@ -1,176 +1,202 @@
 <% content_for :title, @product.canonical_name %>
 
-<section class="page-heading">
-  <div>
-    <h1><%= @product.canonical_name %></h1>
-    <p><%= @product.category_name %> · <%= @product.supplier.name %> · SKU <%= @product.supplier_sku_summary %></p>
-  </div>
-  <%= link_to "Edit product", edit_product_path(@product), class: "button" %>
-</section>
+<%= render "shared/blocks/page_header",
+  eyebrow: "Product workspace",
+  title: @product.canonical_name,
+  subtitle: "#{@product.category_name} · #{@product.supplier.name} · SKU #{@product.supplier_sku_summary}",
+  action: link_to("Edit product", edit_product_path(@product), class: "button primary"),
+  class_name: "product-page-header" %>
 
-<section class="metric-grid">
-  <article class="metric"><span>Total spend</span><strong><%= money(@stats[:total_spend]) %></strong></article>
-  <article class="metric"><span>Times purchased</span><strong><%= @stats[:total_times_purchased] %></strong></article>
-  <article class="metric"><span>Latest package price</span><strong><%= money(@stats[:latest_price]) %></strong></article>
-  <article class="metric"><span>Avg package price</span><strong><%= money(@stats[:average_price]) %></strong></article>
-  <article class="metric"><span>Lowest package price</span><strong><%= money(@stats[:lowest_price]) %></strong></article>
-  <article class="metric"><span>Highest package price</span><strong><%= money(@stats[:highest_price]) %></strong></article>
-  <article class="metric"><span>Latest comparable unit</span><strong><%= money(@stats[:latest_standard_unit_price]) %></strong></article>
-  <article class="metric"><span>Avg comparable unit</span><strong><%= money(@stats[:average_standard_unit_price]) %></strong></article>
-</section>
+<%= render "shared/blocks/metric_grid",
+  label: "Key purchasing and pricing facts",
+  columns: "eight",
+  metrics: [
+    { label: "Latest package", value: money(@stats[:latest_price]), detail: "Most recent receipt price", priority: true },
+    { label: "Average package", value: money(@stats[:average_price]), detail: "Across matched purchases", priority: true },
+    { label: "Total spend", value: money(@stats[:total_spend]), detail: "Imported line total" },
+    { label: "Times purchased", value: @stats[:total_times_purchased], detail: "Matched receipt lines" },
+    { label: "Lowest package", value: money(@stats[:lowest_price]), detail: "Recorded low" },
+    { label: "Highest package", value: money(@stats[:highest_price]), detail: "Recorded high" },
+    { label: "Latest comparable", value: money(@stats[:latest_standard_unit_price]), detail: "Per standard unit" },
+    { label: "Avg comparable", value: money(@stats[:average_standard_unit_price]), detail: "Per standard unit" }
+  ] %>
 
-<section class="grid two">
-  <article class="panel">
-    <h2>Product summary</h2>
-    <dl class="details">
-      <dt>Package size</dt><dd><%= compact_decimal(@product.package_size) %> <%= @product.unit_of_measure %></dd>
-      <dt>Purchase unit</dt><dd><%= @product.purchase_unit.presence || "n/a" %></dd>
-      <dt>Standard unit</dt><dd><%= @product.standard_unit.presence || "n/a" %></dd>
-      <dt>First purchased</dt><dd><%= @stats[:first_purchase_date]&.to_date || "n/a" %></dd>
-      <dt>Last purchased</dt><dd><%= @stats[:last_purchase_date]&.to_date || "n/a" %></dd>
-      <dt>Status</dt><dd><%= review_badge(@product) %></dd>
-    </dl>
+<section class="product-workspace-grid" aria-label="Product summary and receipt variations">
+  <%= render layout: "shared/blocks/section_panel",
+    locals: {
+      title: "Product summary",
+      subtitle: "The shared identity used across receipt lines.",
+      class_name: "product-summary-panel"
+    } do %>
+    <%= render "shared/blocks/detail_list",
+      items: [
+        { label: "Package size", value: "#{compact_decimal(@product.package_size)} #{@product.unit_of_measure}" },
+        { label: "Purchase unit", value: @product.purchase_unit.presence || "n/a" },
+        { label: "Standard unit", value: @product.standard_unit.presence || "n/a" },
+        { label: "First purchased", value: @stats[:first_purchase_date]&.to_date || "n/a" },
+        { label: "Last purchased", value: @stats[:last_purchase_date]&.to_date || "n/a" },
+        { label: "Status", value: review_badge(@product) }
+      ] %>
     <% if @product.notes.present? %>
       <div class="note-block"><%= simple_format(@product.notes) %></div>
     <% end %>
-  </article>
+  <% end %>
 
-  <article class="panel">
-    <h2>Receipt variations</h2>
-    <table>
+  <%= render layout: "shared/blocks/section_panel",
+    locals: {
+      title: "Receipt variations",
+      subtitle: "Raw receipt names currently rolling up to this product.",
+      class_name: "product-variations-panel"
+    } do %>
+    <div class="table-scroll">
+      <table class="product-variations-table">
+        <thead>
+          <tr>
+            <th>Raw receipt name</th>
+            <th>SKU</th>
+            <th class="numeric">Times</th>
+            <th class="numeric">Latest</th>
+            <th>Package</th>
+            <th>Review</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% @variation_summaries.each do |variation| %>
+          <tr>
+            <td class="product-variation-name"><%= variation[:raw_name] %></td>
+            <td><%= variation[:raw_sku].presence || "n/a" %></td>
+            <td class="numeric"><%= variation[:purchases_count] %></td>
+            <td class="numeric"><%= money(variation[:latest_package_price]) %></td>
+            <td><%= variation[:package_label] %></td>
+            <td><%= variation[:needs_review] ? tag.span("Needs review", class: "badge badge-warning badge-compact") : tag.span("Reviewed", class: "badge badge-ok badge-compact") %></td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>
+
+<%= render layout: "shared/blocks/section_panel",
+  locals: {
+    title: "Price history",
+    subtitle: "Presentation price keeps purchased forms separated, but uses comparable units when reliable so different cases can be compared fairly.",
+    class_name: "product-price-panel"
+  } do %>
+  <div class="product-chart-workspace" data-controller="chart-switcher" data-chart-switcher data-initial-chart-mode="<%= @chart_mode %>" data-chart-switcher-initial-mode-value="<%= @chart_mode %>">
+    <div class="segmented product-chart-tabs" role="tablist" aria-label="Product price history mode">
+      <%= safe_join(PriceChartHelper::CHART_MODES.map do |mode, label|
+        fallback_path = product_path(@product, chart_mode: mode)
+        link_to label, fallback_path, class: mode == @chart_mode ? "active" : nil, role: "tab", aria: { selected: mode == @chart_mode }, data: { chart_switcher_target: "control", chart_mode: mode, action: "chart-switcher#setMode" }
+      end) %>
+    </div>
+
+    <% @chart_summaries.each do |mode, summary| %>
+      <%= render "shared/blocks/metric_grid",
+        label: "#{PriceChartHelper::CHART_MODES.fetch(mode)} summary",
+        columns: "four",
+        compact: true,
+        metrics: [
+          { label: "First to latest", value: summary[:recent_change] ? "#{summary[:recent_change]}%" : "n/a" },
+          { label: "Last 30 days", value: summary[:change_30_days] ? "#{summary[:change_30_days]}%" : "n/a" },
+          { label: "Last 60 days", value: summary[:change_60_days] ? "#{summary[:change_60_days]}%" : "n/a" },
+          { label: "Last 90 days", value: summary[:change_90_days] ? "#{summary[:change_90_days]}%" : "n/a" }
+        ],
+        data: { chart_switcher_target: "summary", chart_summary: mode, chart_mode: mode },
+        hidden: mode != @chart_mode %>
+      <% if (insight_text = chart_insight_text(summary[:insight])).present? %>
+        <p class="chart-insight" data-chart-switcher-target="insight" data-chart-insight="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>><%= insight_text %></p>
+      <% end %>
+      <div data-chart-switcher-target="panel" data-chart-panel="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
+        <%= price_history_chart(summary[:observations], mode: mode) %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<%= render layout: "shared/blocks/section_panel",
+  locals: {
+    title: "Purchase history",
+    subtitle: "Receipt-backed observations with raw line details and cleanup actions.",
+    class_name: "product-history-panel"
+  } do %>
+  <div class="table-scroll">
+    <table class="purchase-history-table">
       <thead>
         <tr>
-          <th>Raw receipt name</th>
-          <th>SKU</th>
-          <th class="numeric">Times</th>
-          <th class="numeric">Latest</th>
-          <th>Package</th>
-          <th>Review</th>
+          <th>Date</th>
+          <th>Receipt</th>
+          <th>Item</th>
+          <th>Form</th>
+          <th class="numeric">Package</th>
+          <th class="numeric">Comparable</th>
+          <th class="numeric">Total</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-      <% @variation_summaries.each do |variation| %>
-        <tr>
-          <td><%= variation[:raw_name] %></td>
-          <td><%= variation[:raw_sku].presence || "n/a" %></td>
-          <td class="numeric"><%= variation[:purchases_count] %></td>
-          <td class="numeric"><%= money(variation[:latest_package_price]) %></td>
-          <td><%= variation[:package_label] %></td>
-          <td><%= variation[:needs_review] ? tag.span("Needs line review", class: "badge badge-warning") : tag.span("Reviewed", class: "badge badge-ok") %></td>
-        </tr>
-      <% end %>
+        <% @observations.each do |observation| %>
+          <% line = observation.receipt_line_item %>
+          <% purchase_kind = observation.purchase_kind.presence || line.purchase_kind %>
+          <tr id="<%= dom_id(line) %>" class="<%= [("warning-row" if observation.possible_price_spike?), ("needs-review-row" if line.needs_review?)].compact.join(" ") %>">
+            <td class="date-cell">
+              <time datetime="<%= observation.observed_at.to_date.iso8601 %>">
+                <strong><%= observation.observed_at.strftime("%b %-d") %></strong>
+                <small><%= observation.observed_at.strftime("%Y") %></small>
+              </time>
+            </td>
+            <td><%= line.receipt.receipt_number %></td>
+            <td class="purchase-item">
+              <strong><%= line.raw_name %></strong>
+              <small>
+                <%= [
+                  (line.raw_sku.present? ? "SKU #{line.raw_sku}" : nil),
+                  observation.presentation_label.presence
+                ].compact.join(" · ") %>
+              </small>
+              <details class="purchase-details">
+                <summary>Details</summary>
+                <dl class="details details-grid">
+                  <dt>Unit qty</dt><dd><%= compact_decimal(observation.unit_quantity) %></dd>
+                  <dt>Case qty</dt><dd><%= compact_decimal(observation.case_quantity) %></dd>
+                  <dt>Purchase kind</dt><dd><%= observation.purchase_kind.presence || line.purchase_kind %></dd>
+                  <dt>Comparable qty</dt><dd><%= observation.standard_quantity.present? ? "#{compact_decimal(observation.standard_quantity)} #{observation.standard_unit}" : "n/a" %></dd>
+                  <dt>Inner qty</dt><dd><%= observation.inner_quantity.present? ? "#{compact_decimal(observation.inner_quantity)} #{observation.inner_unit_label}" : "n/a" %></dd>
+                  <dt>Inner price</dt><dd><%= observation.inner_unit_price.present? ? "#{money(observation.inner_unit_price)} / #{observation.inner_unit_label}" : "n/a" %></dd>
+                  <dt>Source file</dt><dd><%= observation.source_filename %></dd>
+                  <dt>Line</dt><dd><%= line.line_number %></dd>
+                  <dt>Line ID</dt><dd>#<%= line.id %></dd>
+                  <dt>Product ID</dt><dd><%= line.product_id ? "##{line.product_id}" : "n/a" %></dd>
+                  <dt>Case-pack ID</dt><dd><%= line.case_pack_id ? "##{line.case_pack_id}" : "n/a" %></dd>
+                  <dt>Review issues</dt><dd><%= line.normalization_reviews.select { |review| review.status == "pending" }.map(&:issue_type).presence&.to_sentence || "None" %></dd>
+                </dl>
+              </details>
+            </td>
+            <td class="presentation-cell">
+              <span class="presentation-badge presentation-badge-<%= purchase_kind.parameterize %>"><%= purchase_kind.titleize %></span>
+              <small><%= line.display_quantity %></small>
+              <% if line.needs_review? %>
+                <span class="review-note">Needs review</span>
+              <% end %>
+            </td>
+            <td class="numeric"><%= money(observation.package_price) %></td>
+            <td class="numeric">
+              <% if observation.standard_unit_price.present? %>
+                <%= money(observation.standard_unit_price) %> / <%= observation.standard_unit %>
+              <% else %>
+                <span class="muted">n/a</span>
+              <% end %>
+            </td>
+            <td class="numeric"><%= money(observation.line_total) %></td>
+            <td>
+              <div class="button-row purchase-actions">
+                <%= link_to "View", import_batch_path(line.import_batch, anchor: dom_id(line)), class: "button small" %>
+                <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line), class: "button small #{'primary' if line.needs_review?}" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
       </tbody>
     </table>
-  </article>
-</section>
-
-<article class="panel" data-controller="chart-switcher" data-chart-switcher data-initial-chart-mode="<%= @chart_mode %>" data-chart-switcher-initial-mode-value="<%= @chart_mode %>">
-  <div class="panel-heading">
-    <div>
-      <h2>Product Price History</h2>
-      <p class="muted">Presentation price keeps purchased forms separated, but uses comparable units when reliable so different cases can be compared fairly.</p>
-    </div>
-    <div class="segmented" role="tablist" aria-label="Product price history mode">
-      <% PriceChartHelper::CHART_MODES.each do |mode, label| %>
-        <% fallback_path = product_path(@product, chart_mode: mode) %>
-        <%= link_to label, fallback_path, class: mode == @chart_mode ? "active" : nil, role: "tab", aria: { selected: mode == @chart_mode }, data: { chart_switcher_target: "control", chart_mode: mode, action: "chart-switcher#setMode" } %>
-      <% end %>
-    </div>
   </div>
-
-  <% @chart_summaries.each do |mode, summary| %>
-    <section class="metric-grid compact" data-chart-switcher-target="summary" data-chart-summary="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
-      <article class="metric"><span>First to latest</span><strong><%= summary[:recent_change] ? "#{summary[:recent_change]}%" : "n/a" %></strong></article>
-      <article class="metric"><span>Last 30 days</span><strong><%= summary[:change_30_days] ? "#{summary[:change_30_days]}%" : "n/a" %></strong></article>
-      <article class="metric"><span>Last 60 days</span><strong><%= summary[:change_60_days] ? "#{summary[:change_60_days]}%" : "n/a" %></strong></article>
-      <article class="metric"><span>Last 90 days</span><strong><%= summary[:change_90_days] ? "#{summary[:change_90_days]}%" : "n/a" %></strong></article>
-    </section>
-    <% if (insight_text = chart_insight_text(summary[:insight])).present? %>
-      <p class="chart-insight" data-chart-switcher-target="insight" data-chart-insight="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>><%= insight_text %></p>
-    <% end %>
-    <div data-chart-switcher-target="panel" data-chart-panel="<%= mode %>" data-chart-mode="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
-      <%= price_history_chart(summary[:observations], mode: mode) %>
-    </div>
-  <% end %>
-</article>
-
-<article class="panel">
-  <h2>Purchase history</h2>
-  <table class="purchase-history-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Receipt</th>
-        <th>Item</th>
-        <th>Form</th>
-        <th class="numeric">Package</th>
-        <th class="numeric">Comparable</th>
-        <th class="numeric">Total</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @observations.each do |observation| %>
-        <% line = observation.receipt_line_item %>
-        <% purchase_kind = observation.purchase_kind.presence || line.purchase_kind %>
-        <tr id="<%= dom_id(line) %>" class="<%= [("warning-row" if observation.possible_price_spike?), ("needs-review-row" if line.needs_review?)].compact.join(" ") %>">
-          <td class="date-cell">
-            <time datetime="<%= observation.observed_at.to_date.iso8601 %>">
-              <strong><%= observation.observed_at.strftime("%b %-d") %></strong>
-              <small><%= observation.observed_at.strftime("%Y") %></small>
-            </time>
-          </td>
-          <td><%= line.receipt.receipt_number %></td>
-          <td class="purchase-item">
-            <strong><%= line.raw_name %></strong>
-            <small>
-              <%= [
-                (line.raw_sku.present? ? "SKU #{line.raw_sku}" : nil),
-                observation.presentation_label.presence
-              ].compact.join(" · ") %>
-            </small>
-            <details class="purchase-details">
-              <summary>Details</summary>
-              <dl class="details details-grid">
-                <dt>Unit qty</dt><dd><%= compact_decimal(observation.unit_quantity) %></dd>
-                <dt>Case qty</dt><dd><%= compact_decimal(observation.case_quantity) %></dd>
-                <dt>Purchase kind</dt><dd><%= observation.purchase_kind.presence || line.purchase_kind %></dd>
-                <dt>Comparable qty</dt><dd><%= observation.standard_quantity.present? ? "#{compact_decimal(observation.standard_quantity)} #{observation.standard_unit}" : "n/a" %></dd>
-                <dt>Inner qty</dt><dd><%= observation.inner_quantity.present? ? "#{compact_decimal(observation.inner_quantity)} #{observation.inner_unit_label}" : "n/a" %></dd>
-                <dt>Inner price</dt><dd><%= observation.inner_unit_price.present? ? "#{money(observation.inner_unit_price)} / #{observation.inner_unit_label}" : "n/a" %></dd>
-                <dt>Source file</dt><dd><%= observation.source_filename %></dd>
-                <dt>Line</dt><dd><%= line.line_number %></dd>
-                <dt>Line ID</dt><dd>#<%= line.id %></dd>
-                <dt>Product ID</dt><dd><%= line.product_id ? "##{line.product_id}" : "n/a" %></dd>
-                <dt>Case-pack ID</dt><dd><%= line.case_pack_id ? "##{line.case_pack_id}" : "n/a" %></dd>
-                <dt>Review issues</dt><dd><%= line.normalization_reviews.select { |review| review.status == "pending" }.map(&:issue_type).presence&.to_sentence || "None" %></dd>
-              </dl>
-            </details>
-          </td>
-          <td class="presentation-cell">
-            <span class="presentation-badge presentation-badge-<%= purchase_kind.parameterize %>"><%= purchase_kind.titleize %></span>
-            <small><%= line.display_quantity %></small>
-            <% if line.needs_review? %>
-              <span class="review-note">Needs review</span>
-            <% end %>
-          </td>
-          <td class="numeric"><%= money(observation.package_price) %></td>
-          <td class="numeric">
-            <% if observation.standard_unit_price.present? %>
-              <%= money(observation.standard_unit_price) %> / <%= observation.standard_unit %>
-            <% else %>
-              <span class="muted">n/a</span>
-            <% end %>
-          </td>
-          <td class="numeric"><%= money(observation.line_total) %></td>
-          <td>
-            <div class="button-row purchase-actions">
-              <%= link_to "View", import_batch_path(line.import_batch, anchor: dom_id(line)), class: "button small" %>
-              <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line), class: "button small #{'primary' if line.needs_review?}" %>
-            </div>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-</article>
+<% end %>

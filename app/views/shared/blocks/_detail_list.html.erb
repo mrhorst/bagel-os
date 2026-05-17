@@ -1,0 +1,6 @@
+<dl class="block-detail-list <%= local_assigns[:class_name] %>">
+  <% items.each do |item| %>
+    <dt><%= item.fetch(:label) %></dt>
+    <dd><%= item.fetch(:value).presence || "n/a" %></dd>
+  <% end %>
+</dl>

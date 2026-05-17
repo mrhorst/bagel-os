@@ -1,0 +1,15 @@
+<% grid_classes = [
+  "block-stat-grid",
+  "block-stat-grid-#{local_assigns.fetch(:columns, "balanced")}",
+  ("block-stat-grid-compact" if local_assigns[:compact])
+].compact.join(" ") %>
+<% grid_attributes = {} %>
+<% grid_attributes[:aria] = { label: label } if local_assigns[:label].present? %>
+<% grid_attributes[:data] = local_assigns[:data] if local_assigns[:data].present? %>
+<% grid_attributes[:hidden] = true if local_assigns[:hidden] %>
+
+<%= tag.section(class: grid_classes, **grid_attributes) do %>
+  <% metrics.each do |metric| %>
+    <%= render "shared/blocks/metric_card", **metric %>
+  <% end %>
+<% end %>

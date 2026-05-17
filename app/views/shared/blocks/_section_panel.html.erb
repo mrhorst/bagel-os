@@ -1,0 +1,20 @@
+<article class="block-panel <%= local_assigns[:class_name] %>">
+  <% if local_assigns[:title].present? || local_assigns[:action].present? %>
+    <div class="block-panel-header">
+      <div>
+        <% if local_assigns[:title].present? %>
+          <h2><%= title %></h2>
+        <% end %>
+        <% if local_assigns[:subtitle].present? %>
+          <p class="muted"><%= subtitle %></p>
+        <% end %>
+      </div>
+      <% if local_assigns[:action].present? %>
+        <div class="block-panel-actions">
+          <%= action %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+  <%= yield %>
+</article>

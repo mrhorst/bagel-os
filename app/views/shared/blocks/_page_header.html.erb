@@ -1,0 +1,16 @@
+<section class="block-page-header <%= local_assigns[:class_name] %>">
+  <div>
+    <% if local_assigns[:eyebrow].present? %>
+      <p class="block-eyebrow"><%= eyebrow %></p>
+    <% end %>
+    <h1><%= title %></h1>
+    <% if local_assigns[:subtitle].present? %>
+      <p><%= subtitle %></p>
+    <% end %>
+  </div>
+  <% if local_assigns[:action].present? %>
+    <div class="block-header-actions">
+      <%= action %>
+    </div>
+  <% end %>
+</section>

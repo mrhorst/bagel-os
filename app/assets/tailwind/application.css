@@ -1016,8 +1016,44 @@
     padding-right: 8px;
   }
 
+  .product-variations-table {
+    table-layout: fixed;
+  }
+
+  .product-variations-table th,
+  .product-variations-table td {
+    font-size: 0.88rem;
+  }
+
+  .product-variations-table th:nth-child(1) {
+    width: 35%;
+  }
+
+  .product-variations-table th:nth-child(2) {
+    width: 20%;
+  }
+
+  .product-variations-table th:nth-child(3) {
+    width: 8%;
+  }
+
+  .product-variations-table th:nth-child(4) {
+    width: 10%;
+  }
+
+  .product-variations-table th:nth-child(5) {
+    width: 12%;
+  }
+
+  .product-variations-table th:nth-child(6) {
+    width: 15%;
+  }
+
+  .product-variations-table td {
+    overflow-wrap: anywhere;
+  }
+
   .product-variation-name {
-    min-width: 220px;
     overflow-wrap: anywhere;
   }
 
@@ -1026,7 +1062,8 @@
     font-size: 0.74rem;
     line-height: 1.1;
     padding: 4px 7px;
-    white-space: nowrap;
+    text-align: center;
+    white-space: normal;
   }
 
   .product-chart-tabs {
