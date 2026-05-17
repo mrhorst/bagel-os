@@ -1,0 +1,10 @@
+<%= form_with url: inventory_item_primary_order_guide_path(item), method: :patch, class: "inline-guide-form" do |form| %>
+  <%= form.label :order_guide_id, "Primary guide", class: "sr-only" %>
+  <%= form.collection_select :order_guide_id,
+    order_guides,
+    :id,
+    :name,
+    { include_blank: "No primary guide", selected: item.primary_order_guide&.id },
+    { class: "compact-select" } %>
+  <%= form.submit "Save", class: "button small" %>
+<% end %>

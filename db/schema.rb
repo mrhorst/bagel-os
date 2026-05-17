@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_16_152000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_17_120000) do
   create_table "import_batches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "file_checksum", null: false
@@ -157,6 +157,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_152000) do
     t.index ["needs_review"], name: "index_order_guide_items_on_needs_review"
     t.index ["order_guide_import_id"], name: "index_order_guide_items_on_order_guide_import_id"
     t.index ["section_name", "position"], name: "index_order_guide_items_on_section_name_and_position"
+  end
+
+  create_table "order_guide_memberships", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.integer "inventory_item_id", null: false
+    t.text "notes"
+    t.integer "order_guide_id", null: false
+    t.decimal "par", precision: 12, scale: 4
+    t.integer "position", default: 0, null: false
+    t.integer "preferred_supplier_id"
+    t.boolean "primary_guide", default: false, null: false
+    t.decimal "reorder_point", precision: 12, scale: 4
+    t.datetime "updated_at", null: false
+    t.index ["inventory_item_id", "primary_guide"], name: "idx_order_guide_memberships_one_active_primary", unique: true, where: "active = 1 AND primary_guide = 1"
+    t.index ["inventory_item_id"], name: "index_order_guide_memberships_on_inventory_item_id"
+    t.index ["order_guide_id", "active", "position"], name: "idx_order_guide_memberships_on_guide_active_position"
+    t.index ["order_guide_id", "inventory_item_id"], name: "idx_order_guide_memberships_unique_guide_item", unique: true
+    t.index ["order_guide_id"], name: "index_order_guide_memberships_on_order_guide_id"
+    t.index ["preferred_supplier_id"], name: "index_order_guide_memberships_on_preferred_supplier_id"
+  end
+
+  create_table "order_guides", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "position"], name: "index_order_guides_on_active_and_position"
+    t.index ["key"], name: "index_order_guides_on_key", unique: true
   end
 
   create_table "price_observations", force: :cascade do |t|
@@ -352,6 +384,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_152000) do
   add_foreign_key "normalization_reviews", "receipt_line_items"
   add_foreign_key "order_guide_items", "inventory_items"
   add_foreign_key "order_guide_items", "order_guide_imports"
+  add_foreign_key "order_guide_memberships", "inventory_items"
+  add_foreign_key "order_guide_memberships", "order_guides"
+  add_foreign_key "order_guide_memberships", "suppliers", column: "preferred_supplier_id"
   add_foreign_key "price_observations", "products"
   add_foreign_key "price_observations", "receipt_line_items"
   add_foreign_key "price_observations", "supplier_product_packs", column: "case_pack_id"

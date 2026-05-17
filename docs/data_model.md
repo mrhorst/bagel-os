@@ -213,6 +213,10 @@ Important fields:
 
 `product_id` is optional because many guide rows do not confidently match a receipt product yet. The app only links an inventory item to a product when the name match is exact or covered by an explicit conservative rule.
 
+Order-guide assignment belongs here, not on `Product`. A product is receipt/vendor/reporting-backed purchasing data. An inventory item is the operating item staff count, stock, and reorder. One inventory item can belong to multiple named order guides through `OrderGuideMembership`, with one active membership marked as the primary guide for simple screens.
+
+`guide_frequency` is retained as compatibility metadata from the first guide import model. New workflows should read and write named guides through memberships.
+
 ## InventoryCount and InventoryCountLine
 
 `InventoryCount` is one manual count event. `InventoryCountLine` stores one counted quantity for one inventory item.
@@ -240,6 +244,38 @@ Important fields:
 
 The checksum prevents duplicate PDF imports. Older PDF files are preserved on disk in `.private/order_guides/archive/`.
 
+## OrderGuide
+
+Represents a named reusable purchasing workflow such as `Daily`, `Weekly`, `Every 2 weeks`, `Monthly`, `Cleaning Supplies`, or `Weekend Prep`.
+
+Important fields:
+
+- `name`
+- `key`
+- `position`
+- `active`
+- `notes`
+
+Guides are generic operating lists. They are intentionally separate from imported PDF files so staff can create useful working guides even when no vendor PDF exists for that exact cadence or category. Archiving a guide sets it inactive instead of deleting it.
+
+## OrderGuideMembership
+
+Joins one `InventoryItem` to one `OrderGuide`.
+
+Important fields:
+
+- `order_guide_id`
+- `inventory_item_id`
+- `preferred_supplier_id`
+- `primary_guide`
+- `active`
+- `position`
+- `par`
+- `reorder_point`
+- `notes`
+
+Memberships are active/inactive so an item can be removed from a staff workflow without destroying traceability. `primary_guide` supports simple dropdown-driven workflows while preserving the many-guide design for future purchasing screens. Guide-specific fields such as par, reorder point, preferred supplier, and notes live here because those values may differ by guide.
+
 ## OrderGuideItem
 
 Stores one raw line from the daily or weekly guide.
@@ -260,6 +296,8 @@ Important fields:
 - `raw_data`
 
 Guide rows stay traceable to raw extracted PDF text. `par_text` and `pack_quantity` are text fields because the PDFs are not structured enough to safely turn every row into a numeric par/unit.
+
+Imported rows keep linking to `InventoryItem` through `inventory_item_id`. The importer also creates or reuses a named guide matching the import type, such as `Daily` or `Weekly`, and adds a membership for the linked inventory item. That keeps raw import traceability in `OrderGuideItem` while making staff-facing ordering workflows use `OrderGuide` and `OrderGuideMembership`.
 
 ## Future Model Fit
 

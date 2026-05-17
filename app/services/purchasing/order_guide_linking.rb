@@ -25,6 +25,7 @@ module Purchasing
       inventory_item = inventory_item_for(row: row, guide_item: nil, section: section, product: product)
 
       apply_inventory_item!(inventory_item, row: row, section: section, product: product, match: match)
+      apply_order_guide_membership!(inventory_item, row)
       guide_item = create_guide_item!(import, row, inventory_item, match, product)
 
       Result.new(guide_item: guide_item, inventory_item: inventory_item, match: match, linked: product.present?)
@@ -42,6 +43,7 @@ module Purchasing
       section = section_for(guide_item.section_name)
       inventory_item = inventory_item_for(row: row, guide_item: guide_item, section: section, product: match.product)
       apply_inventory_item!(inventory_item, row: row, section: section, product: match.product, match: match)
+      apply_order_guide_membership!(inventory_item, row)
       guide_item.update!(
         inventory_item: inventory_item,
         needs_review: false,
@@ -133,6 +135,15 @@ module Purchasing
         active: true,
         needs_review: product.blank?,
         raw_data: inventory_item.raw_data.merge(match_metadata(match, linked: product.present?).compact)
+      )
+    end
+
+    def apply_order_guide_membership!(inventory_item, row)
+      guide = OrderGuide.named!(OrderGuide.name_for_guide_type(row[:guide_type]))
+      inventory_item.add_to_order_guide!(
+        guide,
+        primary: inventory_item.primary_order_guide.blank?,
+        position: row[:position]
       )
     end
 

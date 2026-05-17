@@ -2,11 +2,40 @@ class OrderGuidesController < ApplicationController
   CURRENT_GUIDE_DIR = Rails.root.join("data", "order_guides", "current")
 
   def index
+    @order_guides = OrderGuide.ordered.includes(:order_guide_memberships)
     @imports = OrderGuideImport.recent_first.limit(10)
     @daily_items = OrderGuideItem.active.where(guide_type: "daily").ordered.includes(inventory_item: :product)
     @weekly_items = OrderGuideItem.active.where(guide_type: "weekly").ordered.includes(inventory_item: :product)
     @guide_items_needing_review = OrderGuideItem.active.needs_review.ordered.limit(30)
     @missing_products = Purchasing::InventoryGapAnalyzer.new.missing_products(limit: 40)
+  end
+
+  def create
+    guide = OrderGuide.new(order_guide_params)
+    guide.position = OrderGuide.maximum(:position).to_i + 1
+
+    if guide.save
+      redirect_to order_guides_path, notice: "Order guide created."
+    else
+      redirect_to order_guides_path, alert: guide.errors.full_messages.to_sentence
+    end
+  end
+
+  def update
+    guide = OrderGuide.find(params[:id])
+
+    if guide.update(order_guide_params)
+      redirect_to order_guides_path, notice: "Order guide updated."
+    else
+      redirect_to order_guides_path, alert: guide.errors.full_messages.to_sentence
+    end
+  end
+
+  def destroy
+    guide = OrderGuide.find(params[:id])
+    guide.archive!
+
+    redirect_to order_guides_path, notice: "Order guide archived."
   end
 
   def import_current
@@ -24,5 +53,11 @@ class OrderGuidesController < ApplicationController
     redirect_to order_guides_path, notice: "Order guide import complete: #{imported} imported, #{skipped} skipped."
   rescue Purchasing::OrderGuideTextExtractor::ExtractionError, ArgumentError => error
     redirect_to order_guides_path, alert: error.message
+  end
+
+  private
+
+  def order_guide_params
+    params.require(:order_guide).permit(:name, :notes, :active)
   end
 end

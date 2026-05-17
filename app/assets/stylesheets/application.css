@@ -408,6 +408,45 @@ textarea {
   width: 100%;
 }
 
+.sr-only {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.stacked-form {
+  display: grid;
+  gap: 12px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.inline-guide-form {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.compact-input,
+.compact-select {
+  min-height: 34px;
+  padding: 6px 8px;
+}
+
+.inline-guide-form .compact-input,
+.inline-guide-form .compact-select {
+  min-width: 130px;
+}
+
 .form-grid {
   display: grid;
   gap: 12px;

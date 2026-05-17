@@ -3,7 +3,7 @@
 <div class="page-heading">
   <div>
     <h1>Order Guides</h1>
-    <p>Current daily/weekly guide PDFs cross-referenced against receipt products.</p>
+    <p>Named operating lists for purchasing, counted inventory, and imported guide rows.</p>
   </div>
   <div class="actions">
     <%= button_to "Import current PDFs", import_current_order_guides_path, method: :post, class: "primary" %>
@@ -27,6 +27,71 @@
   <div class="metric">
     <span>Receipt products not on guide</span>
     <strong><%= @missing_products.size %></strong>
+  </div>
+</section>
+
+<section class="grid two">
+  <div class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Named Guides</h2>
+        <p class="muted">Use practical names staff recognize, like Daily, Every 2 weeks, Cleaning Supplies, or Weekend Prep.</p>
+      </div>
+    </div>
+
+    <% if @order_guides.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th class="numeric">Active items</th>
+            <th>Status</th>
+            <th>Rename</th>
+            <th>Archive</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @order_guides.each do |guide| %>
+            <tr>
+              <td><strong><%= guide.name %></strong></td>
+              <td class="numeric"><%= guide.active_item_count %></td>
+              <td><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
+              <td>
+                <%= form_with model: guide, class: "inline-guide-form" do |form| %>
+                  <%= form.label :name, "Guide name", class: "sr-only" %>
+                  <%= form.text_field :name, value: guide.name, class: "compact-input" %>
+                  <%= form.submit "Save", class: "button small" %>
+                <% end %>
+              </td>
+              <td>
+                <% if guide.active? %>
+                  <%= button_to "Archive", order_guide_path(guide), method: :delete, class: "button small" %>
+                <% else %>
+                  <span class="muted">Archived</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-state">No named guides yet. Create the first one below.</p>
+    <% end %>
+  </div>
+
+  <div class="panel">
+    <h2>Create Guide</h2>
+    <%= form_with model: OrderGuide.new, class: "stacked-form" do |form| %>
+      <div class="field">
+        <%= form.label :name, "Guide name" %>
+        <%= form.text_field :name, placeholder: "Every 2 weeks" %>
+      </div>
+      <div class="field">
+        <%= form.label :notes, "Notes" %>
+        <%= form.text_area :notes, rows: 3, placeholder: "Optional staff note for how this guide is used." %>
+      </div>
+      <%= form.submit "Create guide", class: "button primary" %>
+    <% end %>
   </div>
 </section>
 
