@@ -68,7 +68,7 @@
   <div class="panel-heading">
     <div>
       <h2>Product Price History</h2>
-      <p class="muted">Comparable unit price is the default when reliable. Presentation price lines are separated by exact purchased form.</p>
+      <p class="muted">Presentation price keeps purchased forms separated, but uses comparable units when reliable so different cases can be compared fairly.</p>
     </div>
     <div class="segmented" role="tablist" aria-label="Product price history mode">
       <% PriceChartHelper::CHART_MODES.each do |mode, label| %>
@@ -85,6 +85,9 @@
       <article class="metric"><span>Last 60 days</span><strong><%= summary[:change_60_days] ? "#{summary[:change_60_days]}%" : "n/a" %></strong></article>
       <article class="metric"><span>Last 90 days</span><strong><%= summary[:change_90_days] ? "#{summary[:change_90_days]}%" : "n/a" %></strong></article>
     </section>
+    <% if (insight_text = chart_insight_text(summary[:insight])).present? %>
+      <p class="chart-insight" data-chart-insight="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>><%= insight_text %></p>
+    <% end %>
     <div data-chart-panel="<%= mode %>" <%= "hidden" unless mode == @chart_mode %>>
       <%= price_history_svg(summary[:observations], mode: mode) %>
     </div>

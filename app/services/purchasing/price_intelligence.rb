@@ -113,10 +113,11 @@ module Purchasing
 
     def chart_summaries(observations)
       CHART_MODES.index_with do |mode|
-        chart_observations = observations.select { |observation| observation.chart_value(mode).present? }
-        comparable_change = chart_observations.map { |observation| observation.chart_series_key(mode) }.uniq.one?
+        chart_observations = chart_observations_for_mode(observations, mode)
+        comparable_change = chart_observations.map { |observation| observation.chart_unit_key(mode) }.uniq.one?
         {
           observations: chart_observations,
+          insight: chart_insight(chart_observations, mode),
           recent_change: comparable_change ? price_change(chart_observations, mode) : nil,
           change_30_days: comparable_change ? window_change(chart_observations, mode, 30.days) : nil,
           change_60_days: comparable_change ? window_change(chart_observations, mode, 60.days) : nil,
@@ -166,6 +167,44 @@ module Purchasing
     end
 
     private
+
+    def chart_observations_for_mode(observations, mode)
+      chart_observations = observations.select { |observation| observation.chart_value(mode).present? }
+      return chart_observations unless mode == "package_price"
+
+      comparable_observations = chart_observations.select(&:presentation_chart_uses_comparable_unit?)
+      comparable_observations.presence || chart_observations
+    end
+
+    def chart_insight(observations, mode)
+      return unless mode == "package_price"
+
+      latest_by_presentation = observations
+        .select(&:presentation_chart_uses_comparable_unit?)
+        .group_by(&:presentation_key)
+        .values
+        .filter_map { |series| series.max_by { |observation| [ observation.observed_at, observation.id ] } }
+      return if latest_by_presentation.size < 2
+      return if latest_by_presentation.map(&:standard_unit).uniq.many?
+
+      sorted = latest_by_presentation.sort_by { |observation| observation.standard_unit_price.to_d }
+      best = sorted.first
+      next_best = sorted.second
+      return if best.standard_unit_price.blank? || next_best.standard_unit_price.blank? || next_best.standard_unit_price.to_d.zero?
+
+      savings = ((next_best.standard_unit_price.to_d - best.standard_unit_price.to_d) / next_best.standard_unit_price.to_d * 100).round(1)
+      return if savings.zero?
+
+      {
+        kind: "presentation_value",
+        best_label: best.presentation_label.presence || best.receipt_line_item.raw_name,
+        best_price: best.standard_unit_price,
+        comparison_label: next_best.presentation_label.presence || next_best.receipt_line_item.raw_name,
+        comparison_price: next_best.standard_unit_price,
+        unit: best.standard_unit,
+        savings_percent: savings
+      }
+    end
 
     def filtered_products(params)
       products = Product.all

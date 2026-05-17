@@ -136,7 +136,9 @@ Product price history defaults to comparable unit price when reliable standard u
 
 When no comparable unit price exists but approved case-pack facts provide an inner-unit price, product price history can chart `inner_unit_price` as a separate mode. This is useful for movements such as price per pack inside a case.
 
-Package/presentation price charts do not connect different purchased forms. Unit purchases and case purchases are separate presentation series even when the SKU and visible package text match. For example, a `25 lb` banana case and a `1 lb` banana purchase appear as separate presentation series. The comparable unit chart may compare them if both rows confidently calculate to the same standard unit, such as dollars per pound.
+Package/presentation price charts do not connect different purchased forms. Unit purchases and case purchases are separate presentation series even when the SKU and visible package text match. For example, a `25 lb` banana case and a `1 lb` banana purchase appear as separate presentation series.
+
+When presentation rows have reliable comparable units, the presentation chart still uses the comparable unit as the y-axis value while grouping by purchased form. This keeps the chart apples-to-apples and can surface purchasing insights such as a smaller egg case being cheaper per dozen than the larger case. Rows without a reliable comparable unit fall back to their package price and are not treated as comparable with other presentations.
 
 ## Review Flags
 

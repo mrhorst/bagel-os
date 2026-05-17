@@ -155,8 +155,75 @@ class PriceIntelligenceTest < ActiveSupport::TestCase
 
     summaries = @service.chart_summaries(product.price_observations.chronological)
 
-    assert_nil summaries.fetch("package_price").fetch(:recent_change)
+    assert_equal 50.0, summaries.fetch("package_price").fetch(:recent_change)
     assert_equal 50.0, summaries.fetch("standard_unit_price").fetch(:recent_change)
+  end
+
+  test "presentation chart compares forms on shared comparable units and surfaces best value" do
+    product = create_product("Large Eggs")
+    create_observation(
+      product: product,
+      observed_at: Time.zone.parse("2026-03-28 10:00:00"),
+      package_price: 27.39,
+      line_total: 27.39,
+      standard_quantity: 15,
+      standard_unit_price: BigDecimal("1.826"),
+      standard_unit: "dozen",
+      presentation_key: "case-15dz",
+      presentation_label: "15 dozen case"
+    )
+    create_observation(
+      product: product,
+      observed_at: Time.zone.parse("2026-04-14 10:00:00"),
+      package_price: 9.99,
+      line_total: 9.99,
+      standard_quantity: 7.5,
+      standard_unit_price: BigDecimal("1.332"),
+      standard_unit: "dozen",
+      presentation_key: "case-7-5dz",
+      presentation_label: "7.5 dozen case"
+    )
+
+    package_summary = @service.chart_summaries(product.price_observations.chronological).fetch("package_price")
+    insight = package_summary.fetch(:insight)
+
+    assert_equal BigDecimal("1.332"), package_summary.fetch(:observations).last.chart_value("package_price")
+    assert_equal "7.5 dozen case", insight.fetch(:best_label)
+    assert_equal "15 dozen case", insight.fetch(:comparison_label)
+    assert_equal "dozen", insight.fetch(:unit)
+    assert_equal 27.1, insight.fetch(:savings_percent)
+  end
+
+  test "presentation chart does not mix comparable unit prices with raw package prices" do
+    product = create_product("Cream Cheese")
+    create_observation(
+      product: product,
+      package_price: 30,
+      standard_unit_price: BigDecimal("2.00"),
+      standard_unit: "lb",
+      presentation_key: "case-15lb"
+    )
+    create_observation(
+      product: product,
+      package_price: 9,
+      standard_unit_price: nil,
+      standard_unit: nil,
+      presentation_key: "unknown-pack"
+    )
+
+    observations = @service.chart_summaries(product.price_observations.chronological).fetch("package_price").fetch(:observations)
+
+    assert_equal [ "case-15lb" ], observations.map(&:presentation_key)
+  end
+
+  test "presentation chart falls back to package price when no comparable unit prices exist" do
+    product = create_product("Potatoes")
+    create_observation(product: product, package_price: BigDecimal("11.04"), presentation_key: "bag")
+    create_observation(product: product, package_price: BigDecimal("13.55"), presentation_key: "bag")
+
+    observations = @service.chart_summaries(product.price_observations.chronological).fetch("package_price").fetch(:observations)
+
+    assert_equal [ BigDecimal("11.04"), BigDecimal("13.55") ], observations.map { |observation| observation.chart_value("package_price") }
   end
 
   test "calculates chart change windows from the first observation inside each window" do
@@ -272,6 +339,7 @@ class PriceIntelligenceTest < ActiveSupport::TestCase
     standard_unit: nil,
     standard_quantity: nil,
     presentation_key: "presentation",
+    presentation_label: presentation_key,
     possible_price_spike: false
   )
     @line_number += 1
@@ -315,7 +383,7 @@ class PriceIntelligenceTest < ActiveSupport::TestCase
       standard_unit: standard_unit,
       standard_quantity: standard_quantity,
       presentation_key: presentation_key,
-      presentation_label: presentation_key,
+      presentation_label: presentation_label,
       source_filename: @import_batch.source_filename,
       possible_price_spike: possible_price_spike
     )

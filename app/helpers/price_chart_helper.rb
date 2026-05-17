@@ -147,7 +147,7 @@ module PriceChartHelper
       "Line total: #{money(observation.line_total)}",
       "Package price: #{money(observation.package_price)}",
       "Series: #{series_label}",
-      "Calculated unit price: #{format_chart_value(value, mode)}",
+      "Charted price: #{format_point_value(value, mode, observation)}",
       "Source: #{observation.source_filename}"
     ].join("\n")
 
@@ -214,8 +214,20 @@ module PriceChartHelper
       observation.standard_unit.present? ? "#{formatted}/#{observation.standard_unit}" : formatted
     when "inner_unit_price"
       observation.inner_unit_label.present? ? "#{formatted}/#{observation.inner_unit_label}" : formatted
+    when "package_price"
+      observation.presentation_chart_uses_comparable_unit? ? "#{formatted}/#{observation.standard_unit}" : formatted
     else
       formatted
+    end
+  end
+
+  def chart_insight_text(insight)
+    return if insight.blank?
+
+    case insight[:kind]
+    when "presentation_value"
+      "#{insight[:best_label]} is currently #{insight[:savings_percent]}% cheaper than #{insight[:comparison_label]} " \
+        "on a comparable basis (#{money(insight[:best_price])}/#{insight[:unit]} vs #{money(insight[:comparison_price])}/#{insight[:unit]})."
     end
   end
 end

@@ -517,6 +517,17 @@ textarea {
   stroke-width: 4px;
 }
 
+.chart-insight {
+  background: #eef7f3;
+  border: 1px solid #bdd9cf;
+  border-radius: 8px;
+  color: #173844;
+  font-weight: 700;
+  line-height: 1.45;
+  margin: -6px 0 12px;
+  padding: 10px 12px;
+}
+
 .chart-legend {
   display: flex;
   flex-wrap: wrap;

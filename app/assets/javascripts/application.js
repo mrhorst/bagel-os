@@ -75,6 +75,7 @@ const setupChartSwitchers = () => {
 
     const controls = Array.from(switcher.querySelectorAll("[data-chart-mode]"));
     const summaries = Array.from(switcher.querySelectorAll("[data-chart-summary]"));
+    const insights = Array.from(switcher.querySelectorAll("[data-chart-insight]"));
     const panels = Array.from(switcher.querySelectorAll("[data-chart-panel]"));
 
     const setMode = (mode, href) => {
@@ -86,6 +87,10 @@ const setupChartSwitchers = () => {
 
       summaries.forEach((summary) => {
         summary.hidden = summary.dataset.chartSummary !== mode;
+      });
+
+      insights.forEach((insight) => {
+        insight.hidden = insight.dataset.chartInsight !== mode;
       });
 
       panels.forEach((panel) => {

@@ -17,6 +17,8 @@ class PriceObservation < ApplicationRecord
       standard_unit_price
     when "inner_unit_price"
       inner_unit_price
+    when "package_price"
+      presentation_chart_value
     when "line_total"
       line_total
     when "quantity"
@@ -46,6 +48,25 @@ class PriceObservation < ApplicationRecord
     end
   end
 
+  def chart_unit_key(mode)
+    case mode
+    when "standard_unit_price"
+      standard_unit.present? ? "standard_unit:#{standard_unit}" : "standard_unit:unknown"
+    when "inner_unit_price"
+      "inner_unit:#{inner_unit_label.presence || 'unit'}"
+    when "package_price"
+      standard_unit.present? && standard_unit_price.present? ? "standard_unit:#{standard_unit}" : chart_series_key(mode)
+    when "quantity"
+      "quantity"
+    else
+      "money"
+    end
+  end
+
+  def presentation_chart_uses_comparable_unit?
+    standard_unit_price.present? && standard_unit.present?
+  end
+
   def price_spike_value
     standard_unit_price.presence || inner_unit_price.presence || package_price
   end
@@ -55,5 +76,11 @@ class PriceObservation < ApplicationRecord
     return chart_series_key("inner_unit_price") if inner_unit_price.present?
 
     chart_series_key("package_price")
+  end
+
+  private
+
+  def presentation_chart_value
+    standard_unit_price.presence || package_price
   end
 end
