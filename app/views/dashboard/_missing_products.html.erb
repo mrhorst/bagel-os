@@ -1,0 +1,35 @@
+<% if missing_products.any? %>
+  <table class="dashboard-table dashboard-table-compact">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Guide signal</th>
+        <th class="numeric">Buys</th>
+        <th class="numeric">Spend</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% missing_products.each do |row| %>
+        <tr>
+          <td>
+            <%= link_to row.product.canonical_name, product_path(row.product) %>
+            <small><%= row.product.category_name %></small>
+          </td>
+          <td>
+            <span class="badge <%= row.classification == "review_for_guide" ? "badge-warning" : "" %>">
+              <%= row.classification.humanize %>
+            </span>
+            <small><%= row.reason %></small>
+          </td>
+          <td class="numeric"><%= dashboard_count(row.purchase_count) %></td>
+          <td class="numeric"><%= money(row.total_spend) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <%= render "dashboard/empty_state",
+    title: "No guide gaps found",
+    message: "Receipt-backed products are currently covered by the active order guides.",
+    action: link_to("Open order guides", order_guides_path, class: "button small") %>
+<% end %>

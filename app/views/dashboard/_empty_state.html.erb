@@ -1,0 +1,7 @@
+<div class="dashboard-empty-state">
+  <strong><%= title %></strong>
+  <span><%= message %></span>
+  <% if local_assigns[:action].present? %>
+    <%= action %>
+  <% end %>
+</div>

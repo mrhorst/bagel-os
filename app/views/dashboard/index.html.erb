@@ -1,92 +1,170 @@
 <% content_for :title, "Dashboard" %>
 
-<section class="page-heading">
+<section class="dashboard-hero">
   <div>
-    <h1>Purchasing dashboard</h1>
-    <p>Spending, recurring products, review flags, and price movement from imported receipt lines.</p>
+    <h1>Operations dashboard</h1>
+    <p>Review work, price movement, spend changes, and order-guide gaps from imported receipt lines.</p>
   </div>
-  <%= link_to "Import CSV", new_import_batch_path, class: "button primary" %>
+  <div class="dashboard-hero-actions">
+    <%= link_to "Review queue", normalization_reviews_path, class: "button primary" %>
+    <%= link_to "Import CSV", new_import_batch_path, class: "button" %>
+  </div>
 </section>
 
-<section class="metric-grid">
-  <article class="metric"><span>Total spend</span><strong><%= money(@total_spend) %></strong></article>
-  <article class="metric"><span>Receipts imported</span><strong><%= @receipt_count %></strong></article>
-  <article class="metric"><span>Products tracked</span><strong><%= @product_count %></strong></article>
-  <article class="metric"><span>Average receipt</span><strong><%= money(@average_receipt_total) %></strong></article>
+<section class="dashboard-priority-strip" aria-label="Urgent review work">
+  <%= render "dashboard/metric_card",
+    label: "Pending reviews",
+    value: dashboard_count(@pending_review_count),
+    detail: "Receipt rows needing a human decision",
+    tone: dashboard_status_tone(@pending_review_count) %>
+  <%= render "dashboard/metric_card",
+    label: "Products needing review",
+    value: dashboard_count(@needs_review.size),
+    detail: "Top records shown below",
+    tone: dashboard_status_tone(@needs_review.size) %>
+  <%= render "dashboard/metric_card",
+    label: "Guide rows needing review",
+    value: dashboard_count(@guide_items_needing_review_count),
+    detail: "Order-guide links to verify",
+    tone: dashboard_status_tone(@guide_items_needing_review_count) %>
+  <%= render "dashboard/metric_card",
+    label: "Price spikes",
+    value: dashboard_count(@spikes.size),
+    detail: "Recent flagged observations",
+    tone: dashboard_status_tone(@spikes.size) %>
 </section>
 
-<section class="grid two">
-  <article class="panel">
-    <div class="panel-heading">
-      <h2>Spend by month</h2>
-      <% if @monthly_spend.size > 8 %>
-        <span class="muted">Latest 8 of <%= @monthly_spend.size %></span>
+<section class="dashboard-metric-grid" aria-label="Purchasing summary">
+  <%= render "dashboard/metric_card", label: "Total spend", value: money(@total_spend), detail: "Imported receipt line total" %>
+  <%= render "dashboard/metric_card", label: "Receipts", value: dashboard_count(@receipt_count), detail: "Imported purchase documents" %>
+  <%= render "dashboard/metric_card", label: "Products", value: dashboard_count(@product_count), detail: "Receipt-backed product records" %>
+  <%= render "dashboard/metric_card", label: "Average receipt", value: money(@average_receipt_total), detail: "Mean imported receipt total" %>
+</section>
+
+<section class="dashboard-layout" aria-label="Operations blocks">
+  <article class="<%= dashboard_block_class(span: "two_thirds", priority: "urgent") %>">
+    <%= render "dashboard/block_header",
+      title: "Work that needs attention",
+      subtitle: "Start here before trusting reports or building the next order.",
+      action: link_to("Open review queue", normalization_reviews_path, class: "button small primary") %>
+
+    <div class="dashboard-work-grid">
+      <%= link_to normalization_reviews_path, class: "dashboard-work-card" do %>
+        <strong><%= dashboard_count(@pending_review_count) %></strong>
+        <span>Pending receipt reviews</span>
+      <% end %>
+      <%= link_to products_path(needs_review: "1"), class: "dashboard-work-card" do %>
+        <strong><%= dashboard_count(@needs_review.size) %></strong>
+        <span>Product records to clean up</span>
+      <% end %>
+      <%= link_to order_guides_path, class: "dashboard-work-card" do %>
+        <strong><%= dashboard_count(@gap_summary[:review_count]) %></strong>
+        <span>Receipt products to check against guides</span>
       <% end %>
     </div>
-    <%= line_chart @monthly_spend.to_a.last(8).to_h.transform_keys { |month| month.strftime("%Y-%m") }, id: "monthly-spend-chart", height: "260px", colors: ["#d04f2f"], prefix: "$", curve: false, points: true, xtitle: "Month", ytitle: "Spend" %>
-    <table>
-      <thead><tr><th>Month</th><th class="numeric">Spend</th></tr></thead>
-      <tbody>
-        <% @monthly_spend.to_a.last(8).each do |month, total| %>
-          <tr><td><%= month.strftime("%B %Y") %></td><td class="numeric"><%= money(total) %></td></tr>
-        <% end %>
-      </tbody>
-    </table>
+
+    <div class="dashboard-nested-block">
+      <h3>Needs review products</h3>
+      <%= render "dashboard/product_list",
+        products: @needs_review,
+        empty_title: "No product cleanup waiting",
+        empty_message: "Product records are currently marked reviewed." %>
+    </div>
   </article>
 
-  <article class="panel">
-    <div class="panel-heading">
-      <h2>Spend by category</h2>
-      <% if @category_spend.size > 10 %>
-        <span class="muted">Top 10 of <%= @category_spend.size %></span>
+  <article class="<%= dashboard_block_class(span: "third", priority: "actions") %>">
+    <%= render "dashboard/block_header", title: "Quick actions", subtitle: "Common operator moves with clear next screens." %>
+    <div class="dashboard-action-list">
+      <%= link_to new_import_batch_path, class: "dashboard-action" do %>
+        <strong>Import receipt CSV</strong>
+        <span>Add the latest vendor purchase file.</span>
+      <% end %>
+      <%= link_to order_guides_path, class: "dashboard-action" do %>
+        <strong>Review guide gaps</strong>
+        <span>Find receipt products missing from current guides.</span>
+      <% end %>
+      <%= link_to new_inventory_count_path, class: "dashboard-action" do %>
+        <strong>Start inventory count</strong>
+        <span>Record a fast staff count by section.</span>
+      <% end %>
+      <%= link_to reports_path, class: "dashboard-action" do %>
+        <strong>Export reports</strong>
+        <span>Pull clean purchasing files for review.</span>
       <% end %>
     </div>
-    <%= pie_chart @category_spend.first(10).to_h, id: "category-spend-chart", height: "260px", colors: PriceChartHelper::CHART_COLORS, prefix: "$", legend: "bottom" %>
-    <table>
-      <thead><tr><th>Category</th><th class="numeric">Spend</th></tr></thead>
-      <tbody>
-        <% @category_spend.first(10).each do |category, total| %>
-          <tr><td><%= category %></td><td class="numeric"><%= money(total) %></td></tr>
-        <% end %>
-      </tbody>
-    </table>
-  </article>
-</section>
-
-<section class="grid three">
-  <article class="panel">
-    <h2>Top recurring products</h2>
-    <%= render "product_list", products: @top_by_frequency %>
-  </article>
-  <article class="panel">
-    <h2>Top spend</h2>
-    <%= render "product_list", products: @top_by_spend %>
-  </article>
-  <article class="panel">
-    <h2>Needs review</h2>
-    <%= render "product_list", products: @needs_review %>
-  </article>
-</section>
-
-<section class="grid two">
-  <article class="panel">
-    <h2>Possible price spikes</h2>
-    <table>
-      <thead><tr><th>Product</th><th>Date</th><th class="numeric">Price</th></tr></thead>
-      <tbody>
-        <% @spikes.each do |observation| %>
-          <tr>
-            <td><%= link_to observation.product.canonical_name, observation.product %></td>
-            <td><%= observation.observed_at.to_date %></td>
-            <td class="numeric"><%= money(observation.package_price) %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
   </article>
 
-  <article class="panel">
-    <h2>Missing standard unit price</h2>
-    <%= render "product_list", products: @missing_standard %>
+  <article class="<%= dashboard_block_class(span: "two_thirds") %>">
+    <%= render "dashboard/block_header",
+      title: "Price spikes",
+      subtitle: "Recent observations flagged by the price intelligence rules.",
+      action: link_to("Price sort", products_path(sort: "highest_price_increase"), class: "button small") %>
+    <%= render "dashboard/price_spikes", spikes: @spikes %>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "third") %>">
+    <%= render "dashboard/block_header",
+      title: "Order-guide gaps",
+      subtitle: "Receipt-backed products that may need a guide decision.",
+      action: link_to("Open guides", order_guides_path, class: "button small") %>
+    <div class="dashboard-gap-summary">
+      <div><strong><%= dashboard_count(@gap_summary[:missing_count]) %></strong><span>Total gaps</span></div>
+      <div><strong><%= dashboard_count(@gap_summary[:review_count]) %></strong><span>Review for guide</span></div>
+      <div><strong><%= dashboard_count(@gap_summary[:one_off_count]) %></strong><span>Low signal</span></div>
+    </div>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "half") %>">
+    <%= render "dashboard/block_header",
+      title: "Spend by month",
+      subtitle: @monthly_spend.size > 8 ? "Latest 8 of #{@monthly_spend.size} months." : "Monthly imported receipt spend." %>
+    <div class="dashboard-chart-frame">
+      <%= line_chart @monthly_spend.to_a.last(8).to_h.transform_keys { |month| month.strftime("%Y-%m") }, id: "monthly-spend-chart", height: "220px", colors: ["#d04f2f"], prefix: "$", curve: false, points: true, xtitle: "Month", ytitle: "Spend" %>
+    </div>
+    <%= render "dashboard/spend_table", rows: @monthly_spend.to_a.last(8), label: "Month", date_rows: true %>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "half") %>">
+    <%= render "dashboard/block_header",
+      title: "Spend by category",
+      subtitle: @category_spend.size > 10 ? "Top 10 of #{@category_spend.size} categories." : "Category mix from imported receipt lines." %>
+    <div class="dashboard-chart-frame">
+      <%= pie_chart @category_spend.first(10).to_h, id: "category-spend-chart", height: "220px", colors: PriceChartHelper::CHART_COLORS, prefix: "$", legend: "bottom" %>
+    </div>
+    <%= render "dashboard/spend_table", rows: @category_spend.first(10), label: "Category" %>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "half") %>">
+    <%= render "dashboard/block_header",
+      title: "Receipt products not on guides",
+      subtitle: "Dense list for deciding what belongs on the order guide.",
+      action: link_to("Review gaps", order_guides_path, class: "button small") %>
+    <%= render "dashboard/missing_products", missing_products: @missing_products %>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "half") %>">
+    <%= render "dashboard/block_header",
+      title: "Missing standard unit price",
+      subtitle: "Products that need unit cleanup before apples-to-apples price tracking works.",
+      action: link_to("Unit cleanup", products_path(no_standard_unit_price: "1"), class: "button small") %>
+    <%= render "dashboard/product_list",
+      products: @missing_standard,
+      empty_title: "Standard units look complete",
+      empty_message: "No products are currently missing standard unit pricing." %>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "third") %>">
+    <%= render "dashboard/block_header", title: "Top recurring products", subtitle: "Most frequently purchased items." %>
+    <%= render "dashboard/product_list", products: @top_by_frequency %>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "third") %>">
+    <%= render "dashboard/block_header", title: "Top spend", subtitle: "Highest total receipt spend." %>
+    <%= render "dashboard/product_list", products: @top_by_spend %>
+  </article>
+
+  <article class="<%= dashboard_block_class(span: "third") %>">
+    <%= render "dashboard/block_header", title: "Supplier spend", subtitle: "Where purchasing dollars are going." %>
+    <%= render "dashboard/spend_table", rows: @supplier_spend.sort_by { |_supplier, total| -total.to_d }.first(8), label: "Supplier" %>
   </article>
 </section>

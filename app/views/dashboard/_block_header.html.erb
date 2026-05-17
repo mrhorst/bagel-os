@@ -1,0 +1,11 @@
+<div class="dashboard-block-header">
+  <div>
+    <h2><%= title %></h2>
+    <% if local_assigns[:subtitle].present? %>
+      <p class="muted"><%= subtitle %></p>
+    <% end %>
+  </div>
+  <% if local_assigns[:action].present? %>
+    <%= action %>
+  <% end %>
+</div>

@@ -1,0 +1,24 @@
+<% rows = rows.to_a %>
+
+<% if rows.any? %>
+  <table class="dashboard-table dashboard-table-compact">
+    <thead>
+      <tr>
+        <th><%= label %></th>
+        <th class="numeric">Spend</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% rows.each do |name, total| %>
+        <tr>
+          <td><%= local_assigns[:date_rows] ? name.strftime("%B %Y") : name %></td>
+          <td class="numeric"><%= money(total) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <%= render "dashboard/empty_state",
+    title: "No spend data yet",
+    message: "Import receipt CSVs to populate this purchasing block." %>
+<% end %>

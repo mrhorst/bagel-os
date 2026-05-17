@@ -1,0 +1,36 @@
+<% if spikes.any? %>
+  <table class="dashboard-table dashboard-table-compact">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Date</th>
+        <th class="numeric">Price</th>
+        <th class="numeric">Spike</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% spikes.each do |observation| %>
+        <tr>
+          <td>
+            <%= link_to observation.product.canonical_name, observation.product %>
+            <small><%= observation.presentation_label.presence || observation.source_filename %></small>
+          </td>
+          <td><%= observation.observed_at.to_date %></td>
+          <td class="numeric"><%= money(observation.price_spike_value) %></td>
+          <td class="numeric">
+            <% if observation.percent_above_recent_average.present? %>
+              <span class="badge badge-warning"><%= observation.percent_above_recent_average.round(1) %>%</span>
+            <% else %>
+              <span class="badge badge-warning">Flagged</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <%= render "dashboard/empty_state",
+    title: "No price spikes flagged",
+    message: "Imported receipt prices have not crossed the current spike rules.",
+    action: link_to("Review products", products_path(sort: "highest_price_increase"), class: "button small") %>
+<% end %>
