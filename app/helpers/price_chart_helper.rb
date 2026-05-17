@@ -9,28 +9,7 @@ module PriceChartHelper
   CHART_COLORS = %w[#d04f2f #175f73 #6e4c00 #1e5b35 #6b4bb8 #9b2c2c #2f6f4e #7a4f01].freeze
 
   def price_history_chart(observations, mode:)
-    series = price_history_chart_series(observations, mode: mode)
-    return tag.div("Not enough data for this chart mode yet.", class: "empty-state") if series.empty?
-
-    line_chart(
-      series,
-      id: "product-price-history-#{mode}",
-      height: "360px",
-      colors: CHART_COLORS,
-      points: true,
-      curve: false,
-      legend: "bottom",
-      xtitle: "Purchase date",
-      ytitle: CHART_MODES.fetch(mode, "Price history"),
-      prefix: chart_value_prefix(mode),
-      library: {
-        interaction: { mode: "nearest", intersect: false },
-        scales: {
-          x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
-          y: { beginAtZero: false }
-        }
-      }
-    )
+    price_history_svg(observations, mode: mode)
   end
 
   def price_history_svg(observations, mode:)
@@ -71,12 +50,13 @@ module PriceChartHelper
       [ value, x.round(2), y.round(2) ]
     end
 
-    chart = tag.svg(viewBox: "0 0 #{width} #{height}", class: "price-chart", role: "img", aria: { label: CHART_MODES.fetch(mode, "Price history") }) do
+    chart = tag.svg(id: "product-price-history-#{mode}", viewBox: "0 0 #{width} #{height}", class: "price-chart", role: "img", aria: { label: CHART_MODES.fetch(mode, "Price history") }) do
       chart_parts = [
         tag.line(x1: padding_left, y1: padding_top + plot_height, x2: width - padding_right, y2: padding_top + plot_height, class: "chart-axis"),
         tag.line(x1: padding_left, y1: padding_top, x2: padding_left, y2: padding_top + plot_height, class: "chart-axis"),
         tag.text(format_chart_value(axis_max, mode), x: 8, y: padding_top + 4, class: "chart-label"),
         tag.text(format_chart_value(axis_min, mode), x: 8, y: padding_top + plot_height, class: "chart-label"),
+        tag.text(CHART_MODES.fetch(mode, "Price history"), x: -padding_top - (plot_height / 2), y: 24, class: "chart-label chart-axis-title", transform: "rotate(-90)", "text-anchor": "middle"),
         tag.text("Purchase date", x: padding_left + (plot_width / 2), y: height - 12, class: "chart-label chart-axis-title", "text-anchor": "middle")
       ]
 
@@ -107,31 +87,6 @@ module PriceChartHelper
   end
 
   private
-
-  def price_history_chart_series(observations, mode:)
-    points = observations.filter_map do |observation|
-      value = observation.chart_value(mode)
-      next if value.blank?
-
-      [ observation, value.to_d ]
-    end
-
-    points
-      .group_by { |observation, _value| observation.chart_series_key(mode) }
-      .map do |_key, series_points|
-        first_observation = series_points.first.first
-        {
-          name: first_observation.chart_series_label(mode),
-          data: series_points.map do |observation, value|
-            [ observation.observed_at.to_date.iso8601, value.to_f ]
-          end
-        }
-      end
-  end
-
-  def chart_value_prefix(mode)
-    mode == "quantity" ? nil : "$"
-  end
 
   def x_coordinate(observed_time:, min_time:, time_range:, plot_left:, plot_width:)
     return plot_left + (plot_width / 2.0) if time_range.zero?
