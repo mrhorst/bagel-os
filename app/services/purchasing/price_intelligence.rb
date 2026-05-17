@@ -179,22 +179,39 @@ module Purchasing
     def chart_insight(observations, mode)
       return unless mode == "package_price"
 
-      latest_by_presentation = observations
-        .select(&:presentation_chart_uses_comparable_unit?)
-        .group_by(&:presentation_key)
-        .values
-        .filter_map { |series| series.max_by { |observation| [ observation.observed_at, observation.id ] } }
-      return if latest_by_presentation.size < 2
-      return if latest_by_presentation.map(&:standard_unit).uniq.many?
+      latest_by_presentation = latest_comparable_presentations(observations)
+      return unless comparable_presentation_set?(latest_by_presentation)
 
-      sorted = latest_by_presentation.sort_by { |observation| observation.standard_unit_price.to_d }
-      best = sorted.first
-      next_best = sorted.second
-      return if best.standard_unit_price.blank? || next_best.standard_unit_price.blank? || next_best.standard_unit_price.to_d.zero?
+      best, next_best = best_presentation_pair(latest_by_presentation)
+      return unless presentable_savings_pair?(best, next_best)
 
       savings = ((next_best.standard_unit_price.to_d - best.standard_unit_price.to_d) / next_best.standard_unit_price.to_d * 100).round(1)
       return if savings.zero?
 
+      presentation_value_insight(best, next_best, savings)
+    end
+
+    def latest_comparable_presentations(observations)
+      observations
+        .select(&:presentation_chart_uses_comparable_unit?)
+        .group_by(&:presentation_key)
+        .values
+        .filter_map { |series| series.max_by { |observation| [ observation.observed_at, observation.id ] } }
+    end
+
+    def comparable_presentation_set?(observations)
+      observations.size >= 2 && observations.map(&:standard_unit).uniq.one?
+    end
+
+    def best_presentation_pair(observations)
+      observations.sort_by { |observation| observation.standard_unit_price.to_d }.first(2)
+    end
+
+    def presentable_savings_pair?(best, next_best)
+      best.standard_unit_price.present? && next_best.standard_unit_price.present? && !next_best.standard_unit_price.to_d.zero?
+    end
+
+    def presentation_value_insight(best, next_best, savings)
       {
         kind: "presentation_value",
         best_label: best.presentation_label.presence || best.receipt_line_item.raw_name,
@@ -208,22 +225,55 @@ module Purchasing
 
     def filtered_products(params)
       products = Product.all
-      products = products.where(product_category_id: params[:category_id]) if params[:category_id].present?
-      products = products.where(supplier_id: params[:supplier_id]) if params[:supplier_id].present?
-      products = products.where(needs_review: true) if params[:needs_review] == "1"
-      products = products.where(product_category_id: nil) if params[:missing_category] == "1"
-      products = products.left_joins(:price_observations).where(price_observations: { standard_unit_price: nil }).distinct if params[:no_standard_unit_price] == "1"
-      products = products.where(id: PriceObservation.spikes.select(:product_id)) if params[:price_increased] == "1"
-      if params[:q].present?
-        query = "%#{Product.sanitize_sql_like(params[:q].to_s.downcase)}%"
-        products = products.left_joins(:product_aliases)
-          .where(
-            "LOWER(products.canonical_name) LIKE :query OR LOWER(product_aliases.raw_name) LIKE :query OR LOWER(product_aliases.raw_sku) LIKE :query",
-            query: query
-          )
-          .distinct
-      end
+      products = filter_by_category(products, params)
+      products = filter_by_supplier(products, params)
+      products = filter_by_review_state(products, params)
+      products = filter_by_standard_unit_gap(products, params)
+      products = filter_by_price_spike(products, params)
+      products = filter_by_search(products, params)
       products
+    end
+
+    def filter_by_category(products, params)
+      products = products.where(product_category_id: params[:category_id]) if params[:category_id].present?
+      products = products.where(product_category_id: nil) if params[:missing_category] == "1"
+      products
+    end
+
+    def filter_by_supplier(products, params)
+      return products unless params[:supplier_id].present?
+
+      products.where(supplier_id: params[:supplier_id])
+    end
+
+    def filter_by_review_state(products, params)
+      return products unless params[:needs_review] == "1"
+
+      products.where(needs_review: true)
+    end
+
+    def filter_by_standard_unit_gap(products, params)
+      return products unless params[:no_standard_unit_price] == "1"
+
+      products.left_joins(:price_observations).where(price_observations: { standard_unit_price: nil }).distinct
+    end
+
+    def filter_by_price_spike(products, params)
+      return products unless params[:price_increased] == "1"
+
+      products.where(id: PriceObservation.spikes.select(:product_id))
+    end
+
+    def filter_by_search(products, params)
+      return products unless params[:q].present?
+
+      query = "%#{Product.sanitize_sql_like(params[:q].to_s.downcase)}%"
+      products.left_joins(:product_aliases)
+        .where(
+          "LOWER(products.canonical_name) LIKE :query OR LOWER(product_aliases.raw_name) LIKE :query OR LOWER(product_aliases.raw_sku) LIKE :query",
+          query: query
+        )
+        .distinct
     end
 
     def sorted_products(products, params)

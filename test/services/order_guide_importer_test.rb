@@ -40,4 +40,40 @@ class OrderGuideImporterTest < ActiveSupport::TestCase
       assert OrderGuideItem.find_by!(item_name: "Fries").needs_review?
     end
   end
+
+  test "infers guide type from daily and weekly filenames" do
+    text = <<~TEXT
+      Dairy & Refrigerated                                                 Par         Pack Qty     Sunday    Thursday     On Hand   Order
+                        Half n Half                                         4              quart
+    TEXT
+
+    Tempfile.create([ "daily-order-guide", ".pdf" ]) do |daily_file|
+      daily_file.write("daily pdf bytes")
+      daily_file.close
+
+      daily_result = Purchasing::OrderGuideImporter.new(extractor: ExtractorStub.new(text)).import_file(daily_file.path)
+      assert_equal "daily", daily_result.import.guide_type
+    end
+
+    Tempfile.create([ "weekly-order-guide", ".pdf" ]) do |weekly_file|
+      weekly_file.write("weekly pdf bytes")
+      weekly_file.close
+
+      weekly_result = Purchasing::OrderGuideImporter.new(extractor: ExtractorStub.new(text)).import_file(weekly_file.path)
+      assert_equal "weekly", weekly_result.import.guide_type
+    end
+  end
+
+  test "requires guide type when filename does not identify daily or weekly guide" do
+    Tempfile.create([ "supplier-list", ".pdf" ]) do |file|
+      file.write("unknown guide bytes")
+      file.close
+
+      error = assert_raises(ArgumentError) do
+        Purchasing::OrderGuideImporter.new(extractor: ExtractorStub.new("")).import_file(file.path)
+      end
+
+      assert_match(/Could not infer guide type/, error.message)
+    end
+  end
 end

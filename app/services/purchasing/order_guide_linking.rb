@@ -152,11 +152,13 @@ module Purchasing
 
     def reusable_for_guide_item?(inventory_item, guide_item, product)
       return false unless inventory_item && guide_item
-      return true if inventory_item.product_id == product.id && name_match?(inventory_item.name, guide_item.item_name)
-      return true if name_match?(inventory_item.name, guide_item.item_name)
-      return true if name_match?(inventory_item.name, product.canonical_name) && !shared_with_other_guide_rows?(inventory_item, guide_item)
 
-      false
+      guide_name_matches = name_match?(inventory_item.name, guide_item.item_name)
+      product_name_matches = name_match?(inventory_item.name, product.canonical_name)
+
+      (inventory_item.product_id == product.id && guide_name_matches) ||
+        guide_name_matches ||
+        (product_name_matches && !shared_with_other_guide_rows?(inventory_item, guide_item))
     end
 
     def shared_with_other_guide_rows?(inventory_item, guide_item)
