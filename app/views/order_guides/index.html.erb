@@ -3,26 +3,26 @@
 <div class="page-heading">
   <div>
     <h1>Order Guides</h1>
-    <p>Named operating lists for purchasing, counted inventory, and imported guide rows.</p>
+    <p>Named operating lists for purchasing, counted inventory, and staff ordering workflows.</p>
   </div>
   <div class="actions">
-    <%= button_to "Import current PDFs", import_current_order_guides_path, method: :post, class: "primary" %>
+    <%= link_to "Download CSV example", csv_example_order_guides_path, class: "button primary" %>
     <%= link_to "Inventory", inventory_path, class: "button" %>
   </div>
 </div>
 
 <section class="metric-grid">
   <div class="metric">
-    <span>Daily guide rows</span>
-    <strong><%= @daily_items.size %></strong>
+    <span>Named guides</span>
+    <strong><%= @order_guides.count %></strong>
   </div>
   <div class="metric">
-    <span>Weekly guide rows</span>
-    <strong><%= @weekly_items.size %></strong>
+    <span>Guide memberships</span>
+    <strong><%= OrderGuideMembership.active.count %></strong>
   </div>
   <div class="metric">
-    <span>Guide rows needing review</span>
-    <strong><%= OrderGuideItem.active.needs_review.count %></strong>
+    <span>Inventory items</span>
+    <strong><%= InventoryItem.active.count %></strong>
   </div>
   <div class="metric">
     <span>Receipt products not on guide</span>
@@ -46,6 +46,7 @@
             <th>Name</th>
             <th class="numeric">Active items</th>
             <th>Status</th>
+            <th>Items</th>
             <th>Rename</th>
             <th>Archive</th>
           </tr>
@@ -56,6 +57,7 @@
               <td><strong><%= guide.name %></strong></td>
               <td class="numeric"><%= guide.active_item_count %></td>
               <td><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
+              <td><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
               <td>
                 <%= form_with model: guide, class: "inline-guide-form" do |form| %>
                   <%= form.label :name, "Guide name", class: "sr-only" %>
@@ -98,8 +100,69 @@
 <section class="panel">
   <div class="panel-heading">
     <div>
+      <h2>Items By Guide</h2>
+      <p class="muted">Open a guide to review the full operating list, or use Inventory Items to change an item's primary guide.</p>
+    </div>
+    <%= link_to "Inventory items", inventory_items_path, class: "button small" %>
+  </div>
+
+  <% if @order_guides.any? %>
+    <div class="grid two">
+      <% @order_guides.each do |guide| %>
+        <% memberships = guide.order_guide_memberships.select(&:active?).sort_by { |membership| [ membership.position, membership.inventory_item.name ] } %>
+        <section class="guide-card">
+          <div class="panel-heading">
+            <div>
+              <h3><%= link_to guide.name, order_guide_path(guide) %></h3>
+              <p class="muted"><%= pluralize(memberships.size, "active item") %></p>
+            </div>
+            <%= link_to "Open", order_guide_path(guide), class: "button small" %>
+          </div>
+
+          <% if memberships.any? %>
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Section</th>
+                  <th>Pack / count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% memberships.first(8).each do |membership| %>
+                  <% item = membership.inventory_item %>
+                  <tr>
+                    <td>
+                      <strong><%= item.name %></strong>
+                      <% if membership.primary_guide? %>
+                        <span class="badge badge-ok badge-compact">Primary</span>
+                      <% end %>
+                    </td>
+                    <td><%= item.inventory_section&.name || "Unsectioned" %></td>
+                    <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <% if memberships.size > 8 %>
+              <p class="field-hint"><%= link_to "View all #{memberships.size} items", order_guide_path(guide) %></p>
+            <% end %>
+          <% else %>
+            <p class="empty-state">No inventory items assigned to this guide yet.</p>
+          <% end %>
+        </section>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">Create a guide, then assign inventory items from the Master Inventory page.</p>
+  <% end %>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
       <h2>Receipt Products Not On Current Guides</h2>
-      <p class="muted">This is the list to review after updating the spreadsheet and exporting fresh PDFs.</p>
+      <p class="muted">This is the list to review when deciding what should become an operating inventory item or guide membership.</p>
     </div>
   </div>
 
@@ -136,74 +199,4 @@
   <% else %>
     <p class="empty-state">No missing receipt products found for the current guide import.</p>
   <% end %>
-</section>
-
-<section class="grid two">
-  <div class="panel">
-    <h2>Guide Items Needing Link Review</h2>
-    <% if @guide_items_needing_review.any? %>
-      <table>
-        <thead>
-          <tr>
-            <th>Guide item</th>
-            <th>Guide</th>
-            <th>Section</th>
-            <th>Suggested receipt product</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @guide_items_needing_review.each do |item| %>
-            <tr>
-              <td><%= item.item_name %></td>
-              <td><%= item.guide_type.humanize %></td>
-              <td><%= item.section_name %></td>
-              <td><%= item.raw_data["suggested_product_name"].presence || "n/a" %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="empty-state">Every current guide row has a confident receipt-product link.</p>
-    <% end %>
-  </div>
-
-  <div class="panel">
-    <h2>Recent Guide Imports</h2>
-    <% if @imports.any? %>
-      <table>
-        <thead>
-          <tr>
-            <th>File</th>
-            <th>Type</th>
-            <th class="numeric">Rows</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @imports.each do |import| %>
-            <tr>
-              <td><%= import.source_filename %></td>
-              <td><%= import.guide_type.humanize %></td>
-              <td class="numeric"><%= import.rows_imported %></td>
-              <td><span class="badge"><%= import.status.humanize %></span></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="empty-state">No guide PDFs imported yet.</p>
-    <% end %>
-  </div>
-</section>
-
-<section class="grid two">
-  <div class="panel">
-    <h2>Daily Guide</h2>
-    <%= render "guide_table", items: @daily_items %>
-  </div>
-
-  <div class="panel">
-    <h2>Weekly Guide</h2>
-    <%= render "guide_table", items: @weekly_items %>
-  </div>
 </section>

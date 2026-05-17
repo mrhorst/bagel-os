@@ -118,6 +118,12 @@ small {
   max-width: 720px;
 }
 
+.guide-card {
+  border: 1px solid #ddd8cf;
+  border-radius: 8px;
+  padding: 14px;
+}
+
 .panel-heading,
 .review-main,
 .actions {
@@ -274,6 +280,15 @@ input[type="submit"].primary {
 .badge-ok {
   background: #dcefe2;
   color: #1e5b35;
+}
+
+.badge-compact {
+  border-radius: 6px;
+  font-size: 0.74rem;
+  line-height: 1.1;
+  padding: 4px 7px;
+  text-align: center;
+  white-space: normal;
 }
 
 .flash {

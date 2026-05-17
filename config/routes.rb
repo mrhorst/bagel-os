@@ -19,9 +19,9 @@ Rails.application.routes.draw do
   get "inventory/counts/new", to: "inventory#new_count", as: :new_inventory_count
   post "inventory/counts", to: "inventory#create_count"
   patch "inventory/items/:id/primary-order-guide", to: "inventory#update_primary_order_guide", as: :inventory_item_primary_order_guide
-  resources :order_guides, only: %i[index create update destroy] do
+  resources :order_guides, only: %i[index show create update destroy] do
     collection do
-      post :import_current
+      get :csv_example
     end
   end
   resources :products, only: %i[index show edit update]

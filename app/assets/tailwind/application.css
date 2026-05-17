@@ -321,6 +321,12 @@
     max-width: 720px;
   }
 
+  .guide-card {
+    border: 1px solid #ddd8cf;
+    border-radius: var(--radius-card);
+    padding: 14px;
+  }
+
   .panel-heading,
   .review-main {
     align-items: center;

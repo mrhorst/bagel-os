@@ -230,7 +230,7 @@ These tables are intentionally simple first:
 
 ## OrderGuideImport
 
-Represents one daily or weekly order guide PDF import.
+Represents a legacy daily or weekly order guide PDF import.
 
 Important fields:
 
@@ -242,7 +242,7 @@ Important fields:
 - `rows_imported`
 - `validation_summary`
 
-The checksum prevents duplicate PDF imports. Older PDF files are preserved on disk in `.private/order_guides/archive/`.
+The checksum prevents duplicate legacy PDF imports. New staff-facing guide workflows should use `OrderGuide` and `OrderGuideMembership`; future bulk setup should use the order-guide CSV shape exposed from the Order Guides page.
 
 ## OrderGuide
 
@@ -256,7 +256,7 @@ Important fields:
 - `active`
 - `notes`
 
-Guides are generic operating lists. They are intentionally separate from imported PDF files so staff can create useful working guides even when no vendor PDF exists for that exact cadence or category. Archiving a guide sets it inactive instead of deleting it.
+Guides are generic operating lists. They are intentionally separate from legacy imported files so staff can create useful working guides for any cadence or category. Archiving a guide sets it inactive instead of deleting it.
 
 ## OrderGuideMembership
 
@@ -278,7 +278,7 @@ Memberships are active/inactive so an item can be removed from a staff workflow 
 
 ## OrderGuideItem
 
-Stores one raw line from the daily or weekly guide.
+Stores one raw line from a legacy daily or weekly guide import.
 
 Important fields:
 
@@ -295,9 +295,9 @@ Important fields:
 - `needs_review`
 - `raw_data`
 
-Guide rows stay traceable to raw extracted PDF text. `par_text` and `pack_quantity` are text fields because the PDFs are not structured enough to safely turn every row into a numeric par/unit.
+Guide rows stay traceable to raw extracted text. `par_text` and `pack_quantity` are text fields because imported guide files are not structured enough to safely turn every row into a numeric par/unit.
 
-Imported rows keep linking to `InventoryItem` through `inventory_item_id`. The importer also creates or reuses a named guide matching the import type, such as `Daily` or `Weekly`, and adds a membership for the linked inventory item. That keeps raw import traceability in `OrderGuideItem` while making staff-facing ordering workflows use `OrderGuide` and `OrderGuideMembership`.
+Imported rows keep linking to `InventoryItem` through `inventory_item_id`. Legacy imports also create or reuse a named guide matching the import type, such as `Daily` or `Weekly`, and add a membership for the linked inventory item. That keeps raw import traceability in `OrderGuideItem` while making staff-facing ordering workflows use `OrderGuide` and `OrderGuideMembership`.
 
 ## Future Model Fit
 
