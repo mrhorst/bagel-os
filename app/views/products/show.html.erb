@@ -28,17 +28,33 @@
       subtitle: "The shared identity used across receipt lines.",
       class_name: "product-summary-panel"
     } do %>
+    <div class="product-summary-facts">
+      <div class="product-summary-fact product-summary-fact-status">
+        <span>Status</span>
+        <strong><%= review_badge(@product) %></strong>
+      </div>
+      <div class="product-summary-fact">
+        <span>First purchased</span>
+        <strong><%= @stats[:first_purchase_date]&.to_date || "n/a" %></strong>
+      </div>
+      <div class="product-summary-fact">
+        <span>Last purchased</span>
+        <strong><%= @stats[:last_purchase_date]&.to_date || "n/a" %></strong>
+      </div>
+    </div>
+
     <%= render "shared/blocks/detail_list",
+      class_name: "product-unit-details",
       items: [
         { label: "Package size", value: "#{compact_decimal(@product.package_size)} #{@product.unit_of_measure}" },
         { label: "Purchase unit", value: @product.purchase_unit.presence || "n/a" },
-        { label: "Standard unit", value: @product.standard_unit.presence || "n/a" },
-        { label: "First purchased", value: @stats[:first_purchase_date]&.to_date || "n/a" },
-        { label: "Last purchased", value: @stats[:last_purchase_date]&.to_date || "n/a" },
-        { label: "Status", value: review_badge(@product) }
+        { label: "Standard unit", value: @product.standard_unit.presence || "n/a" }
       ] %>
     <% if @product.notes.present? %>
-      <div class="note-block"><%= simple_format(@product.notes) %></div>
+      <div class="product-normalization-note">
+        <h3>Normalization note</h3>
+        <%= simple_format(@product.notes) %>
+      </div>
     <% end %>
   <% end %>
 
