@@ -102,19 +102,24 @@
         <th>Date</th>
         <th>Receipt</th>
         <th>Item</th>
-        <th>Bought</th>
+        <th>Form</th>
         <th class="numeric">Package</th>
         <th class="numeric">Comparable</th>
         <th class="numeric">Total</th>
-        <th>Review</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       <% @observations.each do |observation| %>
         <% line = observation.receipt_line_item %>
-        <tr id="<%= dom_id(line) %>" class="<%= "warning-row" if observation.possible_price_spike? %>">
-          <td><%= observation.observed_at.to_date %></td>
+        <% purchase_kind = observation.purchase_kind.presence || line.purchase_kind %>
+        <tr id="<%= dom_id(line) %>" class="<%= [("warning-row" if observation.possible_price_spike?), ("needs-review-row" if line.needs_review?)].compact.join(" ") %>">
+          <td class="date-cell">
+            <time datetime="<%= observation.observed_at.to_date.iso8601 %>">
+              <strong><%= observation.observed_at.strftime("%b %-d") %></strong>
+              <small><%= observation.observed_at.strftime("%Y") %></small>
+            </time>
+          </td>
           <td><%= line.receipt.receipt_number %></td>
           <td class="purchase-item">
             <strong><%= line.raw_name %></strong>
@@ -135,11 +140,20 @@
                 <dt>Inner price</dt><dd><%= observation.inner_unit_price.present? ? "#{money(observation.inner_unit_price)} / #{observation.inner_unit_label}" : "n/a" %></dd>
                 <dt>Source file</dt><dd><%= observation.source_filename %></dd>
                 <dt>Line</dt><dd><%= line.line_number %></dd>
+                <dt>Line ID</dt><dd>#<%= line.id %></dd>
+                <dt>Product ID</dt><dd><%= line.product_id ? "##{line.product_id}" : "n/a" %></dd>
+                <dt>Case-pack ID</dt><dd><%= line.case_pack_id ? "##{line.case_pack_id}" : "n/a" %></dd>
                 <dt>Review issues</dt><dd><%= line.normalization_reviews.select { |review| review.status == "pending" }.map(&:issue_type).presence&.to_sentence || "None" %></dd>
               </dl>
             </details>
           </td>
-          <td><%= line.display_quantity %></td>
+          <td class="presentation-cell">
+            <span class="presentation-badge presentation-badge-<%= purchase_kind.parameterize %>"><%= purchase_kind.titleize %></span>
+            <small><%= line.display_quantity %></small>
+            <% if line.needs_review? %>
+              <span class="review-note">Needs review</span>
+            <% end %>
+          </td>
           <td class="numeric"><%= money(observation.package_price) %></td>
           <td class="numeric">
             <% if observation.standard_unit_price.present? %>
@@ -149,11 +163,10 @@
             <% end %>
           </td>
           <td class="numeric"><%= money(observation.line_total) %></td>
-          <td><%= review_badge(line) %></td>
           <td>
-            <div class="button-row">
+            <div class="button-row purchase-actions">
               <%= link_to "View", import_batch_path(line.import_batch, anchor: dom_id(line)), class: "button small" %>
-              <%= link_to "Edit", edit_receipt_line_item_path(line), class: "button small" %>
+              <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line), class: "button small #{'primary' if line.needs_review?}" %>
             </div>
           </td>
         </tr>

@@ -76,6 +76,7 @@ class NormalizationReviewWorkflowTest < ActiveSupport::TestCase
 
     assert_equal "ignored", review.reload.status
     assert_equal "Not worth correcting.", review.resolution_notes
+    assert_not line_item.reload.needs_review?
   end
 
   test "syncing pending reviews creates intents once and resolves cleared unit reviews" do

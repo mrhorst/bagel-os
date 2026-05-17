@@ -37,6 +37,35 @@
       <dt>Source</dt><dd><%= @line_item.import_batch.source_filename %></dd>
       <dt>Review</dt><dd><%= review_badge(@line_item) %></dd>
     </dl>
+
+    <% pending_reviews = @line_item.normalization_reviews.pending %>
+    <% if pending_reviews.any? %>
+      <section class="review-decision-list">
+        <h3>Review this line</h3>
+        <% pending_reviews.each do |review| %>
+          <article class="review-decision">
+            <div>
+              <strong><%= review.issue_type.humanize %></strong>
+              <p><%= review.description %></p>
+            </div>
+            <div class="button-row">
+              <%= form_with url: resolve_normalization_review_path(review), method: :patch do %>
+                <%= hidden_field_tag :review_status, "resolved" %>
+                <%= hidden_field_tag :resolution_notes, "Verified from receipt line edit." %>
+                <%= submit_tag "Mark resolved", class: "button small primary" %>
+              <% end %>
+              <%= form_with url: resolve_normalization_review_path(review), method: :patch do %>
+                <%= hidden_field_tag :review_status, "ignored" %>
+                <%= hidden_field_tag :resolution_notes, "Ignored from receipt line edit." %>
+                <%= submit_tag "Ignore", class: "button small" %>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </section>
+    <% else %>
+      <p class="resolved-note">No pending review issues on this receipt line.</p>
+    <% end %>
   </article>
 
   <article class="panel">

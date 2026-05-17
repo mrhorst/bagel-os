@@ -39,10 +39,48 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_select "[data-chart-summary='line_total']"
     assert_select "[data-chart-summary='quantity']"
     assert_select "table.purchase-history-table"
+    assert_select "table.purchase-history-table th", text: "Form"
+    assert_select "table.purchase-history-table th", text: "Line ID", count: 0
+    assert_select "table.purchase-history-table th", text: "Review", count: 0
     assert_select "table.purchase-history-table th", text: "Inner price", count: 0
+    assert_select "table.purchase-history-table .presentation-badge", minimum: 1
+    assert_select "table.purchase-history-table .purchase-actions"
     assert_select "table.purchase-history-table details.purchase-details"
+    assert_select "table.purchase-history-table details.purchase-details dt", text: "Line ID"
     assert_select "a[href='#{import_batch_path(line.import_batch, anchor: "receipt_line_item_#{line.id}")}']", text: "View"
     assert_select "a[href='#{edit_receipt_line_item_path(line)}']", text: "Edit"
+  end
+
+  test "product edit screen separates product review from line review" do
+    product = Product.find_by!(canonical_name: "Tongol Tuna")
+    product.update!(needs_review: true)
+
+    get edit_product_path(product)
+
+    assert_response :success
+    assert_select ".review-summary-band", text: /Product status/
+    assert_select ".review-summary-band", text: /Line review/
+    assert_select "h2", text: "Identity"
+    assert_select "h2", text: "Review decision"
+    assert_select "input[type='submit'][name='mark_reviewed'][value='Save and mark reviewed']"
+
+    patch product_path(product), params: {
+      mark_reviewed: "Save and mark reviewed",
+      product: {
+        canonical_name: product.canonical_name,
+        product_category_id: product.product_category_id,
+        purchase_unit: product.purchase_unit,
+        package_size: product.package_size,
+        unit_of_measure: product.unit_of_measure,
+        standard_unit: product.standard_unit,
+        notes: product.notes,
+        active: "1",
+        needs_review: "1"
+      }
+    }
+
+    assert_redirected_to product_path(product)
+    assert_not product.reload.needs_review?
   end
 
   test "product index paginates large product lists" do

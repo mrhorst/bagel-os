@@ -27,16 +27,25 @@ class ProductsController < ApplicationController
   end
 
   def edit
-    @product = Product.find(params[:id])
+    @product = Product.includes(:product_category, :supplier, :product_aliases).find(params[:id])
     @categories = ProductCategory.ordered
+    @receipt_line_count = @product.receipt_line_items.count
+    @pending_line_review_count = @product.receipt_line_items.needs_review.count
+    @alias_count = @product.product_aliases.count
   end
 
   def update
     @product = Product.find(params[:id])
-    if @product.update(product_params)
+    @product.assign_attributes(product_params)
+    @product.needs_review = false if params[:mark_reviewed].present?
+
+    if @product.save
       redirect_to @product, notice: "Product updated."
     else
       @categories = ProductCategory.ordered
+      @receipt_line_count = @product.receipt_line_items.count
+      @pending_line_review_count = @product.receipt_line_items.needs_review.count
+      @alias_count = @product.product_aliases.count
       render :edit, status: :unprocessable_entity
     end
   end

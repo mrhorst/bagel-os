@@ -1,54 +1,136 @@
 <% content_for :title, "Edit #{@product.canonical_name}" %>
 
-<section class="page-heading">
+<section class="page-heading product-edit-heading">
   <div>
     <h1>Edit product</h1>
-    <p>Use this screen to clean up canonical names, categories, and review status.</p>
+    <p><%= @product.canonical_name %> · <%= @product.supplier.name %></p>
   </div>
+  <%= link_to "Back to product", @product, class: "button" %>
 </section>
 
-<article class="panel narrow">
-  <%= form_with model: @product, class: "stack" do |form| %>
-    <% if @product.errors.any? %>
-      <div class="flash flash-alert"><%= @product.errors.full_messages.to_sentence %></div>
-    <% end %>
+<section class="product-edit-page">
+  <section class="review-summary-band" aria-label="Product review summary">
+    <article>
+      <span>Product status</span>
+      <strong><%= @product.needs_review? ? "Needs review" : "Reviewed" %></strong>
+      <small>Name, category, and default units</small>
+    </article>
+    <article>
+      <span>Line review</span>
+      <strong><%= pluralize(@pending_line_review_count, "pending line") %></strong>
+      <small>Specific receipt rows handled from purchase history</small>
+    </article>
+    <article>
+      <span>Receipt names</span>
+      <strong><%= @alias_count %></strong>
+      <small><%= pluralize(@receipt_line_count, "receipt line") %> linked here</small>
+    </article>
+  </section>
 
-    <div>
-      <%= form.label :canonical_name %>
-      <%= form.text_field :canonical_name, required: true %>
-    </div>
-    <div>
-      <%= form.label :product_category_id, "Category" %>
-      <%= form.collection_select :product_category_id, @categories, :id, :name, include_blank: "Missing category" %>
-    </div>
-    <div class="form-grid">
-      <div>
-        <%= form.label :purchase_unit %>
-        <%= form.text_field :purchase_unit %>
-      </div>
-      <div>
-        <%= form.label :package_size %>
-        <%= form.number_field :package_size, step: "0.0001" %>
-      </div>
-      <div>
-        <%= form.label :unit_of_measure %>
-        <%= form.text_field :unit_of_measure %>
-      </div>
-      <div>
-        <%= form.label :standard_unit %>
-        <%= form.text_field :standard_unit %>
-      </div>
-    </div>
-    <div>
-      <%= form.label :notes %>
-      <%= form.text_area :notes, rows: 4 %>
-    </div>
-    <label class="check"><%= form.check_box :active %> Active</label>
-    <label class="check"><%= form.check_box :needs_review %> Needs review</label>
-
-    <div class="actions">
-      <%= form.submit "Save product", class: "button primary" %>
-      <%= link_to "Cancel", @product, class: "button" %>
+  <% if @pending_line_review_count.positive? %>
+    <div class="review-callout product-edit-callout">
+      <strong>Product review and line review are separate.</strong>
+      <p>You can mark this product reviewed after the name/category look right. The remaining receipt-line issue still needs to be handled from purchase history.</p>
     </div>
   <% end %>
-</article>
+
+  <%= form_with model: @product, class: "stack product-edit-form" do |form| %>
+    <article class="panel product-edit-panel">
+      <% if @product.errors.any? %>
+        <div class="flash flash-alert"><%= @product.errors.full_messages.to_sentence %></div>
+      <% end %>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <h2>Identity</h2>
+          <p>What this product should be called and grouped as.</p>
+        </div>
+        <div>
+          <%= form.label :canonical_name, "Product name" %>
+          <%= form.text_field :canonical_name, required: true, autocomplete: "off" %>
+        </div>
+        <div>
+          <%= form.label :product_category_id, "Category" %>
+          <%= form.collection_select :product_category_id, @categories, :id, :name, include_blank: "Missing category" %>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <h2>Default units</h2>
+          <p>Only fill these when they are true for the product overall. Case-pack details belong on receipt lines.</p>
+        </div>
+        <div class="form-grid">
+          <div>
+            <%= form.label :purchase_unit, "Default purchase form" %>
+            <%= form.text_field :purchase_unit, placeholder: "unit, case, bag" %>
+          </div>
+          <div>
+            <%= form.label :package_size %>
+            <%= form.number_field :package_size, step: "0.0001", placeholder: "5" %>
+          </div>
+          <div>
+            <%= form.label :unit_of_measure, "Package unit" %>
+            <%= form.text_field :unit_of_measure, placeholder: "lb, gal, oz" %>
+          </div>
+          <div>
+            <%= form.label :standard_unit, "Comparable unit" %>
+            <%= form.text_field :standard_unit, placeholder: "lb, gal, each" %>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <h2>Notes</h2>
+          <p>Internal reasoning, aliases, or cleanup context.</p>
+        </div>
+        <%= form.label :notes, "Internal notes" %>
+        <%= form.text_area :notes, rows: 6 %>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <h2>Review decision</h2>
+          <p>Use product review for shared identity. Use line review for individual receipt rows.</p>
+        </div>
+        <div class="check-card-grid">
+          <label class="check-card">
+            <%= form.check_box :active %>
+            <span>
+              <strong>Active product</strong>
+              <small>Keep this product visible in purchasing and inventory.</small>
+            </span>
+          </label>
+          <label class="check-card">
+            <%= form.check_box :needs_review %>
+            <span>
+              <strong>Needs product review</strong>
+              <small>Name, category, or default units still need a human decision.</small>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <% if @product.product_aliases.any? %>
+        <section class="form-section">
+          <div class="section-heading">
+            <h2>Receipt names</h2>
+            <p>Raw names currently linked to this product.</p>
+          </div>
+          <ul class="alias-chip-list">
+            <% @product.product_aliases.order(:raw_name).limit(10).each do |product_alias| %>
+              <li><%= product_alias.raw_name %></li>
+            <% end %>
+          </ul>
+        </section>
+      <% end %>
+
+      <div class="actions product-edit-actions">
+        <%= form.submit "Save product", class: "button primary" %>
+        <%= form.submit "Save and mark reviewed", name: "mark_reviewed", class: "button" %>
+        <%= link_to "Cancel", @product, class: "button" %>
+      </div>
+    </article>
+  <% end %>
+</section>

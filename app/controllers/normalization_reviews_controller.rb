@@ -28,7 +28,7 @@ class NormalizationReviewsController < ApplicationController
   def resolve
     review = NormalizationReview.find(params[:id])
     review_workflow.update_review_status(review: review, status: params[:review_status], notes: params[:resolution_notes])
-    redirect_to normalization_reviews_path, notice: "Review updated."
+    redirect_back fallback_location: normalization_reviews_path, notice: "Review updated."
   end
 
   private

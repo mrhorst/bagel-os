@@ -24,7 +24,10 @@ module Purchasing
       observation = nil
       ActiveRecord::Base.transaction do
         case_pack.save!
-        observation = recalculator.recalculate_line_item!(line_item)
+        matching_case_purchase_lines(case_pack, line_item).find_each do |matching_line_item|
+          recalculated_observation = recalculator.recalculate_line_item!(matching_line_item)
+          observation = recalculated_observation if matching_line_item.id == line_item.id
+        end
       end
 
       Result.new(line_item: line_item.reload, case_pack: case_pack, observation: observation, success?: true)
@@ -54,6 +57,28 @@ module Purchasing
       return unless line_item.product
 
       line_item.supplier.supplier_product_packs.where(product: line_item.product, raw_sku: [ nil, "" ], raw_name: [ nil, "" ]).order(approved: :desc, updated_at: :desc).first
+    end
+
+    def matching_case_purchase_lines(case_pack, line_item)
+      matching_scope_for(case_pack, line_item)
+        .where(line_type: "item")
+        .where(raw_quantity: [ nil, "", "0" ])
+        .where.not(raw_case_quantity: [ nil, "", "0" ])
+        .order(:receipt_id, :line_number)
+    end
+
+    def matching_scope_for(case_pack, line_item)
+      scope = ReceiptLineItem.where(supplier: line_item.supplier)
+
+      if case_pack.raw_sku.present?
+        scope.where(raw_sku: case_pack.raw_sku)
+      elsif case_pack.raw_name.present?
+        scope.where("LOWER(raw_name) = ?", case_pack.raw_name.downcase)
+      elsif case_pack.product.present?
+        scope.where(product: case_pack.product)
+      else
+        ReceiptLineItem.none
+      end
     end
 
     def build_case_pack(line_item)

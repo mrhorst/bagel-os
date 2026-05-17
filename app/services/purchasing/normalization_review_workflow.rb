@@ -91,10 +91,13 @@ module Purchasing
     end
 
     def update_review_status(review:, status:, notes:)
-      review.update!(
-        status: status.presence_in(NormalizationReview::STATUSES) || "resolved",
-        resolution_notes: notes
-      )
+      ActiveRecord::Base.transaction do
+        review.update!(
+          status: status.presence_in(NormalizationReview::STATUSES) || "resolved",
+          resolution_notes: notes
+        )
+        review.receipt_line_item.update!(needs_review: false) unless review.receipt_line_item.normalization_reviews.pending.exists?
+      end
       review
     end
 

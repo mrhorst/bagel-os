@@ -19,11 +19,11 @@ class ReceiptLineItem < ApplicationRecord
   def display_quantity
     case purchase_kind
     when "mixed"
-      "#{compact_quantity(unit_quantity_value)} units / #{compact_quantity(case_quantity_value)} cases"
+      "#{quantity_label(unit_quantity_value, "unit")} / #{quantity_label(case_quantity_value, "case")}"
     when "unit"
-      "#{compact_quantity(unit_quantity_value)} units"
+      quantity_label(unit_quantity_value, "unit")
     when "case"
-      "#{compact_quantity(case_quantity_value)} cases"
+      quantity_label(case_quantity_value, "case")
     else
       quantity.presence || raw_quantity.presence || raw_case_quantity
     end
@@ -44,6 +44,11 @@ class ReceiptLineItem < ApplicationRecord
 
   def compact_quantity(value)
     value.to_d.to_s("F").sub(/\.?0+\z/, "")
+  end
+
+  def quantity_label(value, unit)
+    quantity = compact_quantity(value)
+    "#{quantity} #{unit.pluralize(value.to_d == 1 ? 1 : 2)}"
   end
 
   def unit_quantity_value
