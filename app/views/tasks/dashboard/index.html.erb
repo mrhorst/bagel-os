@@ -3,44 +3,51 @@
 <%= render "shared/blocks/page_header",
   title: "Tasks",
   subtitle: "Current shift work, grouped by the lists staff can actually see right now.",
+  class_name: "tasks-page-header",
   action: capture {
     concat link_to("History", tasks_history_path, class: "button")
     concat link_to("Manage tasks", tasks_manage_path, class: "button")
     concat link_to("Refresh", tasks_root_path, class: "button")
   } %>
 
-<%= render "shared/blocks/metric_grid",
-  compact: true,
-  columns: "balanced",
-  label: "Task dashboard metrics",
-  metrics: [
-    { label: "Open today", value: @metrics.fetch(:open_today), detail: "Needs attention this shift", priority: @metrics.fetch(:open_today).positive? },
-    { label: "Late today", value: @metrics.fetch(:late_today), detail: "Past due time", tone: (@metrics.fetch(:late_today).positive? ? "warning" : nil) },
-    { label: "Completed today", value: @metrics.fetch(:completed_today), detail: "Closed on this device", tone: "success" },
-    { label: "Open this month", value: @metrics.fetch(:open_this_month), detail: "Monthly work still open" },
-    { label: "Hidden by window", value: @metrics.fetch(:hidden_today), detail: "Appears at list time" }
-  ] %>
-
-<%= render layout: "shared/blocks/section_panel",
-  locals: {
-    title: "Completing as",
-    subtitle: "Staff attribution for this device. This is not a login.",
-    action: link_to("Staff setup", tasks_staff_index_path, class: "button small")
-  } do %>
-  <div class="task-staff-command">
-    <div class="task-staff-current">
-      <span>Current staff member</span>
-      <strong><%= @current_staff_member&.display_name || "Not selected" %></strong>
-    </div>
-    <%= form_with url: tasks_completing_as_path, method: :patch, class: "task-staff-form" do |form| %>
-      <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
-      <%= form.select :staff_member_id, options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id), { include_blank: "Select staff member" }, class: "compact-select" %>
-      <%= form.submit "Use staff member", class: "button primary" %>
-    <% end %>
-  </div>
-<% end %>
+<div class="tasks-metrics">
+  <%= render "shared/blocks/metric_grid",
+    compact: true,
+    columns: "balanced",
+    label: "Task dashboard metrics",
+    metrics: [
+      { label: "Open today", value: @metrics.fetch(:open_today), detail: "Needs attention this shift", priority: @metrics.fetch(:open_today).positive? },
+      { label: "Late today", value: @metrics.fetch(:late_today), detail: "Past due time", tone: (@metrics.fetch(:late_today).positive? ? "warning" : nil) },
+      { label: "Completed today", value: @metrics.fetch(:completed_today), detail: "Closed on this device", tone: "success" },
+      { label: "Open this month", value: @metrics.fetch(:open_this_month), detail: "Monthly work still open" },
+      { label: "Hidden by window", value: @metrics.fetch(:hidden_today), detail: "Appears at list time" }
+    ] %>
+</div>
 
 <div class="tasks-workspace">
+  <div class="tasks-staff-column">
+    <%= render layout: "shared/blocks/section_panel",
+      locals: {
+        title: "Completing as",
+        subtitle: "Staff attribution for this device. This is not a login.",
+        class_name: "tasks-staff-panel",
+        action: link_to("Staff setup", tasks_staff_index_path, class: "button small")
+      } do %>
+      <div class="task-staff-command">
+        <div class="task-staff-current">
+          <span>Current staff member</span>
+          <strong><%= @current_staff_member&.display_name || "Not selected" %></strong>
+        </div>
+        <%= form_with url: tasks_completing_as_path, method: :patch, class: "task-staff-form" do |form| %>
+          <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
+          <%= form.select :staff_member_id, options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id), { include_blank: "Select staff member" }, class: "compact-select" %>
+          <%= form.submit "Use staff member", class: "button primary" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="tasks-now-column">
   <%= render layout: "shared/blocks/section_panel",
     locals: {
       title: "Now",
@@ -124,7 +131,9 @@
     </section>
   <% end %>
   <% end %>
+  </div>
 
+  <div class="tasks-month-column">
   <%= render layout: "shared/blocks/section_panel",
     locals: {
       title: "This month",
@@ -188,4 +197,5 @@
     <p class="empty-state">No monthly tasks are open.</p>
   <% end %>
   <% end %>
+  </div>
 </div>

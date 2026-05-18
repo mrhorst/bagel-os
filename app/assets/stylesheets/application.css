@@ -782,8 +782,88 @@ textarea {
   gap: 8px;
 }
 
-.staff-strip {
-  overflow: visible;
+.task-staff-command {
+  align-items: stretch;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+.task-staff-current {
+  background: #f7faf9;
+  border: 1px solid #d7e5e0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.task-staff-current span,
+.task-staff-current strong {
+  display: block;
+}
+
+.task-staff-current span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.task-staff-current strong {
+  color: #12343f;
+  font-size: 1.05rem;
+  margin-top: 4px;
+}
+
+.task-staff-form {
+  align-items: stretch;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+}
+
+.tasks-workspace {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-areas:
+    "now staff"
+    "now month";
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+}
+
+.tasks-page-header {
+  padding-bottom: 24px;
+  padding-top: 24px;
+}
+
+.tasks-metrics .block-stat-grid-balanced {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tasks-now-column {
+  grid-area: now;
+  min-width: 0;
+}
+
+.tasks-staff-column {
+  grid-area: staff;
+  min-width: 0;
+}
+
+.tasks-month-column {
+  align-self: start;
+  grid-area: month;
+  min-width: 0;
+}
+
+.tasks-staff-panel,
+.tasks-now-column .block-panel,
+.tasks-month-panel {
+  margin-bottom: 0;
+}
+
+.tasks-staff-panel .button {
+  white-space: nowrap;
 }
 
 .task-row-list,
@@ -1319,6 +1399,18 @@ tr:target {
     grid-template-columns: 1fr;
   }
 
+  .tasks-workspace {
+    grid-template-areas:
+      "staff"
+      "now"
+      "month";
+    grid-template-columns: 1fr;
+  }
+
+  .tasks-metrics .block-stat-grid-balanced {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .task-row {
     align-items: stretch;
   }
@@ -1391,6 +1483,10 @@ tr:target {
 
   .tasks-dashboard-metrics {
     display: none;
+  }
+
+  .tasks-metrics .block-stat-grid-balanced {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .page-heading p {

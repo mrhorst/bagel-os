@@ -778,15 +778,15 @@
   }
 
   .task-staff-command {
-    align-items: center;
+    align-items: stretch;
     display: grid;
     gap: 12px;
-    grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .task-staff-current {
-    background: #f8fafc;
-    border: 1px solid #dfe7ee;
+    background: #f7faf9;
+    border: 1px solid #d7e5e0;
     border-radius: var(--radius-card);
     padding: 12px;
   }
@@ -810,22 +810,62 @@
   }
 
   .task-staff-form {
-    align-items: center;
+    align-items: stretch;
     display: grid;
     gap: 8px;
-    grid-template-columns: minmax(180px, 1fr) max-content;
+    grid-template-columns: 1fr;
   }
 
   .tasks-workspace {
     align-items: start;
     display: grid;
     gap: 14px;
-    grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.75fr);
+    grid-template-areas:
+      "now staff"
+      "now month";
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
   }
 
+  .tasks-page-header {
+    padding-bottom: 24px;
+    padding-top: 24px;
+  }
+
+  .tasks-metrics .block-stat-grid-balanced {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .tasks-now-column {
+    grid-area: now;
+    min-width: 0;
+  }
+
+  .tasks-staff-column {
+    grid-area: staff;
+    min-width: 0;
+  }
+
+  .tasks-month-column {
+    grid-area: month;
+    min-width: 0;
+  }
+
+  .tasks-month-column {
+    align-self: start;
+  }
+
+  .tasks-staff-panel,
+  .tasks-now-column .block-panel,
   .tasks-month-panel {
-    position: sticky;
-    top: 92px;
+    margin-bottom: 0;
+  }
+
+  .tasks-staff-panel .block-panel-header {
+    align-items: start;
+  }
+
+  .tasks-staff-panel .button {
+    white-space: nowrap;
   }
 
   .task-list-stack,
@@ -884,7 +924,7 @@
     border-radius: var(--radius-card);
     display: grid;
     gap: 12px;
-    grid-template-columns: 42px minmax(0, 1fr) max-content;
+    grid-template-columns: 42px minmax(0, 1fr) minmax(132px, max-content);
     min-height: 82px;
     padding: 12px;
   }
@@ -906,7 +946,7 @@
 
   .task-row-monthly .task-card-actions {
     grid-column: 2;
-    justify-content: start;
+    justify-content: stretch;
   }
 
   .task-row-check {
@@ -2031,11 +2071,15 @@
     }
 
     .tasks-workspace {
+      grid-template-areas:
+        "staff"
+        "now"
+        "month";
       grid-template-columns: 1fr;
     }
 
-    .tasks-month-panel {
-      position: static;
+    .tasks-metrics .block-stat-grid-balanced {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .product-summary-panel,
@@ -2180,6 +2224,10 @@
       grid-template-columns: 1fr;
     }
 
+    .tasks-metrics .block-stat-grid-balanced {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .sidebar-brand {
       padding: 0;
     }
@@ -2316,6 +2364,10 @@
 
     .tasks-workspace,
     .dashboard-layout {
+      grid-template-areas:
+        "staff"
+        "now"
+        "month";
       grid-template-columns: 1fr;
     }
 
@@ -2426,7 +2478,10 @@
     .block-page-header,
     .block-panel,
     .block-stat-grid,
-    .tasks-workspace {
+    .tasks-workspace,
+    .tasks-now-column,
+    .tasks-staff-column,
+    .tasks-month-column {
       max-width: 358px;
       width: min(100%, 358px);
     }
