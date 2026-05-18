@@ -19,19 +19,20 @@ class OrderGuidesController < ApplicationController
   ].freeze
 
   def index
-    @order_guides = OrderGuide.ordered.includes(order_guide_memberships: { inventory_item: [ :inventory_section, :product ] })
+    @order_guides = OrderGuide.ordered.includes(:order_guide_sections, order_guide_memberships: [ :order_guide_section, { inventory_item: [ :inventory_section, :product ] } ])
     @missing_products = Purchasing::InventoryGapAnalyzer.new.missing_products(limit: 40)
   end
 
   def show
     @order_guide = OrderGuide
-      .includes(order_guide_memberships: { inventory_item: [ :inventory_section, :product, :preferred_supplier ] })
+      .includes(:order_guide_sections, order_guide_memberships: [ :order_guide_section, { inventory_item: [ :inventory_section, :product, :preferred_supplier ] } ])
       .find(params[:id])
     @memberships = @order_guide.order_guide_memberships
       .active
       .joins(:inventory_item)
-      .includes(inventory_item: [ :inventory_section, :product, :preferred_supplier ])
+      .includes(:order_guide_section, inventory_item: [ :inventory_section, :product, :preferred_supplier ])
       .order(:position, "inventory_items.name")
+    @sections = @order_guide.active_sections
     active_item_ids = @memberships.map(&:inventory_item_id)
     @available_inventory_items = InventoryItem.active
       .where.not(id: active_item_ids)

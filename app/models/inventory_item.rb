@@ -86,12 +86,27 @@ class InventoryItem < ApplicationRecord
     end
   end
 
-  def add_to_order_guide!(order_guide, primary: false, position: nil, notes: nil)
+  def add_to_order_guide!(
+    order_guide,
+    primary: false,
+    position: nil,
+    notes: nil,
+    order_guide_section: nil,
+    tracking_mode: nil,
+    expected_usage_quantity: nil,
+    buffer_quantity: nil,
+    preferred_supplier: nil
+  )
     membership = order_guide_memberships.find_or_initialize_by(order_guide: order_guide)
     membership.active = true
     membership.primary_guide = primary
     membership.position = position if position.present? || membership.position.blank?
     membership.notes = notes if notes.present?
+    membership.order_guide_section = order_guide_section if order_guide_section.present?
+    membership.tracking_mode = tracking_mode if tracking_mode.present?
+    membership.expected_usage_quantity = expected_usage_quantity if !expected_usage_quantity.nil?
+    membership.buffer_quantity = buffer_quantity if !buffer_quantity.nil?
+    membership.preferred_supplier = preferred_supplier if preferred_supplier.present?
     membership.save!
     membership
   end

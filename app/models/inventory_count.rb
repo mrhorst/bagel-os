@@ -2,6 +2,7 @@ class InventoryCount < ApplicationRecord
   STATUSES = %w[draft completed].freeze
 
   belongs_to :inventory_section, optional: true
+  belongs_to :order_guide, optional: true
   has_many :inventory_count_lines, dependent: :destroy
   has_many :inventory_items, through: :inventory_count_lines
 

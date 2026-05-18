@@ -35,7 +35,7 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     get order_guide_path(guide)
     assert_response :success
     assert_select "h1", text: "Every 2 weeks"
-    assert_select "h2", text: "Guide Items"
+    assert_select "h2", text: "Add Existing Operating Item"
     assert_match "Cream Cheese", response.body
 
     patch order_guide_path(guide), params: { order_guide: { name: "Every other week" } }
@@ -64,13 +64,23 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
 
     get order_guide_path(guide)
     assert_response :success
-    assert_select "select[name='inventory_item_id'] option", text: "Eggs"
+    assert_select "select[name='membership[inventory_item_id]'] option", text: "Eggs"
 
-    post order_guide_memberships_path(guide), params: { inventory_item_id: item.id }
+    post order_guide_memberships_path(guide), params: {
+      membership: {
+        inventory_item_id: item.id,
+        section_name: "Walk-in cooler",
+        tracking_mode: "counted",
+        expected_usage_quantity: "6",
+        buffer_quantity: "2"
+      }
+    }
 
     assert_redirected_to order_guide_path(guide)
     membership = guide.order_guide_memberships.find_by!(inventory_item: item)
     assert membership.active?
+    assert_equal "Walk-in cooler", membership.order_guide_section.name
+    assert_equal BigDecimal("8"), membership.target_after_order
 
     get order_guide_path(guide)
     assert_response :success
@@ -85,13 +95,39 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     get order_guide_path(guide)
     assert_response :success
     assert_no_match(/<strong>Eggs<\/strong>/, response.body)
-    assert_select "select[name='inventory_item_id'] option", text: "Eggs"
+    assert_select "select[name='membership[inventory_item_id]'] option", text: "Eggs"
 
-    post order_guide_memberships_path(guide), params: { inventory_item_id: item.id }
+    post order_guide_memberships_path(guide), params: {
+      membership: {
+        inventory_item_id: item.id,
+        section_name: "Walk-in cooler",
+        tracking_mode: "order_only"
+      }
+    }
 
     assert_redirected_to order_guide_path(guide)
     assert membership.reload.active?
+    assert membership.order_only?
     assert_equal 1, guide.order_guide_memberships.where(inventory_item: item).count
+  end
+
+  test "updates guide membership setup fields inline" do
+    guide = OrderGuide.create!(name: "Weekly")
+    item = InventoryItem.create!(name: "Bacon", key: "bacon")
+    membership = item.add_to_order_guide!(guide, tracking_mode: "counted")
+
+    patch order_guide_membership_path(guide, membership), params: {
+      membership: {
+        section_name: "Freezer",
+        tracking_mode: "counted",
+        expected_usage_quantity: "2",
+        buffer_quantity: "1"
+      }
+    }
+
+    assert_redirected_to order_guide_path(guide)
+    assert_equal "Freezer", membership.reload.order_guide_section.name
+    assert_equal BigDecimal("3"), membership.target_after_order
   end
 
   test "removing primary item from guide leaves item without primary guide" do

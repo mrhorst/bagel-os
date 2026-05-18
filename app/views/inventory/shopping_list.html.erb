@@ -1,55 +1,135 @@
-<% content_for :title, "Shopping List" %>
+<% content_for :title, @order_guide ? "#{@order_guide.name} Buy List" : "Shopping List" %>
 
 <div class="page-heading">
   <div>
-    <h1>Shopping List</h1>
-    <p>Generated from counted on-hand quantities and par levels. Blank par levels are left alone.</p>
+    <h1><%= @order_guide ? "#{@order_guide.name} Buy List" : "Shopping List" %></h1>
+    <p>Guide-specific recommendations use expected usage plus buffer, minus the latest count.</p>
   </div>
-  <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
+  <div class="actions">
+    <% if @order_guide %>
+      <%= link_to "Start count", new_inventory_count_path(order_guide_id: @order_guide.id), class: "button primary" %>
+      <%= link_to "Guide setup", order_guide_path(@order_guide), class: "button" %>
+    <% else %>
+      <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
+    <% end %>
+  </div>
 </div>
 
-<section class="panel">
-  <h2>Buy Now</h2>
-  <% if @buy_now.any? %>
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Section</th>
-          <th class="numeric">On hand</th>
-          <th class="numeric">Par</th>
-          <th class="numeric">Buy</th>
-          <th>Receipt product</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @buy_now.each do |row| %>
-          <% item = row.inventory_item %>
-          <tr>
-            <td><%= item.name %></td>
-            <td><%= item.inventory_section&.name || "Unsectioned" %></td>
-            <td class="numeric"><%= number_with_precision(row.quantity_on_hand, precision: 2, strip_insignificant_zeros: true) %></td>
-            <td class="numeric"><%= number_with_precision(item.current_par, precision: 2, strip_insignificant_zeros: true) %></td>
-            <td class="numeric"><strong><%= number_with_precision(row.buy_quantity, precision: 2, strip_insignificant_zeros: true) %></strong></td>
-            <td><%= item.product ? link_to(item.product.canonical_name, product_path(item.product)) : "Unlinked" %></td>
-          </tr>
+<% if @order_guide.blank? %>
+  <section class="panel">
+    <h2>Choose Guide</h2>
+    <% if @order_guides.any? %>
+      <div class="action-grid">
+        <% @order_guides.each do |guide| %>
+          <%= link_to inventory_shopping_list_path(order_guide_id: guide.id), class: "action-card" do %>
+            <strong><%= guide.name %></strong>
+            <span><%= pluralize(guide.active_item_count, "active row") %></span>
+          <% end %>
         <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p class="empty-state">No buy-now rows yet. Add par levels and save counts first.</p>
-  <% end %>
-</section>
+      </div>
+    <% else %>
+      <p class="empty-state">Create an order guide before generating a shopping list.</p>
+    <% end %>
+  </section>
+<% else %>
+  <section class="panel">
+    <h2>Buy Now</h2>
+    <% if @buy_now.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Section</th>
+            <th class="numeric">On hand</th>
+            <th class="numeric">Target</th>
+            <th class="numeric">Buy</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @buy_now.each do |row| %>
+            <% item = row.inventory_item %>
+            <tr>
+              <td><%= item.name %></td>
+              <td><%= row.membership.order_guide_section&.name || "Unsectioned" %></td>
+              <td class="numeric"><%= compact_decimal(row.quantity_on_hand) %></td>
+              <td class="numeric"><%= compact_decimal(row.target_after_order) %></td>
+              <td class="numeric"><strong><%= compact_decimal(row.buy_quantity) %></strong></td>
+              <td><%= recommendation_status_badge(row) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-state">No buy-now rows for this guide after the latest saved count.</p>
+    <% end %>
+  </section>
 
-<section class="panel">
-  <h2>Not Counted Yet</h2>
-  <% if @not_counted.any? %>
-    <div class="pill-list">
-      <% @not_counted.first(80).each do |row| %>
-        <span class="badge"><%= row.inventory_item.name %></span>
+  <section class="grid two">
+    <div class="panel">
+      <h2>Setup Needed</h2>
+      <% if @setup_needed.any? %>
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Section</th>
+              <th>Needed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @setup_needed.each do |row| %>
+              <tr>
+                <td><%= row.inventory_item.name %></td>
+                <td><%= row.membership.order_guide_section&.name || "Unsectioned" %></td>
+                <td>Expected usage and buffer</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <p class="field-hint"><%= link_to "Finish guide setup", order_guide_path(@order_guide) %></p>
+      <% else %>
+        <p class="empty-state">Every counted row has usage and buffer setup.</p>
       <% end %>
     </div>
-  <% else %>
-    <p class="empty-state">Every active inventory item has at least one saved count.</p>
-  <% end %>
-</section>
+
+    <div class="panel">
+      <h2>Not Counted Yet</h2>
+      <% if @not_counted.any? %>
+        <div class="pill-list">
+          <% @not_counted.first(80).each do |row| %>
+            <span class="badge"><%= row.inventory_item.name %></span>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="empty-state">Every counted row on this guide has a saved count.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Order Only</h2>
+    <% if @order_only.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Section</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @order_only.each do |row| %>
+            <tr>
+              <td><%= row.inventory_item.name %></td>
+              <td><%= row.membership.order_guide_section&.name || "Unsectioned" %></td>
+              <td><%= row.membership.notes.presence || "Manual ordering row" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-state">No order-only rows on this guide.</p>
+    <% end %>
+  </section>
+<% end %>

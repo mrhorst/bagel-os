@@ -226,7 +226,8 @@ These tables are intentionally simple first:
 - blank count rows are skipped
 - quantities are stored as entered
 - no unit conversion is guessed
-- buy-list recommendations only work when an inventory item has a par level and a latest count
+- guide-scoped counts should store the `order_guide_id` on the count and the `order_guide_membership_id` on each line
+- new guide buy-list recommendations use membership-level expected usage plus buffer, not the legacy item-level par fields
 
 ## OrderGuideImport
 
@@ -258,6 +259,12 @@ Important fields:
 
 Guides are generic operating lists. They are intentionally separate from legacy imported files so staff can create useful working guides for any cadence or category. Archiving a guide sets it inactive instead of deleting it.
 
+## OrderGuideSection
+
+Represents a station/section inside one specific guide, such as `Dry storage`, `Front bar`, `Walk-in freezer`, or `Back fridge`.
+
+Sections are guide-specific because the walking path can differ between a weekly guide, monthly guide, cleaning guide, and equipment guide.
+
 ## OrderGuideMembership
 
 Joins one `InventoryItem` to one `OrderGuide`.
@@ -266,15 +273,23 @@ Important fields:
 
 - `order_guide_id`
 - `inventory_item_id`
+- `order_guide_section_id`
 - `preferred_supplier_id`
 - `primary_guide`
 - `active`
 - `position`
+- `tracking_mode`
+- `expected_usage_quantity`
+- `buffer_quantity`
 - `par`
 - `reorder_point`
 - `notes`
 
-Memberships are active/inactive so an item can be removed from a staff workflow without destroying traceability. `primary_guide` supports simple dropdown-driven workflows while preserving the many-guide design for future purchasing screens. Guide-specific fields such as par, reorder point, preferred supplier, and notes live here because those values may differ by guide.
+Memberships are active/inactive so an item can be removed from a staff workflow without destroying traceability. `primary_guide` supports simple dropdown-driven workflows while preserving the many-guide design for future purchasing screens.
+
+`tracking_mode` is either `counted` or `order_only`. Counted rows appear in guide counts and use `expected_usage_quantity + buffer_quantity` as the target after order. Order-only rows stay on the guide for manual purchasing but do not appear on count screens.
+
+Legacy `par` and `reorder_point` values are preserved for traceability and older screens. New guide-specific buy lists should use expected usage plus buffer.
 
 ## OrderGuideItem
 

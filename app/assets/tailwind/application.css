@@ -564,6 +564,10 @@
     color: #64748b;
   }
 
+  .guide-workflow-card .button-row {
+    margin-top: 12px;
+  }
+
   .filters,
   .stack {
     display: flex;
@@ -632,6 +636,29 @@
   .inline-guide-form .compact-input,
   .inline-guide-form .compact-select {
     min-width: 130px;
+  }
+
+  .guide-gap-form,
+  .guide-row-form {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .guide-row-form {
+    min-width: 360px;
+  }
+
+  .guide-setup-form {
+    border-top: 1px solid #dfe7ee;
+    margin-top: 18px;
+    padding-top: 18px;
+  }
+
+  .numeric-input {
+    max-width: 96px;
+    text-align: right;
   }
 
   .form-grid {

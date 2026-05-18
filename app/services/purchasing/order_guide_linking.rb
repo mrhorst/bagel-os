@@ -138,10 +138,12 @@ module Purchasing
 
     def apply_order_guide_membership!(inventory_item, row)
       guide = OrderGuide.named!(OrderGuide.name_for_guide_type(row[:guide_type]))
+      section = guide.section_named!(row[:section_name])
       inventory_item.add_to_order_guide!(
         guide,
         primary: inventory_item.primary_order_guide.blank?,
-        position: row[:position]
+        position: row[:position],
+        order_guide_section: section
       )
     end
 

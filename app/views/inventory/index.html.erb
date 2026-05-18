@@ -38,33 +38,28 @@
   <div class="panel">
     <div class="panel-heading">
       <div>
-        <h2>Next Buy List</h2>
-        <p class="muted">Based on manual counts and par levels when available.</p>
+        <h2>Guide Workflows</h2>
+        <p class="muted">Start with the guide you are counting or ordering from.</p>
       </div>
-      <%= link_to "View all", inventory_shopping_list_path, class: "button" %>
+      <%= link_to "All guides", order_guides_path, class: "button" %>
     </div>
 
-    <% if @buy_now.any? %>
-      <table>
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th class="numeric">On hand</th>
-            <th class="numeric">Buy</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @buy_now.each do |row| %>
-            <tr>
-              <td><%= row.inventory_item.name %></td>
-              <td class="numeric"><%= number_with_precision(row.quantity_on_hand, precision: 2, strip_insignificant_zeros: true) %></td>
-              <td class="numeric"><%= number_with_precision(row.buy_quantity, precision: 2, strip_insignificant_zeros: true) %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+    <% if @order_guides.any? %>
+      <div class="action-grid">
+        <% @order_guides.each do |guide| %>
+          <section class="action-card guide-workflow-card">
+            <strong><%= guide.name %></strong>
+            <span><%= pluralize(guide.active_item_count, "active row") %></span>
+            <div class="button-row">
+              <%= link_to "Count", new_inventory_count_path(order_guide_id: guide.id), class: "button small primary" %>
+              <%= link_to "Buy list", inventory_shopping_list_path(order_guide_id: guide.id), class: "button small" %>
+              <%= link_to "Setup", order_guide_path(guide), class: "button small" %>
+            </div>
+          </section>
+        <% end %>
+      </div>
     <% else %>
-      <p class="empty-state">No buy recommendations yet. Add par levels and save a count to generate the list.</p>
+      <p class="empty-state">Create an order guide before starting counts or buy lists.</p>
     <% end %>
   </div>
 

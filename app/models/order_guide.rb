@@ -1,6 +1,7 @@
 class OrderGuide < ApplicationRecord
   has_many :order_guide_memberships, dependent: :restrict_with_error
   has_many :inventory_items, through: :order_guide_memberships
+  has_many :order_guide_sections, dependent: :destroy
 
   before_validation :assign_key
 
@@ -41,8 +42,22 @@ class OrderGuide < ApplicationRecord
     order_guide_memberships.active
   end
 
+  def active_sections
+    order_guide_sections.active.ordered
+  end
+
   def active_item_count
     active_memberships.count
+  end
+
+  def section_named!(name)
+    section_name = name.presence || "Unsectioned"
+    section = order_guide_sections.find_or_initialize_by(key: OrderGuideSection.key_for(section_name))
+    section.name = section_name
+    section.position = next_section_position if section.new_record? || section.position.blank? || section.position.zero?
+    section.active = true
+    section.save!
+    section
   end
 
   private
@@ -53,5 +68,9 @@ class OrderGuide < ApplicationRecord
 
   def self.next_position
     maximum(:position).to_i + 1
+  end
+
+  def next_section_position
+    order_guide_sections.maximum(:position).to_i + 1
   end
 end

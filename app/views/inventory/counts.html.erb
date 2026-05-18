@@ -14,6 +14,7 @@
       <thead>
         <tr>
           <th>Counted at</th>
+          <th>Guide</th>
           <th>Status</th>
           <th class="numeric">Lines</th>
           <th>Notes</th>
@@ -23,6 +24,13 @@
         <% @counts.each do |count| %>
           <tr>
             <td><%= count.counted_at.to_fs(:long) %></td>
+            <td>
+              <% if count.order_guide.present? %>
+                <%= link_to count.order_guide.name, order_guide_path(count.order_guide) %>
+              <% else %>
+                <span class="muted">Legacy count</span>
+              <% end %>
+            </td>
             <td><span class="badge"><%= count.status.humanize %></span></td>
             <td class="numeric"><%= count.inventory_count_lines.size %></td>
             <td><%= count.notes.presence || "n/a" %></td>

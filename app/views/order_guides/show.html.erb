@@ -3,103 +3,108 @@
 <div class="page-heading">
   <div>
     <h1><%= @order_guide.name %></h1>
-    <p>Inventory items assigned to this order guide.</p>
+    <p>Count, order, and setup items for this operating guide.</p>
   </div>
   <div class="actions">
+    <%= link_to "Start count", new_inventory_count_path(order_guide_id: @order_guide.id), class: "button primary" %>
+    <%= link_to "Buy list", inventory_shopping_list_path(order_guide_id: @order_guide.id), class: "button" %>
     <%= link_to "All guides", order_guides_path, class: "button" %>
-    <%= link_to "Inventory items", inventory_items_path, class: "button primary" %>
   </div>
 </div>
 
 <section class="metric-grid">
   <div class="metric">
-    <span>Active items</span>
+    <span>Active rows</span>
     <strong><%= @memberships.size %></strong>
   </div>
   <div class="metric">
-    <span>Primary assignments</span>
-    <strong><%= @memberships.count(&:primary_guide?) %></strong>
+    <span>Counted rows</span>
+    <strong><%= @memberships.count(&:counted?) %></strong>
   </div>
   <div class="metric">
-    <span>Status</span>
-    <strong><%= @order_guide.active? ? "Active" : "Archived" %></strong>
+    <span>Order-only rows</span>
+    <strong><%= @memberships.count(&:order_only?) %></strong>
+  </div>
+  <div class="metric">
+    <span>Setup needed</span>
+    <strong><%= @memberships.count(&:setup_needed?) %></strong>
   </div>
 </section>
 
 <section class="panel">
   <div class="panel-heading">
     <div>
-      <h2>Guide Items</h2>
-      <p class="muted">Add existing inventory items here, or change an item's primary guide from the Master Inventory page.</p>
+      <h2>Add Existing Operating Item</h2>
+      <p class="muted">Use this when an item already exists in Master Inventory and should join this guide.</p>
     </div>
   </div>
 
   <% if @available_inventory_items.any? %>
-    <%= form_with url: order_guide_memberships_path(@order_guide), method: :post, class: "inline-guide-form guide-add-form" do |form| %>
-      <%= form.label :inventory_item_id, "Add item" %>
-      <%= form.collection_select :inventory_item_id,
-        @available_inventory_items,
-        :id,
-        :name,
-        { prompt: "Choose inventory item" },
-        { class: "compact-select" } %>
-      <%= form.submit "Add to guide", class: "button small" %>
+    <%= form_with url: order_guide_memberships_path(@order_guide), scope: :membership, class: "stacked-form" do |form| %>
+      <div class="form-grid">
+        <div class="field">
+          <%= form.label :inventory_item_id, "Item" %>
+          <%= form.collection_select :inventory_item_id, @available_inventory_items, :id, :name, { prompt: "Choose inventory item" } %>
+        </div>
+        <div class="field">
+          <%= form.label :section_name, "Guide section" %>
+          <%= form.text_field :section_name, placeholder: "Dry storage, freezer, front bar" %>
+        </div>
+        <div class="field">
+          <%= form.label :tracking_mode, "Tracking" %>
+          <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]] %>
+        </div>
+        <div class="field">
+          <%= form.label :expected_usage_quantity, "Expected usage" %>
+          <%= form.number_field :expected_usage_quantity, min: 0, step: "any", inputmode: "decimal" %>
+        </div>
+        <div class="field">
+          <%= form.label :buffer_quantity, "Buffer" %>
+          <%= form.number_field :buffer_quantity, min: 0, step: "any", inputmode: "decimal" %>
+        </div>
+        <div class="field">
+          <%= form.label :notes, "Guide note" %>
+          <%= form.text_field :notes, placeholder: "Optional staff note" %>
+        </div>
+      </div>
+      <%= form.submit "Add to guide", class: "button primary" %>
     <% end %>
   <% else %>
     <p class="field-hint">Every active inventory item is already on this guide.</p>
   <% end %>
-
-  <% if @memberships.any? %>
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Section</th>
-          <th>Receipt product</th>
-          <th>Pack / count note</th>
-          <th>Supplier</th>
-          <th>Status</th>
-          <th>Remove</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @memberships.each do |membership| %>
-          <% item = membership.inventory_item %>
-          <tr>
-            <td>
-              <strong><%= item.name %></strong>
-              <% if membership.primary_guide? %>
-                <span class="badge badge-ok badge-compact">Primary</span>
-              <% end %>
-            </td>
-            <td><%= item.inventory_section&.name || "Unsectioned" %></td>
-            <td>
-              <% if item.product.present? %>
-                <%= link_to item.product.canonical_name, product_path(item.product) %>
-              <% else %>
-                <span class="muted">Unlinked</span>
-              <% end %>
-            </td>
-            <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
-            <td><%= item.preferred_supplier&.name || item.product&.supplier&.name || "n/a" %></td>
-            <td>
-              <% if item.needs_review? %>
-                <span class="badge badge-warning">Review</span>
-              <% else %>
-                <span class="badge badge-ok">Ready</span>
-              <% end %>
-            </td>
-            <td>
-              <%= button_to "Remove",
-                order_guide_membership_path(@order_guide, membership),
-                method: :delete,
-                class: "button small" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p class="empty-state">No inventory items are assigned to this guide yet. Add an existing inventory item above or assign a primary guide from Master Inventory.</p>
-  <% end %>
 </section>
+
+<% grouped_memberships = @memberships.group_by(&:order_guide_section) %>
+<% @sections.each do |section| %>
+  <% section_memberships = grouped_memberships.delete(section) || [] %>
+  <% next if section_memberships.empty? %>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2><%= section.name %></h2>
+        <p class="muted"><%= pluralize(section_memberships.size, "guide row") %></p>
+      </div>
+    </div>
+    <%= render "order_guides/guide_memberships_table", order_guide: @order_guide, memberships: section_memberships %>
+  </section>
+<% end %>
+
+<% unsectioned_memberships = grouped_memberships.values.flatten %>
+<% if unsectioned_memberships.any? %>
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Unsectioned</h2>
+        <p class="muted">Rows that still need a guide section.</p>
+      </div>
+    </div>
+    <%= render "order_guides/guide_memberships_table", order_guide: @order_guide, memberships: unsectioned_memberships %>
+  </section>
+<% end %>
+
+<% if @memberships.empty? %>
+  <section class="panel">
+    <p class="empty-state">No operating items are assigned to this guide yet. Add an existing inventory item above, or add a receipt product from its product page.</p>
+  </section>
+<% end %>

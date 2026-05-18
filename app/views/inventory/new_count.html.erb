@@ -1,40 +1,88 @@
-<% content_for :title, "New Inventory Count" %>
+<% content_for :title, @order_guide ? "Count #{@order_guide.name}" : "New Inventory Count" %>
 
 <div class="page-heading">
   <div>
-    <h1>New Inventory Count</h1>
-    <p>Enter only what you counted. Blank rows are skipped.</p>
+    <h1><%= @order_guide ? "Count #{@order_guide.name}" : "New Inventory Count" %></h1>
+    <p>Choose a guide, then walk its sections and enter only what you counted.</p>
   </div>
   <%= link_to "Count history", inventory_counts_path, class: "button" %>
 </div>
 
-<%= form_with url: inventory_counts_path, method: :post, class: "count-form" do %>
+<% if @order_guide.blank? %>
   <section class="panel">
-    <label for="notes"><strong>Count notes</strong></label>
-    <%= text_area_tag :notes, nil, rows: 2, placeholder: "Optional notes about this count" %>
-  </section>
-
-  <% @sections.each do |section| %>
-    <% items = section.inventory_items.select(&:active?) %>
-    <% next if items.empty? %>
-
-    <section class="panel">
-      <h2><%= section.name %></h2>
-      <div class="count-grid">
-        <% items.sort_by { |item| [item.position, item.name] }.each do |item| %>
-          <label class="count-row">
-            <span>
-              <strong><%= item.name %></strong>
-              <small><%= item.pack_size.presence || item.count_unit.presence || item.linked_product_name %></small>
-            </span>
-            <%= number_field_tag "counts[#{item.id}]", nil, min: 0, step: "any", inputmode: "decimal" %>
-          </label>
+    <h2>Choose Guide</h2>
+    <% if @order_guides.any? %>
+      <div class="action-grid">
+        <% @order_guides.each do |guide| %>
+          <%= link_to new_inventory_count_path(order_guide_id: guide.id), class: "action-card" do %>
+            <strong><%= guide.name %></strong>
+            <span><%= pluralize(guide.order_guide_memberships.active.counted.count, "countable row") %></span>
+          <% end %>
         <% end %>
       </div>
+    <% else %>
+      <p class="empty-state">Create an order guide before starting an inventory count.</p>
+      <%= link_to "Create order guide", order_guides_path, class: "button primary" %>
+    <% end %>
+  </section>
+<% else %>
+  <%= form_with url: inventory_counts_path, method: :post, class: "count-form" do %>
+    <%= hidden_field_tag :order_guide_id, @order_guide.id %>
+    <section class="panel">
+      <label for="notes"><strong>Count notes</strong></label>
+      <%= text_area_tag :notes, nil, rows: 2, placeholder: "Optional notes about this count" %>
     </section>
-  <% end %>
 
-  <div class="sticky-actions">
-    <%= submit_tag "Save count", class: "primary" %>
-  </div>
+    <% grouped_memberships = @memberships.group_by(&:order_guide_section) %>
+    <% @order_guide.active_sections.each do |section| %>
+      <% memberships = grouped_memberships.delete(section) || [] %>
+      <% next if memberships.empty? %>
+
+      <section class="panel">
+        <h2><%= section.name %></h2>
+        <div class="count-grid">
+          <% memberships.each do |membership| %>
+            <% item = membership.inventory_item %>
+            <label class="count-row">
+              <span>
+                <strong><%= item.name %></strong>
+                <small><%= item.pack_size.presence || item.count_unit.presence || item.linked_product_name %></small>
+              </span>
+              <%= number_field_tag "counts[#{membership.id}]", nil, min: 0, step: "any", inputmode: "decimal" %>
+            </label>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% unsectioned_memberships = grouped_memberships.values.flatten %>
+    <% if unsectioned_memberships.any? %>
+      <section class="panel">
+        <h2>Unsectioned</h2>
+        <div class="count-grid">
+          <% unsectioned_memberships.each do |membership| %>
+            <% item = membership.inventory_item %>
+            <label class="count-row">
+              <span>
+                <strong><%= item.name %></strong>
+                <small><%= item.pack_size.presence || item.count_unit.presence || item.linked_product_name %></small>
+              </span>
+              <%= number_field_tag "counts[#{membership.id}]", nil, min: 0, step: "any", inputmode: "decimal" %>
+            </label>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @memberships.empty? %>
+      <section class="panel">
+        <p class="empty-state">This guide has no counted rows yet. Add counted items from the guide setup page.</p>
+        <%= link_to "Open guide setup", order_guide_path(@order_guide), class: "button primary" %>
+      </section>
+    <% else %>
+      <div class="sticky-actions">
+        <%= submit_tag "Save count", class: "primary" %>
+      </div>
+    <% end %>
+  <% end %>
 <% end %>

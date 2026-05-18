@@ -125,6 +125,56 @@
   <% else %>
     <p class="empty-state">No operating inventory item is linked to this product yet.</p>
   <% end %>
+
+  <div class="guide-setup-form">
+    <h3>Add to operating guide</h3>
+    <% if @order_guides.any? %>
+      <%= form_with url: product_order_guide_memberships_path(@product), scope: :membership, class: "stacked-form" do |form| %>
+        <div class="form-grid">
+          <div class="field">
+            <%= form.label :order_guide_id, "Guide" %>
+            <%= form.collection_select :order_guide_id, @order_guides, :id, :name, { prompt: "Choose guide" } %>
+          </div>
+          <div class="field">
+            <%= form.label :section_name, "Guide section" %>
+            <%= form.text_field :section_name, placeholder: "Dry storage, freezer, front bar" %>
+          </div>
+          <div class="field">
+            <%= form.label :item_name, "Operating item name" %>
+            <%= form.text_field :item_name, value: @product.canonical_name %>
+          </div>
+          <div class="field">
+            <%= form.label :tracking_mode, "Tracking" %>
+            <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]] %>
+          </div>
+          <div class="field">
+            <%= form.label :expected_usage_quantity, "Expected usage" %>
+            <%= form.number_field :expected_usage_quantity, min: 0, step: "any", inputmode: "decimal" %>
+          </div>
+          <div class="field">
+            <%= form.label :buffer_quantity, "Buffer" %>
+            <%= form.number_field :buffer_quantity, min: 0, step: "any", inputmode: "decimal" %>
+          </div>
+          <div class="field">
+            <%= form.label :count_unit, "Count unit" %>
+            <%= form.text_field :count_unit, placeholder: "case, sleeve, each" %>
+          </div>
+          <div class="field">
+            <%= form.label :pack_size, "Pack note" %>
+            <%= form.text_field :pack_size, placeholder: "2/5 lb, case, box" %>
+          </div>
+        </div>
+        <div class="field">
+          <%= form.label :notes, "Guide note" %>
+          <%= form.text_area :notes, rows: 2, placeholder: "Optional ordering note for staff" %>
+        </div>
+        <%= form.submit "Add to guide", class: "button primary" %>
+      <% end %>
+    <% else %>
+      <p class="empty-state">Create an order guide first, then add this product to the operating workflow.</p>
+      <%= link_to "Create order guide", order_guides_path, class: "button primary" %>
+    <% end %>
+  </div>
 <% end %>
 
 <%= render layout: "shared/blocks/section_panel",

@@ -23,9 +23,11 @@ Rails.application.routes.draw do
     collection do
       get :csv_example
     end
-    resources :memberships, only: %i[create destroy], controller: "order_guide_memberships"
+    resources :memberships, only: %i[create update destroy], controller: "order_guide_memberships"
   end
-  resources :products, only: %i[index show edit update]
+  resources :products, only: %i[index show edit update] do
+    resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
+  end
   resources :receipt_line_items, only: %i[edit update]
   resources :normalization_reviews, only: %i[index] do
     member do
