@@ -6,8 +6,7 @@ class InventoryController < ApplicationController
     @guide_items_needing_review = OrderGuideItem.active.needs_review.count
     @latest_count = InventoryCount.recent_first.first
     @missing_products = Purchasing::InventoryGapAnalyzer.new.missing_products(limit: 12)
-    @recommendations = Purchasing::InventoryRecommendation.new.rows
-    @buy_now = @recommendations.select { |row| row.status == "buy_now" }.first(12)
+    @order_guides = OrderGuide.active.ordered.includes(:order_guide_memberships)
   end
 
   def items

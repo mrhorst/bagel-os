@@ -2,11 +2,11 @@ class ProductOrderGuideMembershipsController < ApplicationController
   def create
     product = Product.includes(:supplier, :product_category).find(params[:product_id])
     guide = OrderGuide.active.find(product_membership_params[:order_guide_id])
-    section = guide.section_named!(product_membership_params[:section_name])
     inventory_item = inventory_item_for(product)
 
     membership = nil
     ActiveRecord::Base.transaction do
+      section = guide.section_named!(product_membership_params[:section_name])
       inventory_item.assign_attributes(
         name: product_membership_params[:item_name].presence || inventory_item.name.presence || product.canonical_name,
         product: product,

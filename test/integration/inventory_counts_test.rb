@@ -37,6 +37,18 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_no_match "Air Freshener", response.body
   end
 
+  test "inventory landing page starts from guide workflows instead of legacy par buy list" do
+    get inventory_path
+
+    assert_response :success
+    assert_select "h2", text: "Guide Workflows"
+    assert_match "Weekly", response.body
+    assert_select "a[href='#{new_inventory_count_path(order_guide_id: @guide.id)}']", text: "Count"
+    assert_select "a[href='#{inventory_shopping_list_path(order_guide_id: @guide.id)}']", text: "Buy list"
+    assert_no_match "Next Buy List", response.body
+    assert_no_match "par levels", response.body
+  end
+
   test "creates a guide inventory count from submitted rows and skips blanks" do
     post inventory_counts_path, params: {
       order_guide_id: @guide.id,

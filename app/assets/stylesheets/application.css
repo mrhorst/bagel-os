@@ -382,6 +382,10 @@ td small {
   color: #66727c;
 }
 
+.guide-workflow-card .button-row {
+  margin-top: 12px;
+}
+
 .filters,
 .stack {
   display: flex;
