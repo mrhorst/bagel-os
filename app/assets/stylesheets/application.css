@@ -118,6 +118,12 @@ small {
   max-width: 720px;
 }
 
+.guide-card {
+  border: 1px solid #ddd8cf;
+  border-radius: 8px;
+  padding: 14px;
+}
+
 .panel-heading,
 .review-main,
 .actions {
@@ -276,6 +282,15 @@ input[type="submit"].primary {
   color: #1e5b35;
 }
 
+.badge-compact {
+  border-radius: 6px;
+  font-size: 0.74rem;
+  line-height: 1.1;
+  padding: 4px 7px;
+  text-align: center;
+  white-space: normal;
+}
+
 .flash {
   border-radius: 8px;
   margin-bottom: 18px;
@@ -406,6 +421,45 @@ textarea {
   min-height: 40px;
   padding: 9px 10px;
   width: 100%;
+}
+
+.sr-only {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+  clip: rect(0, 0, 0, 0);
+}
+
+.stacked-form {
+  display: grid;
+  gap: 12px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.inline-guide-form {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.compact-input,
+.compact-select {
+  min-height: 34px;
+  padding: 6px 8px;
+}
+
+.inline-guide-form .compact-input,
+.inline-guide-form .compact-select {
+  min-width: 130px;
 }
 
 .form-grid {

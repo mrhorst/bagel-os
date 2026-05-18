@@ -1,0 +1,83 @@
+<% content_for :title, @order_guide.name %>
+
+<div class="page-heading">
+  <div>
+    <h1><%= @order_guide.name %></h1>
+    <p>Inventory items assigned to this order guide.</p>
+  </div>
+  <div class="actions">
+    <%= link_to "All guides", order_guides_path, class: "button" %>
+    <%= link_to "Inventory items", inventory_items_path, class: "button primary" %>
+  </div>
+</div>
+
+<section class="metric-grid">
+  <div class="metric">
+    <span>Active items</span>
+    <strong><%= @memberships.size %></strong>
+  </div>
+  <div class="metric">
+    <span>Primary assignments</span>
+    <strong><%= @memberships.count(&:primary_guide?) %></strong>
+  </div>
+  <div class="metric">
+    <span>Status</span>
+    <strong><%= @order_guide.active? ? "Active" : "Archived" %></strong>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Guide Items</h2>
+      <p class="muted">Change an item's primary guide from the Master Inventory page.</p>
+    </div>
+  </div>
+
+  <% if @memberships.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Section</th>
+          <th>Receipt product</th>
+          <th>Pack / count note</th>
+          <th>Supplier</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @memberships.each do |membership| %>
+          <% item = membership.inventory_item %>
+          <tr>
+            <td>
+              <strong><%= item.name %></strong>
+              <% if membership.primary_guide? %>
+                <span class="badge badge-ok badge-compact">Primary</span>
+              <% end %>
+            </td>
+            <td><%= item.inventory_section&.name || "Unsectioned" %></td>
+            <td>
+              <% if item.product.present? %>
+                <%= link_to item.product.canonical_name, product_path(item.product) %>
+              <% else %>
+                <span class="muted">Unlinked</span>
+              <% end %>
+            </td>
+            <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
+            <td><%= item.preferred_supplier&.name || item.product&.supplier&.name || "n/a" %></td>
+            <td>
+              <% if item.needs_review? %>
+                <span class="badge badge-warning">Review</span>
+              <% else %>
+                <span class="badge badge-ok">Ready</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No inventory items are assigned to this guide yet.</p>
+  <% end %>
+</section>

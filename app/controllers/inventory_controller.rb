@@ -11,8 +11,9 @@ class InventoryController < ApplicationController
   end
 
   def items
-    @sections = InventorySection.ordered.includes(inventory_items: [ :product, :preferred_supplier ])
-    @unsectioned_items = InventoryItem.active.where(inventory_section_id: nil).ordered
+    @order_guides = OrderGuide.active.ordered
+    @sections = InventorySection.ordered.includes(inventory_items: [ :product, :preferred_supplier, order_guide_memberships: :order_guide ])
+    @unsectioned_items = InventoryItem.active.where(inventory_section_id: nil).ordered.includes(order_guide_memberships: :order_guide)
     @items_needing_review = InventoryItem.active.needs_review.order(:name)
   end
 
@@ -63,5 +64,13 @@ class InventoryController < ApplicationController
     redirect_to inventory_counts_path, notice: "Saved #{inventory_count.inventory_count_lines.count} inventory counts."
   rescue ArgumentError
     redirect_to new_inventory_count_path, alert: "One of the counts was not a valid number."
+  end
+
+  def update_primary_order_guide
+    item = InventoryItem.find(params[:id])
+    guide = OrderGuide.active.find_by(id: params[:order_guide_id].presence)
+    item.assign_primary_order_guide!(guide)
+
+    redirect_back fallback_location: inventory_items_path, notice: "Updated #{item.name} primary guide."
   end
 end

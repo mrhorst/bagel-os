@@ -1,28 +1,79 @@
+require "csv"
+
 class OrderGuidesController < ApplicationController
-  CURRENT_GUIDE_DIR = Rails.root.join("data", "order_guides", "current")
+  CSV_EXAMPLE_HEADERS = %w[
+    guide_name
+    item_name
+    section
+    category
+    count_unit
+    pack_size
+    primary_guide
+    position
+    notes
+  ].freeze
+  CSV_EXAMPLE_ROWS = [
+    [ "Daily", "Eggs", "Walk-in cooler", "Eggs", "case", "case", "yes", "1", "Count before morning order." ],
+    [ "Weekly", "Coffee beans", "Dry storage", "Coffee / tea", "bag", "bag", "yes", "2", "Use generic roast names." ],
+    [ "Every 2 weeks", "To-go cups", "Paper and packaging", "Packaging", "sleeve", "case", "yes", "3", "Staff-facing names." ]
+  ].freeze
 
   def index
-    @imports = OrderGuideImport.recent_first.limit(10)
-    @daily_items = OrderGuideItem.active.where(guide_type: "daily").ordered.includes(inventory_item: :product)
-    @weekly_items = OrderGuideItem.active.where(guide_type: "weekly").ordered.includes(inventory_item: :product)
-    @guide_items_needing_review = OrderGuideItem.active.needs_review.ordered.limit(30)
+    @order_guides = OrderGuide.ordered.includes(order_guide_memberships: { inventory_item: [ :inventory_section, :product ] })
     @missing_products = Purchasing::InventoryGapAnalyzer.new.missing_products(limit: 40)
   end
 
-  def import_current
-    files = Dir.glob(CURRENT_GUIDE_DIR.join("*.pdf")).sort
-    if files.empty?
-      redirect_to order_guides_path, alert: "No PDF files found in #{CURRENT_GUIDE_DIR}."
-      return
+  def show
+    @order_guide = OrderGuide
+      .includes(order_guide_memberships: { inventory_item: [ :inventory_section, :product, :preferred_supplier ] })
+      .find(params[:id])
+    @memberships = @order_guide.order_guide_memberships
+      .active
+      .joins(:inventory_item)
+      .includes(inventory_item: [ :inventory_section, :product, :preferred_supplier ])
+      .order(:position, "inventory_items.name")
+  end
+
+  def create
+    guide = OrderGuide.new(order_guide_params)
+    guide.position = OrderGuide.maximum(:position).to_i + 1
+
+    if guide.save
+      redirect_to order_guides_path, notice: "Order guide created."
+    else
+      redirect_to order_guides_path, alert: guide.errors.full_messages.to_sentence
+    end
+  end
+
+  def update
+    guide = OrderGuide.find(params[:id])
+
+    if guide.update(order_guide_params)
+      redirect_to order_guides_path, notice: "Order guide updated."
+    else
+      redirect_to order_guides_path, alert: guide.errors.full_messages.to_sentence
+    end
+  end
+
+  def destroy
+    guide = OrderGuide.find(params[:id])
+    guide.archive!
+
+    redirect_to order_guides_path, notice: "Order guide archived."
+  end
+
+  def csv_example
+    csv = CSV.generate(headers: true) do |output|
+      output << CSV_EXAMPLE_HEADERS
+      CSV_EXAMPLE_ROWS.each { |row| output << row }
     end
 
-    importer = Purchasing::OrderGuideImporter.new
-    results = files.map { |path| importer.import_file(path) }
-    imported = results.count { |result| !result.skipped }
-    skipped = results.count(&:skipped)
+    send_data csv, filename: "order-guide-import-example.csv", type: "text/csv"
+  end
 
-    redirect_to order_guides_path, notice: "Order guide import complete: #{imported} imported, #{skipped} skipped."
-  rescue Purchasing::OrderGuideTextExtractor::ExtractionError, ArgumentError => error
-    redirect_to order_guides_path, alert: error.message
+  private
+
+  def order_guide_params
+    params.require(:order_guide).permit(:name, :notes, :active)
   end
 end

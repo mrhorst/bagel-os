@@ -6,6 +6,8 @@ class InventoryItem < ApplicationRecord
   has_many :inventory_count_lines, dependent: :destroy
   has_many :inventory_counts, through: :inventory_count_lines
   has_many :order_guide_items, dependent: :nullify
+  has_many :order_guide_memberships, dependent: :destroy
+  has_many :order_guides, through: :order_guide_memberships
 
   before_validation :assign_key
 
@@ -47,6 +49,51 @@ class InventoryItem < ApplicationRecord
 
   def guide_frequency_label
     guide_frequency.to_s.humanize
+  end
+
+  def primary_order_guide_membership
+    order_guide_memberships.active.primary_guide.includes(:order_guide).first
+  end
+
+  def primary_order_guide
+    primary_order_guide_membership&.order_guide
+  end
+
+  def order_guide_label
+    primary_order_guide&.name || guide_frequency_label
+  end
+
+  def additional_order_guides
+    order_guide_memberships
+      .active
+      .includes(:order_guide)
+      .reject(&:primary_guide?)
+      .map(&:order_guide)
+      .sort_by { |guide| [ guide.position, guide.name ] }
+  end
+
+  def assign_primary_order_guide!(order_guide)
+    transaction do
+      order_guide_memberships.active.primary_guide.update_all(primary_guide: false, updated_at: Time.current)
+
+      return if order_guide.blank?
+
+      membership = order_guide_memberships.find_or_initialize_by(order_guide: order_guide)
+      membership.active = true
+      membership.primary_guide = true
+      membership.position = position if membership.position.blank? || membership.position.zero?
+      membership.save!
+    end
+  end
+
+  def add_to_order_guide!(order_guide, primary: false, position: nil, notes: nil)
+    membership = order_guide_memberships.find_or_initialize_by(order_guide: order_guide)
+    membership.active = true
+    membership.primary_guide = primary
+    membership.position = position if position.present?
+    membership.notes = notes if notes.present?
+    membership.save!
+    membership
   end
 
   def merge_guide_frequency!(new_frequency)

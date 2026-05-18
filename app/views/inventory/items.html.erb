@@ -3,7 +3,7 @@
 <div class="page-heading">
   <div>
     <h1>Master Inventory</h1>
-    <p>Operational inventory items created from the current daily and weekly guides.</p>
+    <p>Operational inventory items staff count and order against.</p>
   </div>
   <div class="actions">
     <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
@@ -62,7 +62,12 @@
         <% items.sort_by { |item| [item.position, item.name] }.each do |item| %>
           <tr>
             <td><%= item.name %></td>
-            <td><span class="badge"><%= item.guide_frequency_label %></span></td>
+            <td>
+              <%= render "inventory/primary_order_guide_form", item: item, order_guides: @order_guides %>
+              <% if item.additional_order_guides.any? %>
+                <small class="muted">Also: <%= item.additional_order_guides.map(&:name).to_sentence %></small>
+              <% end %>
+            </td>
             <td>
               <% if item.product.present? %>
                 <%= link_to item.product.canonical_name, product_path(item.product) %>

@@ -37,6 +37,7 @@ class OrderGuideImporterTest < ActiveSupport::TestCase
       assert_equal 2, OrderGuideItem.active.count
       assert_equal 2, InventoryItem.active.count
       assert_equal "Half and Half", OrderGuideItem.find_by!(item_name: "Half n Half").linked_product.canonical_name
+      assert_equal "Weekly", InventoryItem.find_by!(name: "Half n Half").primary_order_guide.name
       assert OrderGuideItem.find_by!(item_name: "Fries").needs_review?
     end
   end

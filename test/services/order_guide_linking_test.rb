@@ -38,6 +38,7 @@ class OrderGuideLinkingTest < ActiveSupport::TestCase
     assert_equal BigDecimal("0.9"), guide_item.match_confidence
     assert_equal "plain-language order guide rule", guide_item.raw_data["match_basis"]
     assert_equal "Dairy & Refrigerated", inventory_item.inventory_section.name
+    assert_equal "Weekly", inventory_item.primary_order_guide.name
   end
 
   test "does not link below the confidence threshold" do
@@ -144,6 +145,20 @@ class OrderGuideLinkingTest < ActiveSupport::TestCase
     assert_equal patties, patties_row.reload.linked_product
     assert_equal links, links_row.reload.linked_product
     assert_not_equal patties_row.inventory_item_id, links_row.inventory_item_id
+  end
+
+  test "adds membership without replacing an existing primary guide" do
+    daily = OrderGuide.create!(name: "Daily")
+    item = InventoryItem.create!(name: "Half n Half", key: "half-n-half", product: @half_and_half, needs_review: false)
+    item.assign_primary_order_guide!(daily)
+
+    result = linker_for(
+      "Half n Half" => match(product: @half_and_half, confidence: "0.90", basis: "plain-language order guide rule")
+    ).link_row!(import: @import, row: row(item_name: "Half n Half"))
+
+    assert_equal item, result.inventory_item
+    assert_equal daily, item.reload.primary_order_guide
+    assert_includes item.order_guides.map(&:name), "Weekly"
   end
 
   private

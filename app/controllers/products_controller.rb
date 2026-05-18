@@ -18,6 +18,8 @@ class ProductsController < ApplicationController
 
   def show
     @product = Product.includes(:supplier, :product_category, :product_aliases).find(params[:id])
+    @inventory_items = @product.inventory_items.active.includes(order_guide_memberships: :order_guide).ordered
+    @order_guides = OrderGuide.active.ordered
     profile = price_intelligence.product_profile(@product, requested_chart_mode: params[:chart_mode])
     @stats = profile.stats
     @observations = profile.observations

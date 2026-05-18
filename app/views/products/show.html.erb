@@ -95,6 +95,40 @@
 
 <%= render layout: "shared/blocks/section_panel",
   locals: {
+    title: "Inventory and guides",
+    subtitle: "Operating items that use this receipt-backed product for counting and ordering.",
+    class_name: "product-inventory-panel"
+  } do %>
+  <% if @inventory_items.any? %>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Inventory item</th>
+            <th>Primary guide</th>
+            <th>Also on</th>
+            <th>Section</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @inventory_items.each do |item| %>
+            <tr>
+              <td><%= item.name %></td>
+              <td><%= render "inventory/primary_order_guide_form", item: item, order_guides: @order_guides %></td>
+              <td><%= item.additional_order_guides.map(&:name).presence&.to_sentence || "n/a" %></td>
+              <td><%= item.inventory_section&.name || "Unsectioned" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="empty-state">No operating inventory item is linked to this product yet.</p>
+  <% end %>
+<% end %>
+
+<%= render layout: "shared/blocks/section_panel",
+  locals: {
     title: "Price history",
     subtitle: "Presentation price keeps purchased forms separated, but uses comparable units when reliable so different cases can be compared fairly.",
     class_name: "product-price-panel"
