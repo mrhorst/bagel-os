@@ -1,0 +1,66 @@
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Setup</th>
+      <th class="numeric">Usage</th>
+      <th class="numeric">Buffer</th>
+      <th>Status</th>
+      <th>Update</th>
+      <th>Remove</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% memberships.sort_by { |membership| [membership.position, membership.inventory_item.name] }.each do |membership| %>
+      <% item = membership.inventory_item %>
+      <tr>
+        <td>
+          <strong><%= item.name %></strong>
+          <small>
+            <%= safe_join([
+              item.product ? link_to(item.product.canonical_name, product_path(item.product)) : "Unlinked product",
+              item.pack_size.presence || item.count_unit.presence
+            ].compact, " · ") %>
+          </small>
+          <% if membership.primary_guide? %>
+            <span class="badge badge-ok badge-compact">Primary</span>
+          <% end %>
+        </td>
+        <td>
+          <%= tracking_mode_label(membership) %>
+          <small><%= membership.order_guide_section&.name || "Unsectioned" %></small>
+        </td>
+        <td class="numeric"><%= compact_decimal(membership.expected_usage_quantity) %></td>
+        <td class="numeric"><%= compact_decimal(membership.buffer_quantity) %></td>
+        <td>
+          <% if membership.order_only? %>
+            <span class="badge">Order only</span>
+          <% elsif membership.setup_needed? %>
+            <span class="badge badge-warning">Setup needed</span>
+          <% else %>
+            <span class="badge badge-ok">Ready</span>
+          <% end %>
+        </td>
+        <td>
+          <%= form_with url: order_guide_membership_path(order_guide, membership), method: :patch, scope: :membership, class: "guide-row-form" do |form| %>
+            <%= form.label :section_name, "Section", class: "sr-only" %>
+            <%= form.text_field :section_name, value: membership.order_guide_section&.name, placeholder: "Section", class: "compact-input" %>
+            <%= form.label :tracking_mode, "Tracking", class: "sr-only" %>
+            <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]], { selected: membership.tracking_mode }, { class: "compact-select" } %>
+            <%= form.label :expected_usage_quantity, "Expected usage", class: "sr-only" %>
+            <%= form.number_field :expected_usage_quantity, value: membership.expected_usage_quantity, min: 0, step: "any", inputmode: "decimal", placeholder: "Usage", class: "compact-input numeric-input" %>
+            <%= form.label :buffer_quantity, "Buffer", class: "sr-only" %>
+            <%= form.number_field :buffer_quantity, value: membership.buffer_quantity, min: 0, step: "any", inputmode: "decimal", placeholder: "Buffer", class: "compact-input numeric-input" %>
+            <%= form.submit "Save", class: "button small" %>
+          <% end %>
+        </td>
+        <td>
+          <%= button_to "Remove",
+            order_guide_membership_path(order_guide, membership),
+            method: :delete,
+            class: "button small" %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -5,14 +5,47 @@ class OrderGuideMembershipTest < ActiveSupport::TestCase
     item = InventoryItem.create!(name: "Half and Half", key: "half-and-half")
     daily = OrderGuide.create!(name: "Daily")
     every_two_weeks = OrderGuide.create!(name: "Every 2 weeks")
+    daily_section = daily.section_named!("Walk-in")
+    bulk_section = every_two_weeks.section_named!("Dry storage")
 
-    item.add_to_order_guide!(daily, primary: true, position: 1)
-    item.add_to_order_guide!(every_two_weeks, primary: true, position: 2)
+    item.add_to_order_guide!(daily, primary: true, position: 1, order_guide_section: daily_section)
+    item.add_to_order_guide!(every_two_weeks, primary: true, position: 2, order_guide_section: bulk_section)
 
     assert_equal [ "Daily", "Every 2 weeks" ], item.order_guides.order(:name).pluck(:name)
     assert_equal every_two_weeks, item.reload.primary_order_guide
     assert_not item.order_guide_memberships.find_by!(order_guide: daily).primary_guide?
     assert item.order_guide_memberships.find_by!(order_guide: every_two_weeks).primary_guide?
+    assert_equal daily_section, item.order_guide_memberships.find_by!(order_guide: daily).order_guide_section
+    assert_equal bulk_section, item.order_guide_memberships.find_by!(order_guide: every_two_weeks).order_guide_section
+  end
+
+  test "membership stores tracking mode and usage plus buffer target" do
+    item = InventoryItem.create!(name: "Bacon", key: "bacon")
+    guide = OrderGuide.create!(name: "Weekly")
+    section = guide.section_named!("Freezer")
+
+    membership = item.add_to_order_guide!(
+      guide,
+      order_guide_section: section,
+      tracking_mode: "counted",
+      expected_usage_quantity: 2,
+      buffer_quantity: 1
+    )
+
+    assert membership.counted?
+    assert_not membership.setup_needed?
+    assert_equal BigDecimal("3"), membership.target_after_order
+  end
+
+  test "order only membership is not count setup needed" do
+    item = InventoryItem.create!(name: "Tables", key: "tables")
+    guide = OrderGuide.create!(name: "Equipment")
+
+    membership = item.add_to_order_guide!(guide, tracking_mode: "order_only")
+
+    assert membership.order_only?
+    assert_not membership.setup_needed?
+    assert_nil membership.target_after_order
   end
 
   test "assigning blank primary guide keeps memberships but clears primary flag" do

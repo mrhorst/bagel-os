@@ -462,6 +462,29 @@ textarea {
   min-width: 130px;
 }
 
+.guide-gap-form,
+.guide-row-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guide-row-form {
+  min-width: 360px;
+}
+
+.guide-setup-form {
+  border-top: 1px solid #ebe7df;
+  margin-top: 18px;
+  padding-top: 18px;
+}
+
+.numeric-input {
+  max-width: 96px;
+  text-align: right;
+}
+
 .form-grid {
   display: grid;
   gap: 12px;

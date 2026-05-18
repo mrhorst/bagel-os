@@ -63,6 +63,8 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_select ".review-summary-band", text: /Line review/
     assert_select "h2", text: "Identity"
     assert_select "h2", text: "Review decision"
+    assert_select "strong", text: "Visible in purchase catalog"
+    assert_no_match "Keep this product visible in purchasing and inventory", response.body
     assert_select "input[type='submit'][name='mark_reviewed'][value='Save and mark reviewed']"
 
     patch product_path(product), params: {

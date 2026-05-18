@@ -124,7 +124,7 @@
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>Section</th>
+                  <th>Guide section</th>
                   <th>Pack / count</th>
                 </tr>
               </thead>
@@ -138,7 +138,7 @@
                         <span class="badge badge-ok badge-compact">Primary</span>
                       <% end %>
                     </td>
-                    <td><%= item.inventory_section&.name || "Unsectioned" %></td>
+                    <td><%= membership.order_guide_section&.name || item.inventory_section&.name || "Unsectioned" %></td>
                     <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
                   </tr>
                 <% end %>
@@ -176,6 +176,7 @@
           <th class="numeric">Buys</th>
           <th class="numeric">Spend</th>
           <th>Last bought</th>
+          <th>Add to guide</th>
         </tr>
       </thead>
       <tbody>
@@ -192,6 +193,18 @@
             <td class="numeric"><%= row.purchase_count %></td>
             <td class="numeric"><%= number_to_currency(row.total_spend) %></td>
             <td><%= row.last_purchased_at&.to_date || "n/a" %></td>
+            <td>
+              <% if @order_guides.active.any? %>
+                <%= form_with url: product_order_guide_memberships_path(row.product), scope: :membership, class: "guide-gap-form" do |form| %>
+                  <%= form.collection_select :order_guide_id, @order_guides.select(&:active?), :id, :name, { prompt: "Guide" }, { class: "compact-select" } %>
+                  <%= form.text_field :section_name, placeholder: "Section", class: "compact-input" %>
+                  <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]], {}, { class: "compact-select" } %>
+                  <%= form.submit "Add", class: "button small" %>
+                <% end %>
+              <% else %>
+                <%= link_to "Create guide", order_guides_path, class: "button small" %>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>
