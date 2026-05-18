@@ -14,7 +14,25 @@ Rails.application.routes.draw do
   scope module: :tasks, path: :tasks, as: :tasks do
     root "dashboard#index"
     patch "completing-as", to: "completing_as#update", as: :completing_as
-    resources :occurrences, only: [] do
+    get "history", to: "history#index", as: :history
+    resources :staff_members, path: "staff", as: "staff", only: %i[index create update] do
+      member do
+        patch :deactivate
+        patch :reactivate
+      end
+    end
+    resources :task_lists, path: "lists", as: "lists", only: %i[index create update] do
+      member do
+        patch :archive
+        patch :reactivate
+      end
+    end
+    get "manage", to: "manage#index", as: :manage
+    post "manage", to: "manage#create"
+    patch "manage/:id", to: "manage#update", as: :managed_task
+    patch "manage/:id/archive", to: "manage#archive", as: :archive_managed_task
+    patch "manage/:id/reactivate", to: "manage#reactivate", as: :reactivate_managed_task
+    resources :occurrences, only: %i[show] do
       resource :completion, only: %i[create destroy], controller: "completions"
     end
   end

@@ -1,0 +1,75 @@
+<% content_for :title, "Manage Tasks" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Manage Tasks</h1>
+    <p>Create recurring staff tasks and archive old work without losing history.</p>
+  </div>
+  <div class="button-row">
+    <%= link_to "Tasks", tasks_root_path, class: "button" %>
+    <%= link_to "Task lists", tasks_lists_path, class: "button" %>
+    <%= link_to "Staff", tasks_staff_index_path, class: "button" %>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>New Task</h2>
+      <p class="muted">Use monthly for work that can happen any time before the month closes.</p>
+    </div>
+  </div>
+
+  <% if @task_lists.any? %>
+    <%= render "task_form", task: @task, url: tasks_manage_path, method: :post, submit_label: "Create task" %>
+  <% else %>
+    <p class="empty-state">Create a task list before adding tasks.</p>
+  <% end %>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Existing Tasks</h2>
+      <p class="muted"><%= pluralize(@tasks.size, "task") %></p>
+    </div>
+  </div>
+
+  <% if @tasks.any? %>
+    <div class="task-card-list">
+      <% @tasks.each do |task| %>
+        <article class="guide-card">
+          <div class="panel-heading">
+            <div>
+              <h3><%= task.title %></h3>
+              <div class="status-row">
+                <% if task.active? %>
+                  <span class="badge badge-ok">Active</span>
+                <% else %>
+                  <span class="badge">Archived</span>
+                <% end %>
+                <% if task.requires_photo_evidence? %>
+                  <span class="badge badge-compact">Photo required</span>
+                <% end %>
+                <span class="muted"><%= task.task_list.name %></span>
+              </div>
+            </div>
+            <span class="muted"><%= task_recurrence_label(task) %></span>
+          </div>
+
+          <%= render "task_form", task: task, url: tasks_managed_task_path(task), method: :patch, submit_label: "Save task" %>
+
+          <div class="button-row">
+            <% if task.active? %>
+              <%= button_to "Archive task", tasks_archive_managed_task_path(task), method: :patch, class: "button small" %>
+            <% else %>
+              <%= button_to "Reactivate task", tasks_reactivate_managed_task_path(task), method: :patch, class: "button small" %>
+            <% end %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">No tasks yet.</p>
+  <% end %>
+</section>

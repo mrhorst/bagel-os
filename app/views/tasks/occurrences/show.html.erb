@@ -1,0 +1,138 @@
+<% content_for :title, @occurrence.snapshot_title %>
+
+<div class="page-heading">
+  <div>
+    <h1><%= @occurrence.snapshot_title %></h1>
+    <p><%= @occurrence.snapshot_list_name %> task for <%= task_period_label(@occurrence) %>.</p>
+  </div>
+  <div class="button-row">
+    <%= link_to "Tasks", tasks_root_path, class: "button" %>
+    <%= link_to "History", tasks_history_path, class: "button" %>
+  </div>
+</div>
+
+<section class="grid two">
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Occurrence</h2>
+        <p class="muted">Task details are snapshotted for history.</p>
+      </div>
+      <%= task_status_badge(@occurrence) %>
+    </div>
+
+    <dl class="details">
+      <dt>List</dt>
+      <dd><%= @occurrence.snapshot_list_name %></dd>
+      <dt>Period</dt>
+      <dd><%= task_period_label(@occurrence) %></dd>
+      <dt>Due</dt>
+      <dd><%= task_due_label(@occurrence) %></dd>
+      <dt>Photo</dt>
+      <dd><%= @occurrence.requires_photo_evidence? ? "Required" : "Not required" %></dd>
+    </dl>
+
+    <% if @occurrence.snapshot_instructions.present? %>
+      <div class="note-block">
+        <strong>Instructions</strong>
+        <p><%= @occurrence.snapshot_instructions %></p>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Current Completion</h2>
+        <p class="muted">Only one completion can be active at a time.</p>
+      </div>
+    </div>
+
+    <% if @active_completion.present? %>
+      <dl class="details">
+        <dt>Completed by</dt>
+        <dd><%= @active_completion.snapshot_staff_name %></dd>
+        <dt>Completed at</dt>
+        <dd><%= @active_completion.completed_at.strftime("%b %-d, %Y %-I:%M %p") %></dd>
+        <dt>Notes</dt>
+        <dd><%= @active_completion.notes.presence || "None" %></dd>
+      </dl>
+
+      <% if @active_completion.photo.attached? %>
+        <div class="note-block">
+          <strong>Photo Evidence</strong>
+          <%= image_tag @active_completion.photo, alt: "Photo evidence for #{@occurrence.snapshot_title}", class: "task-photo-evidence" %>
+        </div>
+      <% end %>
+
+      <% if @occurrence.undoable? %>
+        <%= form_with url: tasks_occurrence_completion_path(@occurrence), method: :delete, class: "stacked-form note-block" do |form| %>
+          <%= form.label :undone_note, "Undo note" %>
+          <%= form.text_field :undone_note, placeholder: "Optional undo note" %>
+          <label class="check">
+            <%= check_box_tag :confirm_undo, "1", false %>
+            <span>Confirm undo</span>
+          </label>
+          <%= form.submit "Undo completion", class: "button" %>
+        <% end %>
+      <% else %>
+        <p class="field-hint">Undo is closed for this completion.</p>
+      <% end %>
+    <% elsif @occurrence.missed? %>
+      <p class="empty-state">This task was missed and can no longer be completed.</p>
+    <% else %>
+      <p class="empty-state">This task is not completed yet.</p>
+    <% end %>
+  </section>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Undo History</h2>
+      <p class="muted"><%= pluralize(@undone_completions.size, "undone completion") %></p>
+    </div>
+  </div>
+
+  <% if @undone_completions.any? %>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Completed</th>
+          <th>Undone</th>
+          <th>Notes</th>
+          <th>Photo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @undone_completions.each do |completion| %>
+          <tr>
+            <td>
+              <strong><%= completion.snapshot_staff_name %></strong>
+              <small><%= completion.completed_at.strftime("%b %-d, %Y %-I:%M %p") %></small>
+            </td>
+            <td>
+              <strong><%= completion.snapshot_undone_by_staff_name %></strong>
+              <small><%= completion.undone_at.strftime("%b %-d, %Y %-I:%M %p") %></small>
+            </td>
+            <td>
+              <%= completion.notes.presence || "No completion note" %>
+              <% if completion.undone_note.present? %>
+                <small>Undo: <%= completion.undone_note %></small>
+              <% end %>
+            </td>
+            <td>
+              <% if completion.photo.attached? %>
+                <%= link_to "View kept photo", url_for(completion.photo), class: "button small" %>
+              <% else %>
+                <span class="muted">No photo</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No undo history for this occurrence.</p>
+  <% end %>
+</section>

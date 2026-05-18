@@ -1,0 +1,65 @@
+<% task_list_options = (@task_lists.to_a + [task.task_list]).compact.uniq.sort_by { |task_list| [task_list.position, task_list.name] } %>
+
+<%= form_with model: task, url: url, method: method, class: "stacked-form" do |form| %>
+  <div class="form-grid">
+    <div class="field">
+      <%= form.label :title, "Task name" %>
+      <%= form.text_field :title, required: true, placeholder: "Clean espresso machine" %>
+    </div>
+    <div class="field">
+      <%= form.label :task_list_id, "Task list" %>
+      <%= form.select :task_list_id, options_from_collection_for_select(task_list_options, :id, :name, task.task_list_id), { include_blank: "Choose list" }, required: true %>
+    </div>
+    <div class="field">
+      <%= form.label :recurrence_type, "Repeats" %>
+      <%= form.select :recurrence_type, Task::RECURRENCE_TYPES.map { |value| [ value.humanize, value ] }, {}, required: true %>
+    </div>
+    <div class="field">
+      <%= form.label :due_time, "Due time" %>
+      <%= form.time_field :due_time, value: task.due_time&.strftime("%H:%M") %>
+    </div>
+    <div class="field">
+      <%= form.label :one_time_on, "One-time date" %>
+      <%= form.date_field :one_time_on %>
+    </div>
+    <div class="field">
+      <%= form.label :starts_on, "Start date" %>
+      <%= form.date_field :starts_on %>
+    </div>
+    <div class="field">
+      <%= form.label :ends_on, "End date" %>
+      <%= form.date_field :ends_on %>
+    </div>
+    <div class="field">
+      <%= form.label :position, "Sort order" %>
+      <%= form.number_field :position, step: 1 %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :instructions, "Instructions" %>
+    <%= form.text_area :instructions, rows: 3, placeholder: "Plain text steps for staff" %>
+  </div>
+
+  <div class="field">
+    <label>Weekly days</label>
+    <%= hidden_field_tag "task[weekdays][]", "" %>
+    <div class="check-card-grid">
+      <% Date::DAYNAMES.each_with_index do |day_name, weekday| %>
+        <label class="check-card" for="<%= "#{dom_id(task)}_weekday_#{weekday}" %>">
+          <%= check_box_tag "task[weekdays][]", weekday, task.weekday_values.include?(weekday), id: "#{dom_id(task)}_weekday_#{weekday}" %>
+          <span>
+            <strong><%= day_name %></strong>
+          </span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <label class="check">
+    <%= form.check_box :requires_photo_evidence %>
+    <span>Require one completion photo</span>
+  </label>
+
+  <%= form.submit submit_label, class: "button primary" %>
+<% end %>

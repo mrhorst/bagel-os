@@ -5,7 +5,11 @@
     <h1>Tasks</h1>
     <p>Today’s staff work and this month’s recurring operating tasks.</p>
   </div>
-  <%= link_to "Refresh", tasks_root_path, class: "button" %>
+  <div class="button-row">
+    <%= link_to "History", tasks_history_path, class: "button" %>
+    <%= link_to "Manage tasks", tasks_manage_path, class: "button" %>
+    <%= link_to "Refresh", tasks_root_path, class: "button" %>
+  </div>
 </div>
 
 <section class="metric-grid compact">
@@ -33,6 +37,7 @@
       <h2>Completing As</h2>
       <p class="muted">This is staff attribution for this device, not a login.</p>
     </div>
+    <%= link_to "Staff setup", tasks_staff_index_path, class: "button small" %>
   </div>
   <%= form_with url: tasks_completing_as_path, method: :patch, class: "inline-guide-form" do |form| %>
     <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
@@ -78,6 +83,7 @@
               </div>
 
               <div class="task-card-actions">
+                <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
                 <% if occurrence.completed? %>
                   <% if occurrence.undoable? %>
                     <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "stacked-form task-action-form" do |form| %>
@@ -150,6 +156,7 @@
               </div>
 
               <div class="task-card-actions">
+                <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
                 <%= form_with url: tasks_occurrence_completion_path(occurrence), multipart: true, class: "stacked-form task-action-form" do |form| %>
                   <% if occurrence.requires_photo_evidence? %>
                     <%= form.label :photo, "Photo evidence" %>

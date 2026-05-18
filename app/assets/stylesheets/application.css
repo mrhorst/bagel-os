@@ -412,6 +412,11 @@ label {
   margin: 0;
 }
 
+.check input {
+  min-height: 18px;
+  width: 18px;
+}
+
 input,
 select,
 textarea {
@@ -740,8 +745,35 @@ textarea {
   color: #66727c;
 }
 
+.task-card-actions {
+  align-content: start;
+  display: grid;
+  gap: 8px;
+}
+
 .task-action-form {
   gap: 8px;
+}
+
+.status-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.task-photo-evidence {
+  border: 1px solid #ddd8cf;
+  border-radius: 8px;
+  display: block;
+  height: auto;
+  margin-top: 10px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.history-table td {
+  vertical-align: middle;
 }
 
 .segmented {
@@ -1084,7 +1116,7 @@ tr:target {
   }
 
   .button-row .button {
-    flex: 1;
+    flex: 1 1 160px;
     text-align: center;
   }
 
@@ -1095,5 +1127,15 @@ tr:target {
   .sticky-actions {
     margin-left: -16px;
     margin-right: -16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-heading .button,
+  .actions .button,
+  .actions form,
+  .actions button {
+    flex-basis: 100%;
+    width: 100%;
   }
 }

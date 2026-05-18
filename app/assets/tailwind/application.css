@@ -730,8 +730,35 @@
     color: #66727c;
   }
 
+  .task-card-actions {
+    align-content: start;
+    display: grid;
+    gap: 8px;
+  }
+
   .task-action-form {
     gap: 8px;
+  }
+
+  .status-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .task-photo-evidence {
+    border: 1px solid #dfe7ee;
+    border-radius: var(--radius-card);
+    display: block;
+    height: auto;
+    margin-top: 10px;
+    max-width: 420px;
+    width: 100%;
+  }
+
+  .history-table td {
+    vertical-align: middle;
   }
 
   .segmented {
@@ -1658,10 +1685,10 @@
       width: 100%;
     }
 
-    .button-row .button {
-      flex: 1;
-      text-align: center;
-    }
+  .button-row .button {
+    flex: 1 1 160px;
+    text-align: center;
+  }
 
     .sticky-actions {
       margin-left: -16px;
@@ -1689,6 +1716,7 @@
     .actions .button,
     .actions form,
     .actions button {
+      flex-basis: 100%;
       width: 100%;
     }
 
