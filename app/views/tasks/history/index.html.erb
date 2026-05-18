@@ -1,0 +1,85 @@
+<% content_for :title, "Task History" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Task History</h1>
+    <p>Review what was open, late, missed, completed, or undone.</p>
+  </div>
+  <div class="button-row">
+    <%= link_to "Tasks", tasks_root_path, class: "button" %>
+    <%= link_to "Manage tasks", tasks_manage_path, class: "button" %>
+  </div>
+</div>
+
+<section class="panel">
+  <%= form_with url: tasks_history_path, method: :get, class: "filters" do |form| %>
+    <div class="field">
+      <%= form.label :from, "From" %>
+      <%= form.date_field :from, value: @from_date %>
+    </div>
+    <div class="field">
+      <%= form.label :to, "To" %>
+      <%= form.date_field :to, value: @to_date %>
+    </div>
+    <div class="field">
+      <%= form.label :status, "Status" %>
+      <%= form.select :status, options_for_select([ [ "Any status", "" ], [ "Open", "open" ], [ "Late", "late" ], [ "Completed", "completed" ], [ "Missed", "missed" ] ], @status.to_s) %>
+    </div>
+    <div class="field">
+      <%= form.label :task_list_id, "Task list" %>
+      <%= form.select :task_list_id, options_from_collection_for_select(@task_lists, :id, :name, @task_list_id), { include_blank: "Any list" } %>
+    </div>
+    <%= form.submit "Filter", class: "button primary" %>
+  <% end %>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Occurrences</h2>
+      <p class="muted"><%= pluralize(@occurrences.size, "task occurrence") %></p>
+    </div>
+  </div>
+
+  <% if @occurrences.any? %>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Task</th>
+          <th>List</th>
+          <th>Period</th>
+          <th>Due</th>
+          <th>Completion</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @occurrences.each do |occurrence| %>
+          <tr>
+            <td><%= task_status_badge(occurrence) %></td>
+            <td>
+              <strong><%= occurrence.snapshot_title %></strong>
+              <% if occurrence.requires_photo_evidence? %>
+                <small>Photo required</small>
+              <% end %>
+            </td>
+            <td><%= occurrence.snapshot_list_name %></td>
+            <td><%= task_period_label(occurrence) %></td>
+            <td><%= task_due_label(occurrence) %></td>
+            <td>
+              <% if occurrence.active_completion.present? %>
+                <%= task_completion_summary(occurrence.active_completion) %>
+              <% else %>
+                <span class="muted">Not completed</span>
+              <% end %>
+            </td>
+            <td class="numeric"><%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No task history matches these filters.</p>
+  <% end %>
+</section>

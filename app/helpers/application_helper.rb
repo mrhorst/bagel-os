@@ -7,6 +7,7 @@ module ApplicationHelper
     [
       { label: "Dashboard", path: root_path, match: :root, icon: "chart" },
       { label: "Inventory", path: inventory_path, controller: "inventory", icon: "boxes" },
+      { label: "Tasks", path: tasks_root_path, controller: "dashboard", module: "tasks", icon: "check" },
       { label: "Order Guides", path: order_guides_path, controller: "order_guides", icon: "clipboard" },
       { label: "Imports", path: import_batches_path, controller: "import_batches", icon: "upload" },
       { label: "Products", path: products_path, controller: "products", icon: "package" },
@@ -16,7 +17,9 @@ module ApplicationHelper
   end
 
   def active_nav_item?(item)
-    if item[:match] == :root
+    if item[:module].present?
+      controller_path.start_with?("#{item[:module]}/")
+    elsif item[:match] == :root
       current_page?(item[:path])
     else
       controller_name == item[:controller]
@@ -27,6 +30,7 @@ module ApplicationHelper
     paths = {
       "chart" => tag.path(d: "M4 19V5m8 14V9m8 10V3", "stroke-linecap": "round"),
       "boxes" => tag.path(d: "M4 7l8-4 8 4-8 4-8-4Zm0 6l8 4 8-4M4 17l8 4 8-4", "stroke-linecap": "round", "stroke-linejoin": "round"),
+      "check" => tag.path(d: "m5 12 4 4L19 6M5 20h14", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "clipboard" => tag.path(d: "M9 4h6m-7 3h8m-8 5h8m-8 4h5M7 4h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z", "stroke-linecap": "round"),
       "upload" => tag.path(d: "M12 16V4m0 0 4 4m-4-4-4 4M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "package" => tag.path(d: "M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Zm8 4.5 8-4.5M12 12 4 7.5m8 4.5v9", "stroke-linejoin": "round"),

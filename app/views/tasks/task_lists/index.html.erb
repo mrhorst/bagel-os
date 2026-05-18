@@ -1,0 +1,117 @@
+<% content_for :title, "Task Lists" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Task Lists</h1>
+    <p>Operating groups for staff tasks.</p>
+  </div>
+  <div class="button-row">
+    <%= link_to "Tasks", tasks_root_path, class: "button" %>
+    <%= link_to "Manage tasks", tasks_manage_path, class: "button" %>
+  </div>
+</div>
+
+<section class="grid two">
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Add Task List</h2>
+        <p class="muted">Examples: Opening, Closing, Cleaning.</p>
+      </div>
+    </div>
+
+    <%= form_with model: TaskList.new, url: tasks_lists_path, class: "stacked-form" do |form| %>
+      <div class="form-grid">
+        <div class="field">
+          <%= form.label :name, "List name" %>
+          <%= form.text_field :name, required: true, placeholder: "Opening" %>
+        </div>
+        <div class="field">
+          <%= form.label :position, "Sort order" %>
+          <%= form.number_field :position, step: 1, value: @next_position %>
+        </div>
+        <div class="field">
+          <%= form.label :display_start_time, "Show from" %>
+          <%= form.time_field :display_start_time %>
+          <p class="field-hint">Leave blank for all-day lists.</p>
+        </div>
+        <div class="field">
+          <%= form.label :display_end_time, "Show until" %>
+          <%= form.time_field :display_end_time %>
+          <p class="field-hint">Example: Closing can show from 12:00 PM until close.</p>
+        </div>
+      </div>
+      <div class="field">
+        <%= form.label :notes, "Notes" %>
+        <%= form.text_area :notes, rows: 3 %>
+      </div>
+      <%= form.submit "Add task list", class: "button primary" %>
+    <% end %>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Lists</h2>
+        <p class="muted"><%= pluralize(@task_lists.size, "list") %></p>
+      </div>
+    </div>
+
+    <% if @task_lists.any? %>
+      <div class="task-card-list">
+        <% @task_lists.each do |task_list| %>
+          <article class="guide-card">
+            <div class="panel-heading">
+              <div>
+                <h3><%= task_list.name %></h3>
+                <% if task_list.active? %>
+                  <span class="badge badge-ok">Active</span>
+                <% else %>
+                  <span class="badge">Archived</span>
+                <% end %>
+              </div>
+              <span class="muted">Sort <%= task_list.position %></span>
+            </div>
+            <p class="field-hint"><%= task_list_display_window_label(task_list) %></p>
+
+            <%= form_with model: task_list, url: tasks_list_path(task_list), method: :patch, class: "stacked-form" do |form| %>
+              <div class="form-grid">
+                <div class="field">
+                  <%= form.label :name, "List name" %>
+                  <%= form.text_field :name, required: true %>
+                </div>
+                <div class="field">
+                  <%= form.label :position, "Sort order" %>
+                  <%= form.number_field :position, step: 1 %>
+                </div>
+                <div class="field">
+                  <%= form.label :display_start_time, "Show from" %>
+                  <%= form.time_field :display_start_time, value: task_list.display_start_time&.strftime("%H:%M") %>
+                </div>
+                <div class="field">
+                  <%= form.label :display_end_time, "Show until" %>
+                  <%= form.time_field :display_end_time, value: task_list.display_end_time&.strftime("%H:%M") %>
+                </div>
+              </div>
+              <div class="field">
+                <%= form.label :notes, "Notes" %>
+                <%= form.text_area :notes, rows: 2 %>
+              </div>
+              <%= form.submit "Save list", class: "button small" %>
+            <% end %>
+
+            <div class="button-row">
+              <% if task_list.active? %>
+                <%= button_to "Archive list", archive_tasks_list_path(task_list), method: :patch, class: "button small" %>
+              <% else %>
+                <%= button_to "Reactivate list", reactivate_tasks_list_path(task_list), method: :patch, class: "button small" %>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="empty-state">No task lists yet.</p>
+    <% end %>
+  </section>
+</section>
