@@ -10,7 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_17_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_18_071000) do
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.integer "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.integer "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
   create_table "import_batches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "file_checksum", null: false
@@ -338,6 +366,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_17_120000) do
     t.index ["supplier_id"], name: "index_receipts_on_supplier_id"
   end
 
+  create_table "staff_members", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "display_name", null: false
+    t.text "notes"
+    t.datetime "updated_at", null: false
+    t.index ["active", "display_name"], name: "index_staff_members_on_active_and_display_name"
+  end
+
   create_table "supplier_product_packs", force: :cascade do |t|
     t.boolean "approved", default: false, null: false
     t.decimal "confidence_score", precision: 5, scale: 2, default: "0.0", null: false
@@ -373,6 +410,82 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_17_120000) do
     t.index ["name"], name: "index_suppliers_on_name", unique: true
   end
 
+  create_table "task_completions", force: :cascade do |t|
+    t.datetime "completed_at", null: false
+    t.datetime "created_at", null: false
+    t.text "notes"
+    t.string "snapshot_staff_name", null: false
+    t.string "snapshot_undone_by_staff_name"
+    t.integer "staff_member_id", null: false
+    t.integer "task_occurrence_id", null: false
+    t.datetime "undone_at"
+    t.integer "undone_by_staff_member_id"
+    t.text "undone_note"
+    t.datetime "updated_at", null: false
+    t.index ["staff_member_id"], name: "index_task_completions_on_staff_member_id"
+    t.index ["task_occurrence_id"], name: "idx_task_completions_one_active", unique: true, where: "undone_at IS NULL"
+    t.index ["task_occurrence_id"], name: "index_task_completions_on_task_occurrence_id"
+    t.index ["undone_at"], name: "index_task_completions_on_undone_at"
+    t.index ["undone_by_staff_member_id"], name: "index_task_completions_on_undone_by_staff_member_id"
+  end
+
+  create_table "task_lists", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "position"], name: "index_task_lists_on_active_and_position"
+    t.index ["key"], name: "index_task_lists_on_key", unique: true
+  end
+
+  create_table "task_occurrences", force: :cascade do |t|
+    t.datetime "completion_window_ends_at"
+    t.datetime "created_at", null: false
+    t.datetime "due_at"
+    t.date "period_ends_on", null: false
+    t.string "period_kind", null: false
+    t.date "period_starts_on", null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "requires_photo_evidence", default: false, null: false
+    t.text "snapshot_instructions"
+    t.string "snapshot_list_name", null: false
+    t.string "snapshot_title", null: false
+    t.integer "task_id", null: false
+    t.integer "task_list_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["completion_window_ends_at"], name: "index_task_occurrences_on_completion_window_ends_at"
+    t.index ["due_at"], name: "index_task_occurrences_on_due_at"
+    t.index ["period_kind", "period_starts_on", "period_ends_on"], name: "idx_task_occurrences_period"
+    t.index ["task_id", "period_kind", "period_starts_on"], name: "idx_task_occurrences_unique_period", unique: true
+    t.index ["task_id"], name: "index_task_occurrences_on_task_id"
+    t.index ["task_list_id"], name: "index_task_occurrences_on_task_list_id"
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.time "due_time"
+    t.date "ends_on"
+    t.text "instructions"
+    t.date "one_time_on"
+    t.integer "position", default: 0, null: false
+    t.string "recurrence_type", null: false
+    t.boolean "requires_photo_evidence", default: false, null: false
+    t.date "starts_on"
+    t.integer "task_list_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.json "weekdays", default: [], null: false
+    t.index ["recurrence_type"], name: "index_tasks_on_recurrence_type"
+    t.index ["task_list_id", "active", "position"], name: "index_tasks_on_task_list_id_and_active_and_position"
+    t.index ["task_list_id"], name: "index_tasks_on_task_list_id"
+  end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "import_batches", "suppliers"
   add_foreign_key "inventory_count_lines", "inventory_counts"
   add_foreign_key "inventory_count_lines", "inventory_items"
@@ -403,4 +516,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_17_120000) do
   add_foreign_key "receipts", "suppliers"
   add_foreign_key "supplier_product_packs", "products"
   add_foreign_key "supplier_product_packs", "suppliers"
+  add_foreign_key "task_completions", "staff_members"
+  add_foreign_key "task_completions", "staff_members", column: "undone_by_staff_member_id"
+  add_foreign_key "task_completions", "task_occurrences"
+  add_foreign_key "task_occurrences", "task_lists"
+  add_foreign_key "task_occurrences", "tasks"
+  add_foreign_key "tasks", "task_lists"
 end

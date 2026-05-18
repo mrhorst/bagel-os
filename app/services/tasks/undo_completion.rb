@@ -1,0 +1,29 @@
+module Tasks
+  class UndoCompletion
+    def initialize(now: Time.current)
+      @now = now
+    end
+
+    def call(completion:, staff_member:, note: nil)
+      raise ArgumentError, "Staff member must be active." unless staff_member&.active?
+      raise ArgumentError, "Completion has already been undone." unless completion.active?
+      raise ArgumentError, "Completion can only be undone during the same operating day." unless undoable_today?(completion)
+
+      completion.update!(
+        undone_at: now,
+        undone_note: note,
+        undone_by_staff_member: staff_member,
+        snapshot_undone_by_staff_name: staff_member.display_name
+      )
+      completion
+    end
+
+    private
+
+    attr_reader :now
+
+    def undoable_today?(completion)
+      completion.completed_at.to_date == now.to_date
+    end
+  end
+end
