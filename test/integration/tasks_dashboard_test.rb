@@ -22,10 +22,10 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select "h1", "Tasks"
-      assert_select ".metric strong", text: "1", minimum: 2
+      assert_select ".block-stat-card strong", text: "1", minimum: 2
       assert_select ".task-card-title", text: /Check display case/
       assert_select ".badge", text: "Late"
-      assert_select "h2", text: "This Month"
+      assert_select "h2", text: "This month"
       assert_select ".task-card-title", text: /Change AC filter/
     end
   end
@@ -55,8 +55,8 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       get tasks_root_path
 
       assert_response :success
-      assert_select "h2", text: "Opening"
-      assert_select "h2", text: "Closing", count: 0
+      assert_select ".task-list-cluster h3", text: "Opening"
+      assert_select ".task-list-cluster h3", text: "Closing", count: 0
       assert_select ".task-card-title", text: /Check display case/
       assert_select ".task-card-title", text: /Clean slicer/, count: 0
       assert_select ".later-tasks-panel", text: /1 task hidden/
@@ -66,7 +66,7 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       get tasks_root_path
 
       assert_response :success
-      assert_select "h2", text: "Closing"
+      assert_select ".task-list-cluster h3", text: "Closing"
       assert_select ".task-card-title", text: /Clean slicer/
     end
   end
