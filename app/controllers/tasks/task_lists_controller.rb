@@ -39,7 +39,7 @@ module Tasks
     private
 
     def task_list_params
-      params.require(:task_list).permit(:name, :position, :notes)
+      params.require(:task_list).permit(:name, :position, :notes, :display_start_time, :display_end_time)
     end
   end
 end

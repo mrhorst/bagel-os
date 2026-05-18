@@ -21,6 +21,21 @@ module TasksHelper
     end
   end
 
+  def task_list_display_window_label(task_list)
+    return "Always visible" unless task_list.display_window?
+
+    start_label = task_time_label(task_list.display_start_time)
+    end_label = task_time_label(task_list.display_end_time)
+
+    if task_list.display_start_time.present? && task_list.display_end_time.present?
+      "Visible #{start_label} - #{end_label}"
+    elsif task_list.display_start_time.present?
+      "Visible after #{start_label}"
+    else
+      "Visible until #{end_label}"
+    end
+  end
+
   def task_completion_summary(completion)
     return nil if completion.blank?
 

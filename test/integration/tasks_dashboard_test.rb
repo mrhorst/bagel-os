@@ -30,6 +30,47 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "hides task lists outside their display window" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      opening = TaskList.create!(name: "Opening", position: 1)
+      closing = TaskList.create!(
+        name: "Closing",
+        position: 2,
+        display_start_time: Time.zone.parse("12:00"),
+        display_end_time: Time.zone.parse("14:30")
+      )
+      opening.tasks.create!(
+        title: "Check display case",
+        recurrence_type: "daily",
+        starts_on: Date.new(2026, 5, 18),
+        due_time: Time.zone.parse("08:00")
+      )
+      closing.tasks.create!(
+        title: "Clean slicer",
+        recurrence_type: "daily",
+        starts_on: Date.new(2026, 5, 18),
+        due_time: Time.zone.parse("13:00")
+      )
+
+      get tasks_root_path
+
+      assert_response :success
+      assert_select "h2", text: "Opening"
+      assert_select "h2", text: "Closing", count: 0
+      assert_select ".task-card-title", text: /Check display case/
+      assert_select ".task-card-title", text: /Clean slicer/, count: 0
+      assert_select ".later-tasks-panel", text: /1 task hidden/
+    end
+
+    travel_to Time.zone.local(2026, 5, 18, 12) do
+      get tasks_root_path
+
+      assert_response :success
+      assert_select "h2", text: "Closing"
+      assert_select ".task-card-title", text: /Clean slicer/
+    end
+  end
+
   test "requires completing as before completion" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       occurrence = build_today_occurrence

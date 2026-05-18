@@ -26,12 +26,16 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
         task_list: {
           name: "Opening",
           position: 1,
+          display_start_time: "05:00",
+          display_end_time: "11:00",
           notes: "Before doors open"
         }
       }
       assert_redirected_to tasks_lists_path
       task_list = TaskList.sole
       assert_equal "Opening", task_list.name
+      assert_equal "05:00", task_list.display_start_time.strftime("%H:%M")
+      assert_equal "11:00", task_list.display_end_time.strftime("%H:%M")
 
       post tasks_manage_path, params: {
         task: {

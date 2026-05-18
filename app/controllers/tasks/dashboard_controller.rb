@@ -9,9 +9,13 @@ module Tasks
       @current_staff_member = current_task_staff_member
       @today_occurrences = actionable_day_occurrences(today)
       @monthly_occurrences = current_month_occurrences(today)
+      @hidden_today_occurrences = @today_occurrences.reject { |occurrence| occurrence.task_list.visible_at?(Time.current) }
+      @hidden_monthly_occurrences = @monthly_occurrences.reject { |occurrence| occurrence.task_list.visible_at?(Time.current) }
+      @today_occurrences = @today_occurrences.select { |occurrence| occurrence.task_list.visible_at?(Time.current) }
+      @monthly_occurrences = @monthly_occurrences.select { |occurrence| occurrence.task_list.visible_at?(Time.current) }
       @grouped_today_occurrences = grouped_occurrences(@today_occurrences)
       @grouped_monthly_occurrences = grouped_occurrences(@monthly_occurrences)
-      @metrics = board_metrics(@today_occurrences, @monthly_occurrences)
+      @metrics = board_metrics(@today_occurrences, @monthly_occurrences, @hidden_today_occurrences + @hidden_monthly_occurrences)
     end
 
     private
@@ -39,13 +43,14 @@ module Tasks
       occurrences.group_by(&:task_list).sort_by { |task_list, _items| [ task_list.position, task_list.name ] }
     end
 
-    def board_metrics(today_occurrences, monthly_occurrences)
+    def board_metrics(today_occurrences, monthly_occurrences, hidden_today_occurrences)
       statuses = today_occurrences.map { |occurrence| occurrence.status }
       {
         open_today: statuses.count("open"),
         late_today: statuses.count("late"),
         completed_today: statuses.count("completed"),
-        open_this_month: monthly_occurrences.size
+        open_this_month: monthly_occurrences.size,
+        hidden_today: hidden_today_occurrences.size
       }
     end
 

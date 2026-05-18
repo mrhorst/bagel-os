@@ -30,9 +30,31 @@ class TaskList < ApplicationRecord
     !active?
   end
 
+  def visible_at?(time = Time.current)
+    return true if display_start_time.blank? && display_end_time.blank?
+
+    current_seconds = seconds_since_midnight(time)
+    start_seconds = display_start_time.present? ? seconds_since_midnight(display_start_time) : nil
+    end_seconds = display_end_time.present? ? seconds_since_midnight(display_end_time) : nil
+
+    return current_seconds >= start_seconds if end_seconds.blank?
+    return current_seconds <= end_seconds if start_seconds.blank?
+    return current_seconds.between?(start_seconds, end_seconds) if start_seconds <= end_seconds
+
+    current_seconds >= start_seconds || current_seconds <= end_seconds
+  end
+
+  def display_window?
+    display_start_time.present? || display_end_time.present?
+  end
+
   private
 
   def assign_key
     self.key = self.class.key_for(name) if key.blank? && name.present?
+  end
+
+  def seconds_since_midnight(value)
+    (value.hour * 60 * 60) + (value.min * 60) + value.sec
   end
 end

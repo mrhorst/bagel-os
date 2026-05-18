@@ -53,4 +53,29 @@ class TaskFoundationTest < ActiveSupport::TestCase
     monthly = list.tasks.build(title: "Change AC filter", recurrence_type: "monthly", starts_on: Date.new(2026, 5, 1))
     assert monthly.valid?
   end
+
+  test "task list display window controls board visibility" do
+    list = TaskList.create!(
+      name: "Closing",
+      display_start_time: Time.zone.parse("12:00"),
+      display_end_time: Time.zone.parse("14:30")
+    )
+
+    assert_not list.visible_at?(Time.zone.local(2026, 5, 18, 9))
+    assert list.visible_at?(Time.zone.local(2026, 5, 18, 12))
+    assert list.visible_at?(Time.zone.local(2026, 5, 18, 14, 30))
+    assert_not list.visible_at?(Time.zone.local(2026, 5, 18, 15))
+  end
+
+  test "task list display window can cross midnight" do
+    list = TaskList.create!(
+      name: "Overnight",
+      display_start_time: Time.zone.parse("22:00"),
+      display_end_time: Time.zone.parse("02:00")
+    )
+
+    assert list.visible_at?(Time.zone.local(2026, 5, 18, 23))
+    assert list.visible_at?(Time.zone.local(2026, 5, 19, 1))
+    assert_not list.visible_at?(Time.zone.local(2026, 5, 18, 12))
+  end
 end

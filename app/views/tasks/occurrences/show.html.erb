@@ -81,7 +81,19 @@
     <% elsif @occurrence.missed? %>
       <p class="empty-state">This task was missed and can no longer be completed.</p>
     <% else %>
-      <p class="empty-state">This task is not completed yet.</p>
+      <%= form_with url: tasks_occurrence_completion_path(@occurrence), multipart: true, class: "stacked-form" do |form| %>
+        <% if @occurrence.requires_photo_evidence? %>
+          <div class="field">
+            <%= form.label :photo, "Photo evidence" %>
+            <%= form.file_field :photo, accept: "image/*", capture: "environment" %>
+          </div>
+        <% end %>
+        <div class="field">
+          <%= form.label :notes, "Note" %>
+          <%= form.text_area :notes, rows: 3, placeholder: "Optional note" %>
+        </div>
+        <%= form.submit "Complete task", class: "button primary button-success" %>
+      <% end %>
     <% end %>
   </section>
 </section>

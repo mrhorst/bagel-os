@@ -36,10 +36,10 @@
   </div>
 
   <% if @tasks.any? %>
-    <div class="task-card-list">
+    <div class="manage-task-list">
       <% @tasks.each do |task| %>
-        <article class="guide-card">
-          <div class="panel-heading">
+        <article class="manage-task-row">
+          <div class="manage-task-summary">
             <div>
               <h3><%= task.title %></h3>
               <div class="status-row">
@@ -57,7 +57,10 @@
             <span class="muted"><%= task_recurrence_label(task) %></span>
           </div>
 
-          <%= render "task_form", task: task, url: tasks_managed_task_path(task), method: :patch, submit_label: "Save task" %>
+          <details class="form-disclosure">
+            <summary>Edit task</summary>
+            <%= render "task_form", task: task, url: tasks_managed_task_path(task), method: :patch, submit_label: "Save task" %>
+          </details>
 
           <div class="button-row">
             <% if task.active? %>

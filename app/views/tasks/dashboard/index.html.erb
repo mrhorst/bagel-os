@@ -3,7 +3,7 @@
 <div class="page-heading">
   <div>
     <h1>Tasks</h1>
-    <p>Today’s staff work and this month’s recurring operating tasks.</p>
+    <p>Current shift work only.</p>
   </div>
   <div class="button-row">
     <%= link_to "History", tasks_history_path, class: "button" %>
@@ -12,7 +12,7 @@
   </div>
 </div>
 
-<section class="metric-grid compact">
+<section class="metric-grid compact tasks-dashboard-metrics">
   <div class="metric">
     <span>Open today</span>
     <strong><%= @metrics.fetch(:open_today) %></strong>
@@ -29,9 +29,13 @@
     <span>Open this month</span>
     <strong><%= @metrics.fetch(:open_this_month) %></strong>
   </div>
+  <div class="metric">
+    <span>Hidden by window</span>
+    <strong><%= @metrics.fetch(:hidden_today) %></strong>
+  </div>
 </section>
 
-<section class="panel">
+<section class="panel staff-strip">
   <div class="panel-heading">
     <div>
       <h2>Completing As</h2>
@@ -48,8 +52,8 @@
 
 <section class="tasks-board">
   <div class="section-heading">
-    <h2>Today</h2>
-    <p>Late tasks stay actionable until the operating day closes. Completed tasks remain visible for the shift.</p>
+    <h2>Now</h2>
+    <p>Only visible task lists show here.</p>
   </div>
 
   <% if @grouped_today_occurrences.any? %>
@@ -62,9 +66,23 @@
           </div>
         </div>
 
-        <div class="task-card-list">
+        <div class="task-row-list">
           <% occurrences.each do |occurrence| %>
-            <article class="task-card task-card-<%= occurrence.status %>">
+            <article class="task-row task-row-<%= occurrence.status %>">
+              <div class="task-row-check">
+                <% if occurrence.completed? %>
+                  <span class="task-circle task-circle-completed" aria-label="Completed"></span>
+                <% elsif occurrence.requires_photo_evidence? %>
+                  <%= link_to tasks_occurrence_path(occurrence), class: "task-circle task-circle-photo", aria: { label: "Add photo evidence for #{occurrence.snapshot_title}" } do %>
+                    <span class="sr-only">Add photo evidence</span>
+                  <% end %>
+                <% else %>
+                  <%= form_with url: tasks_occurrence_completion_path(occurrence), class: "circle-form" do |form| %>
+                    <%= form.submit "", class: "task-circle task-circle-open", aria: { label: "Complete #{occurrence.snapshot_title}" } %>
+                  <% end %>
+                <% end %>
+              </div>
+
               <div class="task-card-main">
                 <div class="task-card-title">
                   <%= task_status_badge(occurrence) %>
@@ -75,7 +93,10 @@
                   <span><%= task_due_label(occurrence) %></span>
                 </div>
                 <% if occurrence.snapshot_instructions.present? %>
-                  <p><%= occurrence.snapshot_instructions %></p>
+                  <details class="task-details">
+                    <summary>Details</summary>
+                    <p><%= occurrence.snapshot_instructions %></p>
+                  </details>
                 <% end %>
                 <% if occurrence.active_completion.present? %>
                   <p class="field-hint"><%= task_completion_summary(occurrence.active_completion) %></p>
@@ -86,27 +107,16 @@
                 <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
                 <% if occurrence.completed? %>
                   <% if occurrence.undoable? %>
-                    <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "stacked-form task-action-form" do |form| %>
-                      <%= form.label :undone_note, "Undo note", class: "sr-only" %>
-                      <%= form.text_field :undone_note, placeholder: "Optional undo note" %>
-                      <label class="check">
-                        <%= check_box_tag :confirm_undo, "1", false %>
-                        <span>Confirm undo</span>
-                      </label>
-                      <%= form.submit "Undo", class: "button small" %>
+                    <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "circle-form" do |form| %>
+                      <%= hidden_field_tag :confirm_undo, "1" %>
+                      <%= form.submit "", class: "task-circle task-circle-undo", aria: { label: "Undo #{occurrence.snapshot_title}" } %>
                     <% end %>
                   <% else %>
                     <span class="muted">Undo closed</span>
                   <% end %>
                 <% else %>
-                  <%= form_with url: tasks_occurrence_completion_path(occurrence), multipart: true, class: "stacked-form task-action-form" do |form| %>
-                    <% if occurrence.requires_photo_evidence? %>
-                      <%= form.label :photo, "Photo evidence" %>
-                      <%= form.file_field :photo, accept: "image/*", capture: "environment" %>
-                    <% end %>
-                    <%= form.label :notes, "Note", class: "sr-only" %>
-                    <%= form.text_area :notes, rows: 2, placeholder: "Optional note" %>
-                    <%= form.submit "Complete", class: "button primary" %>
+                  <% if occurrence.requires_photo_evidence? %>
+                    <span class="field-hint">Open details to attach photo.</span>
                   <% end %>
                 <% end %>
               </div>
@@ -117,7 +127,14 @@
     <% end %>
   <% else %>
     <section class="panel">
-      <p class="empty-state">No daily or weekly tasks are due today.</p>
+      <p class="empty-state">No task lists are active right now.</p>
+    </section>
+  <% end %>
+
+  <% if @hidden_today_occurrences.any? %>
+    <section class="panel later-tasks-panel">
+      <strong><%= pluralize(@hidden_today_occurrences.size, "task") %> hidden by task-list display windows</strong>
+      <p class="field-hint">Those lists appear automatically during their configured start and end times.</p>
     </section>
   <% end %>
 </section>
@@ -138,9 +155,14 @@
           </div>
         </div>
 
-        <div class="task-card-list">
+        <div class="task-row-list">
           <% occurrences.each do |occurrence| %>
-            <article class="task-card">
+            <article class="task-row">
+              <div class="task-row-check">
+                <%= link_to tasks_occurrence_path(occurrence), class: "task-circle task-circle-open", aria: { label: "Open #{occurrence.snapshot_title}" } do %>
+                  <span class="sr-only">Open task details</span>
+                <% end %>
+              </div>
               <div class="task-card-main">
                 <div class="task-card-title">
                   <%= task_status_badge(occurrence) %>
@@ -151,21 +173,15 @@
                   <span>This month</span>
                 </div>
                 <% if occurrence.snapshot_instructions.present? %>
-                  <p><%= occurrence.snapshot_instructions %></p>
+                  <details class="task-details">
+                    <summary>Details</summary>
+                    <p><%= occurrence.snapshot_instructions %></p>
+                  </details>
                 <% end %>
               </div>
 
               <div class="task-card-actions">
                 <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
-                <%= form_with url: tasks_occurrence_completion_path(occurrence), multipart: true, class: "stacked-form task-action-form" do |form| %>
-                  <% if occurrence.requires_photo_evidence? %>
-                    <%= form.label :photo, "Photo evidence" %>
-                    <%= form.file_field :photo, accept: "image/*", capture: "environment" %>
-                  <% end %>
-                  <%= form.label :notes, "Note", class: "sr-only" %>
-                  <%= form.text_area :notes, rows: 2, placeholder: "Optional note" %>
-                  <%= form.submit "Complete", class: "button primary" %>
-                <% end %>
               </div>
             </article>
           <% end %>

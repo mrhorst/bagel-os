@@ -30,6 +30,16 @@
           <%= form.label :position, "Sort order" %>
           <%= form.number_field :position, step: 1, value: @next_position %>
         </div>
+        <div class="field">
+          <%= form.label :display_start_time, "Show from" %>
+          <%= form.time_field :display_start_time %>
+          <p class="field-hint">Leave blank for all-day lists.</p>
+        </div>
+        <div class="field">
+          <%= form.label :display_end_time, "Show until" %>
+          <%= form.time_field :display_end_time %>
+          <p class="field-hint">Example: Closing can show from 12:00 PM until close.</p>
+        </div>
       </div>
       <div class="field">
         <%= form.label :notes, "Notes" %>
@@ -62,6 +72,7 @@
               </div>
               <span class="muted">Sort <%= task_list.position %></span>
             </div>
+            <p class="field-hint"><%= task_list_display_window_label(task_list) %></p>
 
             <%= form_with model: task_list, url: tasks_list_path(task_list), method: :patch, class: "stacked-form" do |form| %>
               <div class="form-grid">
@@ -72,6 +83,14 @@
                 <div class="field">
                   <%= form.label :position, "Sort order" %>
                   <%= form.number_field :position, step: 1 %>
+                </div>
+                <div class="field">
+                  <%= form.label :display_start_time, "Show from" %>
+                  <%= form.time_field :display_start_time, value: task_list.display_start_time&.strftime("%H:%M") %>
+                </div>
+                <div class="field">
+                  <%= form.label :display_end_time, "Show until" %>
+                  <%= form.time_field :display_end_time, value: task_list.display_end_time&.strftime("%H:%M") %>
                 </div>
               </div>
               <div class="field">

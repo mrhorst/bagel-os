@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_18_071000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_18_183000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -432,6 +432,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_18_071000) do
   create_table "task_lists", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
+    t.time "display_end_time"
+    t.time "display_start_time"
     t.string "key", null: false
     t.string "name", null: false
     t.text "notes"
