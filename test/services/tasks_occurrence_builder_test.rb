@@ -39,6 +39,24 @@ class TasksOccurrenceBuilderTest < ActiveSupport::TestCase
     assert_equal [ Date.new(2026, 5, 18), Date.new(2026, 5, 20) ], task.task_occurrences.order(:period_starts_on).pluck(:period_starts_on)
   end
 
+  test "builds due times in the restaurant local timezone" do
+    list = TaskList.create!(name: "Midday")
+    task = list.tasks.create!(
+      title: "Clean slicer",
+      recurrence_type: "daily",
+      starts_on: Date.new(2026, 5, 18),
+      due_time: Time.zone.parse("15:00")
+    )
+
+    Tasks::OccurrenceBuilder.new.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
+
+    occurrence = task.task_occurrences.sole
+    assert_equal "Eastern Time (US & Canada)", Time.zone.name
+    assert_equal Time.utc(2026, 5, 18, 19), occurrence.due_at.utc
+    assert_equal "open", occurrence.status(now: Time.zone.local(2026, 5, 18, 14, 59))
+    assert_equal "late", occurrence.status(now: Time.zone.local(2026, 5, 18, 15))
+  end
+
   test "builds monthly occurrences as calendar month windows" do
     list = TaskList.create!(name: "Maintenance")
     task = list.tasks.create!(
