@@ -9,7 +9,47 @@ module PriceChartHelper
   CHART_COLORS = %w[#d04f2f #175f73 #6e4c00 #1e5b35 #6b4bb8 #9b2c2c #2f6f4e #7a4f01].freeze
 
   def price_history_chart(observations, mode:)
-    price_history_svg(observations, mode: mode)
+    series = price_history_chart_series(observations, mode: mode)
+    return tag.div("Not enough data for this chart mode yet.", class: "empty-state") if series.empty?
+
+    line_chart(
+      series,
+      id: "product-price-history-#{mode}",
+      height: "360px",
+      colors: CHART_COLORS,
+      points: true,
+      curve: false,
+      legend: "bottom",
+      xtitle: "Purchase date",
+      ytitle: CHART_MODES.fetch(mode, "Price history"),
+      prefix: chart_value_prefix(mode),
+      library: {
+        interaction: { mode: "nearest", intersect: false },
+        plugins: {
+          datalabels: {
+            display: true,
+            align: "top",
+            anchor: "end",
+            offset: 4,
+            clamp: true,
+            color: "#293743",
+            backgroundColor: "rgba(248, 250, 252, 0.92)",
+            borderColor: "rgba(203, 213, 225, 0.95)",
+            borderRadius: 4,
+            borderWidth: 1,
+            padding: { top: 2, right: 4, bottom: 2, left: 4 },
+            font: { size: 11, weight: "700" },
+            valueDecimals: chart_value_decimals(mode),
+            valuePrefix: chart_value_prefix(mode),
+            valueSuffix: chart_value_suffix(observations, mode)
+          }
+        },
+        scales: {
+          x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
+          y: { beginAtZero: false }
+        }
+      }
+    )
   end
 
   def price_history_svg(observations, mode:)
@@ -87,6 +127,54 @@ module PriceChartHelper
   end
 
   private
+
+  def price_history_chart_series(observations, mode:)
+    points = observations.filter_map do |observation|
+      value = observation.chart_value(mode)
+      next if value.blank?
+
+      [ observation, value.to_d ]
+    end
+
+    points
+      .group_by { |observation, _value| observation.chart_series_key(mode) }
+      .map do |_key, series_points|
+        first_observation = series_points.first.first
+        {
+          name: first_observation.chart_series_label(mode),
+          data: series_points.map do |observation, value|
+            [ observation.observed_at.to_date.iso8601, value.to_f ]
+          end
+        }
+      end
+  end
+
+  def chart_value_prefix(mode)
+    mode == "quantity" ? nil : "$"
+  end
+
+  def chart_value_decimals(mode)
+    mode == "quantity" ? 4 : 2
+  end
+
+  def chart_value_suffix(observations, mode)
+    unit = case mode
+    when "standard_unit_price"
+      unique_present_value(observations.map(&:standard_unit))
+    when "inner_unit_price"
+      unique_present_value(observations.map(&:inner_unit_label))
+    when "package_price"
+      comparable_observations = observations.select(&:presentation_chart_uses_comparable_unit?)
+      unique_present_value(comparable_observations.map(&:standard_unit)) if comparable_observations.size == observations.size
+    end
+
+    unit.present? ? "/#{unit}" : nil
+  end
+
+  def unique_present_value(values)
+    unique_values = values.compact_blank.uniq
+    unique_values.first if unique_values.one?
+  end
 
   def x_coordinate(observed_time:, min_time:, time_range:, plot_left:, plot_width:)
     return plot_left + (plot_width / 2.0) if time_range.zero?

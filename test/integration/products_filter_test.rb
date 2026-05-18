@@ -31,8 +31,11 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     standard_unit_path = product_path(product, chart_mode: "standard_unit_price")
     assert_select "a[data-chart-mode='standard_unit_price'][href='#{standard_unit_path}']", text: "Comparable unit price"
     assert_select "[data-chart-panel='package_price'] #product-price-history-package_price"
-    assert_select "[data-chart-panel='package_price'] .chart-point-label", text: "$0.17/oz"
-    assert_select "[data-chart-panel='package_price'] circle[data-purchase-date='2026-05-13']"
+    assert_select "script", text: /new Chartkick\["LineChart"\]\("product-price-history-package_price"/
+    assert_select "script", text: /"datalabels":\{"display":true/
+    assert_select "script", text: /"valuePrefix":"\$"/
+    assert_select "script", text: /"valueSuffix":"\/oz"/
+    assert_select "script", text: /2026-05-13/
     assert_select "[data-chart-panel='standard_unit_price']"
     assert_select "[data-chart-summary='line_total']"
     assert_select "[data-chart-summary='quantity']"

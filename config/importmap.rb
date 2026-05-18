@@ -2,6 +2,7 @@
 
 pin "application"
 pin "Chart.bundle", to: "Chart.bundle.js"
+pin "chartjs-plugin-datalabels", to: "chartjs-plugin-datalabels.js"
 pin "chartkick", to: "chartkick.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
