@@ -13,8 +13,13 @@ class ProductNameMatcherTest < ActiveSupport::TestCase
   test "matches plain guide wording to conservative product names" do
     matcher = Purchasing::ProductNameMatcher.new
 
-    assert_equal @oat_milk, matcher.match("Oatmilk").product
-    assert_equal @fries, matcher.match("Fries").product
+    oat_milk_match = matcher.match("Oatmilk")
+    fries_match = matcher.match("Fries")
+
+    assert oat_milk_match.auto_link?
+    assert_equal @oat_milk, oat_milk_match.linked_product
+    assert_equal "plain-language order guide rule", oat_milk_match.basis
+    assert_equal @fries, fries_match.linked_product
   end
 
   test "does not auto-link ambiguous American cheese guide row" do
@@ -22,7 +27,11 @@ class ProductNameMatcherTest < ActiveSupport::TestCase
     @supplier.products.create!(canonical_name: "American Cheese White")
     matcher = Purchasing::ProductNameMatcher.new
 
-    assert_nil matcher.match("American").product
+    match = matcher.match("American")
+
+    assert_nil match.product
+    assert_not match.auto_link?
+    assert match.review_required?
   end
 
   test "matches sausage formats to separate products" do
@@ -38,6 +47,6 @@ class ProductNameMatcherTest < ActiveSupport::TestCase
     match = matcher.match("Rye", context: { subcategory: "Sliced Bread" })
 
     assert_equal @rye_bread, match.product
-    assert_operator match.confidence, :>=, 0.9
+    assert match.auto_link?
   end
 end

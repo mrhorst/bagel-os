@@ -11,7 +11,8 @@ module Purchasing
 
       interpretation = name_interpreter.interpret(line_item.raw_name)
       category = category_classifier.category_for(line_item.raw_name)
-      product = find_product(line_item, interpretation) || build_product(line_item, parsed_unit, interpretation, category)
+      decision = product_decision_for(line_item, interpretation)
+      product = decision&.auto_link? ? decision.product : build_product(line_item, parsed_unit, interpretation, category)
       ensure_alias!(product, line_item, interpretation)
       refresh_product!(product, line_item, parsed_unit, interpretation, category)
       flag_possible_match!(product, line_item, interpretation) if product.previously_new_record?
@@ -21,6 +22,17 @@ module Purchasing
     private
 
     attr_reader :supplier, :category_classifier, :name_interpreter
+
+    def product_decision_for(line_item, interpretation)
+      if (product = find_product(line_item, interpretation))
+        ProductMatchDecision.new(
+          product: product,
+          confidence: 0.98,
+          basis: "receipt product identity rule",
+          source: "receipt"
+        )
+      end
+    end
 
     def find_product(line_item, interpretation)
       canonical_product = supplier.products.where(canonical_name: interpretation.canonical_name).to_a.min_by do |product|

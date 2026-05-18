@@ -71,6 +71,17 @@ class ProductNormalizerTest < ActiveSupport::TestCase
     assert_match(/not auto-merged/, review.description)
   end
 
+  test "uses matching decisions for existing receipt product identity" do
+    existing = @supplier.products.create!(canonical_name: "Oat Milk", supplier_sku: "OAT-1")
+    line_item = create_line!(raw_name: "OAT ORIG 32OZ", raw_sku: "OAT-1")
+    parsed_unit = ParsedUnit.new(package_size: 32, unit_of_measure: "oz", standard_unit: "oz")
+
+    product = normalizer.match_or_create!(line_item, parsed_unit)
+
+    assert_equal existing, product
+    assert_equal 1, @supplier.products.where(canonical_name: "Oat Milk").count
+  end
+
   private
 
   def normalizer

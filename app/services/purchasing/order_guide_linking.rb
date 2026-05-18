@@ -1,7 +1,5 @@
 module Purchasing
   class OrderGuideLinking
-    CONFIDENT_MATCH_THRESHOLD = BigDecimal("0.9")
-
     Result = Struct.new(
       :guide_item,
       :inventory_item,
@@ -97,7 +95,7 @@ module Purchasing
     end
 
     def confident_match?(match)
-      match.product.present? && match.confidence.to_d >= CONFIDENT_MATCH_THRESHOLD
+      match.auto_link?
     end
 
     def create_guide_item!(import, row, inventory_item, match, product)

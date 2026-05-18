@@ -1,10 +1,6 @@
 module Purchasing
   class ProductNameMatcher
-    Match = Struct.new(:product, :suggested_product, :confidence, :basis, keyword_init: true) do
-      def confident?
-        product.present? && confidence.to_d >= 0.9
-      end
-    end
+    Match = ProductMatchDecision
 
     GUIDE_RULES = [
       [ /\Ahalf n half\z/i, "Half and Half" ],
@@ -53,28 +49,28 @@ module Purchasing
     def match(raw_name, context: {})
       normalized = normalize(raw_name)
       if (product = canonical_index[normalized])
-        return Match.new(product: product, confidence: 0.98, basis: "exact canonical product name")
+        return Match.new(product: product, confidence: 0.98, basis: "exact canonical product name", source: "order_guide")
       end
 
       if (product = alias_index[normalized])
-        return Match.new(product: product, confidence: 0.95, basis: "exact raw receipt alias")
+        return Match.new(product: product, confidence: 0.95, basis: "exact raw receipt alias", source: "order_guide")
       end
 
       if (product = product_for_context_rule(raw_name, context))
-        return Match.new(product: product, confidence: 0.94, basis: "order guide section/subcategory rule")
+        return Match.new(product: product, confidence: 0.94, basis: "order guide section/subcategory rule", source: "order_guide")
       end
 
       if (product = product_for_rule(raw_name))
-        return Match.new(product: product, confidence: 0.93, basis: "plain-language order guide rule")
+        return Match.new(product: product, confidence: 0.93, basis: "plain-language order guide rule", source: "order_guide")
       end
 
       interpreted_name = interpreter.interpret(raw_name).canonical_name
       if interpreted_name.present? && (product = canonical_index[normalize(interpreted_name)])
-        return Match.new(product: product, confidence: 0.92, basis: "receipt shorthand interpreter")
+        return Match.new(product: product, confidence: 0.92, basis: "receipt shorthand interpreter", source: "order_guide")
       end
 
       suggested_product, score = closest_product(raw_name)
-      Match.new(product: nil, suggested_product: suggested_product, confidence: score, basis: "low-confidence token similarity")
+      Match.new(product: nil, suggested_product: suggested_product, confidence: score, basis: "low-confidence token similarity", source: "order_guide")
     end
 
     def normalize(value)
