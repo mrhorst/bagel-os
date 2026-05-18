@@ -1,0 +1,173 @@
+<% content_for :title, "Tasks" %>
+
+<div class="page-heading">
+  <div>
+    <h1>Tasks</h1>
+    <p>Today’s staff work and this month’s recurring operating tasks.</p>
+  </div>
+  <%= link_to "Refresh", tasks_root_path, class: "button" %>
+</div>
+
+<section class="metric-grid compact">
+  <div class="metric">
+    <span>Open today</span>
+    <strong><%= @metrics.fetch(:open_today) %></strong>
+  </div>
+  <div class="metric">
+    <span>Late today</span>
+    <strong><%= @metrics.fetch(:late_today) %></strong>
+  </div>
+  <div class="metric">
+    <span>Completed today</span>
+    <strong><%= @metrics.fetch(:completed_today) %></strong>
+  </div>
+  <div class="metric">
+    <span>Open this month</span>
+    <strong><%= @metrics.fetch(:open_this_month) %></strong>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Completing As</h2>
+      <p class="muted">This is staff attribution for this device, not a login.</p>
+    </div>
+  </div>
+  <%= form_with url: tasks_completing_as_path, method: :patch, class: "inline-guide-form" do |form| %>
+    <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
+    <%= form.select :staff_member_id, options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id), { include_blank: "Select staff member" }, class: "compact-select" %>
+    <%= form.submit "Use staff member", class: "button small" %>
+  <% end %>
+</section>
+
+<section class="tasks-board">
+  <div class="section-heading">
+    <h2>Today</h2>
+    <p>Late tasks stay actionable until the operating day closes. Completed tasks remain visible for the shift.</p>
+  </div>
+
+  <% if @grouped_today_occurrences.any? %>
+    <% @grouped_today_occurrences.each do |task_list, occurrences| %>
+      <section class="panel task-list-panel">
+        <div class="panel-heading">
+          <div>
+            <h2><%= task_list.name %></h2>
+            <p class="muted"><%= pluralize(occurrences.size, "task") %></p>
+          </div>
+        </div>
+
+        <div class="task-card-list">
+          <% occurrences.each do |occurrence| %>
+            <article class="task-card task-card-<%= occurrence.status %>">
+              <div class="task-card-main">
+                <div class="task-card-title">
+                  <%= task_status_badge(occurrence) %>
+                  <% if occurrence.requires_photo_evidence? %>
+                    <span class="badge badge-compact">Photo required</span>
+                  <% end %>
+                  <strong><%= occurrence.snapshot_title %></strong>
+                  <span><%= task_due_label(occurrence) %></span>
+                </div>
+                <% if occurrence.snapshot_instructions.present? %>
+                  <p><%= occurrence.snapshot_instructions %></p>
+                <% end %>
+                <% if occurrence.active_completion.present? %>
+                  <p class="field-hint"><%= task_completion_summary(occurrence.active_completion) %></p>
+                <% end %>
+              </div>
+
+              <div class="task-card-actions">
+                <% if occurrence.completed? %>
+                  <% if occurrence.undoable? %>
+                    <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "stacked-form task-action-form" do |form| %>
+                      <%= form.label :undone_note, "Undo note", class: "sr-only" %>
+                      <%= form.text_field :undone_note, placeholder: "Optional undo note" %>
+                      <label class="check">
+                        <%= check_box_tag :confirm_undo, "1", false %>
+                        <span>Confirm undo</span>
+                      </label>
+                      <%= form.submit "Undo", class: "button small" %>
+                    <% end %>
+                  <% else %>
+                    <span class="muted">Undo closed</span>
+                  <% end %>
+                <% else %>
+                  <%= form_with url: tasks_occurrence_completion_path(occurrence), multipart: true, class: "stacked-form task-action-form" do |form| %>
+                    <% if occurrence.requires_photo_evidence? %>
+                      <%= form.label :photo, "Photo evidence" %>
+                      <%= form.file_field :photo, accept: "image/*", capture: "environment" %>
+                    <% end %>
+                    <%= form.label :notes, "Note", class: "sr-only" %>
+                    <%= form.text_area :notes, rows: 2, placeholder: "Optional note" %>
+                    <%= form.submit "Complete", class: "button primary" %>
+                  <% end %>
+                <% end %>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% else %>
+    <section class="panel">
+      <p class="empty-state">No daily or weekly tasks are due today.</p>
+    </section>
+  <% end %>
+</section>
+
+<section class="tasks-board">
+  <div class="section-heading">
+    <h2>This Month</h2>
+    <p>Monthly tasks can be completed any time this month.</p>
+  </div>
+
+  <% if @grouped_monthly_occurrences.any? %>
+    <% @grouped_monthly_occurrences.each do |task_list, occurrences| %>
+      <section class="panel task-list-panel">
+        <div class="panel-heading">
+          <div>
+            <h2><%= task_list.name %></h2>
+            <p class="muted"><%= pluralize(occurrences.size, "monthly task") %></p>
+          </div>
+        </div>
+
+        <div class="task-card-list">
+          <% occurrences.each do |occurrence| %>
+            <article class="task-card">
+              <div class="task-card-main">
+                <div class="task-card-title">
+                  <%= task_status_badge(occurrence) %>
+                  <% if occurrence.requires_photo_evidence? %>
+                    <span class="badge badge-compact">Photo required</span>
+                  <% end %>
+                  <strong><%= occurrence.snapshot_title %></strong>
+                  <span>This month</span>
+                </div>
+                <% if occurrence.snapshot_instructions.present? %>
+                  <p><%= occurrence.snapshot_instructions %></p>
+                <% end %>
+              </div>
+
+              <div class="task-card-actions">
+                <%= form_with url: tasks_occurrence_completion_path(occurrence), multipart: true, class: "stacked-form task-action-form" do |form| %>
+                  <% if occurrence.requires_photo_evidence? %>
+                    <%= form.label :photo, "Photo evidence" %>
+                    <%= form.file_field :photo, accept: "image/*", capture: "environment" %>
+                  <% end %>
+                  <%= form.label :notes, "Note", class: "sr-only" %>
+                  <%= form.text_area :notes, rows: 2, placeholder: "Optional note" %>
+                  <%= form.submit "Complete", class: "button primary" %>
+                <% end %>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% else %>
+    <section class="panel">
+      <p class="empty-state">No monthly tasks are open.</p>
+    </section>
+  <% end %>
+</section>

@@ -11,6 +11,14 @@ Rails.application.routes.draw do
 
   root "dashboard#index"
 
+  scope module: :tasks, path: :tasks, as: :tasks do
+    root "dashboard#index"
+    patch "completing-as", to: "completing_as#update", as: :completing_as
+    resources :occurrences, only: [] do
+      resource :completion, only: %i[create destroy], controller: "completions"
+    end
+  end
+
   resources :import_batches, only: %i[index new create show]
   get "inventory", to: "inventory#index", as: :inventory
   get "inventory/items", to: "inventory#items", as: :inventory_items
