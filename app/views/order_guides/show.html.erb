@@ -30,9 +30,24 @@
   <div class="panel-heading">
     <div>
       <h2>Guide Items</h2>
-      <p class="muted">Change an item's primary guide from the Master Inventory page.</p>
+      <p class="muted">Add existing inventory items here, or change an item's primary guide from the Master Inventory page.</p>
     </div>
   </div>
+
+  <% if @available_inventory_items.any? %>
+    <%= form_with url: order_guide_memberships_path(@order_guide), method: :post, class: "inline-guide-form guide-add-form" do |form| %>
+      <%= form.label :inventory_item_id, "Add item" %>
+      <%= form.collection_select :inventory_item_id,
+        @available_inventory_items,
+        :id,
+        :name,
+        { prompt: "Choose inventory item" },
+        { class: "compact-select" } %>
+      <%= form.submit "Add to guide", class: "button small" %>
+    <% end %>
+  <% else %>
+    <p class="field-hint">Every active inventory item is already on this guide.</p>
+  <% end %>
 
   <% if @memberships.any? %>
     <table>
@@ -44,6 +59,7 @@
           <th>Pack / count note</th>
           <th>Supplier</th>
           <th>Status</th>
+          <th>Remove</th>
         </tr>
       </thead>
       <tbody>
@@ -73,11 +89,17 @@
                 <span class="badge badge-ok">Ready</span>
               <% end %>
             </td>
+            <td>
+              <%= button_to "Remove",
+                order_guide_membership_path(@order_guide, membership),
+                method: :delete,
+                class: "button small" %>
+            </td>
           </tr>
         <% end %>
       </tbody>
     </table>
   <% else %>
-    <p class="empty-state">No inventory items are assigned to this guide yet.</p>
+    <p class="empty-state">No inventory items are assigned to this guide yet. Add an existing inventory item above or assign a primary guide from Master Inventory.</p>
   <% end %>
 </section>

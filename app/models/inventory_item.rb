@@ -90,7 +90,7 @@ class InventoryItem < ApplicationRecord
     membership = order_guide_memberships.find_or_initialize_by(order_guide: order_guide)
     membership.active = true
     membership.primary_guide = primary
-    membership.position = position if position.present?
+    membership.position = position if position.present? || membership.position.blank?
     membership.notes = notes if notes.present?
     membership.save!
     membership

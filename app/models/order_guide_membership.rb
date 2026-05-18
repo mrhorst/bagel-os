@@ -16,6 +16,10 @@ class OrderGuideMembership < ApplicationRecord
     active? && primary_guide?
   end
 
+  def deactivate!
+    update!(active: false, primary_guide: false)
+  end
+
   private
 
   def clear_other_primary_memberships

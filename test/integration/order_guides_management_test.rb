@@ -56,4 +56,67 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "guide_name,item_name,section,category,count_unit,pack_size,primary_guide,position,notes"
     assert_includes response.body, "Daily,Eggs,Walk-in cooler"
   end
+
+  test "adds removes and re-adds existing inventory items from a guide" do
+    guide = OrderGuide.create!(name: "Daily")
+    section = InventorySection.create!(name: "Walk-in cooler", position: 1)
+    item = InventoryItem.create!(name: "Eggs", key: "eggs", inventory_section: section)
+
+    get order_guide_path(guide)
+    assert_response :success
+    assert_select "select[name='inventory_item_id'] option", text: "Eggs"
+
+    post order_guide_memberships_path(guide), params: { inventory_item_id: item.id }
+
+    assert_redirected_to order_guide_path(guide)
+    membership = guide.order_guide_memberships.find_by!(inventory_item: item)
+    assert membership.active?
+
+    get order_guide_path(guide)
+    assert_response :success
+    assert_match "Eggs", response.body
+    assert_select "form[action='#{order_guide_membership_path(guide, membership)}']"
+
+    delete order_guide_membership_path(guide, membership)
+
+    assert_redirected_to order_guide_path(guide)
+    assert_not membership.reload.active?
+
+    get order_guide_path(guide)
+    assert_response :success
+    assert_no_match(/<strong>Eggs<\/strong>/, response.body)
+    assert_select "select[name='inventory_item_id'] option", text: "Eggs"
+
+    post order_guide_memberships_path(guide), params: { inventory_item_id: item.id }
+
+    assert_redirected_to order_guide_path(guide)
+    assert membership.reload.active?
+    assert_equal 1, guide.order_guide_memberships.where(inventory_item: item).count
+  end
+
+  test "removing primary item from guide leaves item without primary guide" do
+    guide = OrderGuide.create!(name: "Weekly")
+    item = InventoryItem.create!(name: "Coffee beans", key: "coffee-beans")
+    membership = item.add_to_order_guide!(guide, primary: true)
+
+    delete order_guide_membership_path(guide, membership)
+
+    assert_redirected_to order_guide_path(guide)
+    assert_not membership.reload.active?
+    assert_nil item.reload.primary_order_guide
+  end
+
+  test "changing primary guide from master inventory reactivates membership" do
+    guide = OrderGuide.create!(name: "Every 2 weeks")
+    item = InventoryItem.create!(name: "Napkins", key: "napkins")
+    membership = item.add_to_order_guide!(guide, primary: true)
+    membership.deactivate!
+
+    patch inventory_item_primary_order_guide_path(item), params: { order_guide_id: guide.id }
+
+    assert_redirected_to inventory_items_path
+    assert membership.reload.active?
+    assert membership.primary_guide?
+    assert_equal guide, item.reload.primary_order_guide
+  end
 end

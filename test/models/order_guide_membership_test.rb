@@ -38,4 +38,43 @@ class OrderGuideMembershipTest < ActiveSupport::TestCase
     assert_not membership.reload.active?
     assert_nil item.reload.primary_order_guide
   end
+
+  test "reactivating an inactive membership does not create a duplicate" do
+    item = InventoryItem.create!(name: "Trash bags", key: "trash-bags")
+    guide = OrderGuide.create!(name: "Cleaning Supplies")
+    membership = item.add_to_order_guide!(guide, primary: true)
+    membership.deactivate!
+
+    reactivated = item.add_to_order_guide!(guide)
+
+    assert_equal membership, reactivated
+    assert reactivated.active?
+    assert_not reactivated.primary_guide?
+    assert_equal 1, item.order_guide_memberships.where(order_guide: guide).count
+  end
+
+  test "removing primary membership clears the item primary guide" do
+    item = InventoryItem.create!(name: "Whole milk", key: "whole-milk")
+    guide = OrderGuide.create!(name: "Daily")
+    membership = item.add_to_order_guide!(guide, primary: true)
+
+    membership.deactivate!
+
+    assert_not membership.reload.active?
+    assert_not membership.primary_guide?
+    assert_nil item.reload.primary_order_guide
+  end
+
+  test "removing non-primary membership leaves primary unchanged" do
+    item = InventoryItem.create!(name: "Coffee beans", key: "coffee-beans")
+    weekly = OrderGuide.create!(name: "Weekly")
+    prep = OrderGuide.create!(name: "Weekend Prep")
+    item.add_to_order_guide!(weekly, primary: true)
+    secondary_membership = item.add_to_order_guide!(prep)
+
+    secondary_membership.deactivate!
+
+    assert_not secondary_membership.reload.active?
+    assert_equal weekly, item.reload.primary_order_guide
+  end
 end

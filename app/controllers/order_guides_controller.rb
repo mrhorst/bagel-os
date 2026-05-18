@@ -32,6 +32,10 @@ class OrderGuidesController < ApplicationController
       .joins(:inventory_item)
       .includes(inventory_item: [ :inventory_section, :product, :preferred_supplier ])
       .order(:position, "inventory_items.name")
+    active_item_ids = @memberships.map(&:inventory_item_id)
+    @available_inventory_items = InventoryItem.active
+      .where.not(id: active_item_ids)
+      .ordered
   end
 
   def create
