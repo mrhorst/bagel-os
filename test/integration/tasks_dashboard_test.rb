@@ -22,6 +22,7 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select "h1", "Tasks"
+      assert_select ".task-staff-warning", text: "Select a staff member before completing tasks."
       assert_select ".block-stat-card strong", text: "1", minimum: 2
       assert_select ".task-card-title", text: /Check display case/
       assert_select ".badge", text: "Late"

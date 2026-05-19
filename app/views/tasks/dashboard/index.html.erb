@@ -38,6 +38,9 @@
           <span>Current staff member</span>
           <strong><%= @current_staff_member&.display_name || "Not selected" %></strong>
         </div>
+        <% if @current_staff_member.blank? %>
+          <p class="task-staff-warning">Select a staff member before completing tasks.</p>
+        <% end %>
         <%= form_with url: tasks_completing_as_path, method: :patch, class: "task-staff-form" do |form| %>
           <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
           <%= form.select :staff_member_id, options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id), { include_blank: "Select staff member" }, class: "compact-select" %>
