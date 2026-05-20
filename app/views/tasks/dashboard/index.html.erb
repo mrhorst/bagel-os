@@ -1,204 +1,175 @@
 <% content_for :title, "Tasks" %>
 
-<%= render "shared/blocks/page_header",
-  title: "Tasks",
-  subtitle: "Current shift work, grouped by the lists staff can actually see right now.",
-  class_name: "tasks-page-header",
-  action: capture {
-    concat link_to("History", tasks_history_path, class: "button")
-    concat link_to("Manage tasks", tasks_manage_path, class: "button")
-    concat link_to("Refresh", tasks_root_path, class: "button")
-  } %>
+<%
+  # Context line: day of week + active list name (or "All lists" for the
+  # combined view). Keeps the user oriented without a verbose subtitle.
+  context_parts = [ Time.zone.now.strftime("%a") ]
+  context_parts << case @selected_task_list
+                    when :all then "All lists"
+                    when TaskList then @selected_task_list.name
+                    end
+  context_line = context_parts.compact.join(" · ")
 
-<div class="tasks-metrics">
-  <%= render "shared/blocks/metric_grid",
-    compact: true,
-    columns: "balanced",
-    label: "Task dashboard metrics",
-    metrics: [
-      { label: "Open today", value: @metrics.fetch(:open_today), detail: "Needs attention this shift", priority: @metrics.fetch(:open_today).positive? },
-      { label: "Late today", value: @metrics.fetch(:late_today), detail: "Past due time", tone: (@metrics.fetch(:late_today).positive? ? "warning" : nil) },
-      { label: "Completed today", value: @metrics.fetch(:completed_today), detail: "Closed on this device", tone: "success" },
-      { label: "Open this month", value: @metrics.fetch(:open_this_month), detail: "Monthly work still open" },
-      { label: "Hidden by window", value: @metrics.fetch(:hidden_today), detail: "Appears at list time" }
-    ] %>
-</div>
+  staff_chip_class = [ "tasks-staff-chip", ("tasks-staff-chip-empty" if @current_staff_member.blank?) ].compact
+%>
 
-<div class="tasks-workspace">
-  <div class="tasks-staff-column">
-    <%= render layout: "shared/blocks/section_panel",
-      locals: {
-        title: "Completing as",
-        subtitle: "Staff attribution for this device. This is not a login.",
-        class_name: "tasks-staff-panel",
-        action: link_to("Staff setup", tasks_staff_index_path, class: "button small")
-      } do %>
-      <div class="task-staff-command">
-        <div class="task-staff-current">
-          <span>Current staff member</span>
-          <strong><%= @current_staff_member&.display_name || "Not selected" %></strong>
-        </div>
-        <% if @current_staff_member.blank? %>
-          <p class="task-staff-warning">Select a staff member before completing tasks.</p>
-        <% end %>
-        <%= form_with url: tasks_completing_as_path, method: :patch, class: "task-staff-form" do |form| %>
-          <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
-          <%= form.select :staff_member_id, options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id), { include_blank: "Select staff member" }, class: "compact-select" %>
-          <%= form.submit "Use staff member", class: "button primary" %>
-        <% end %>
+<%# ── Page header: title + context, overflow menu, staff chip ─────────── %>
+<section class="tasks-page-header-v2">
+  <div class="tasks-page-header-titles">
+    <h1>Tasks</h1>
+    <p class="muted small"><%= context_line %></p>
+  </div>
+
+  <div class="tasks-page-header-tools" data-controller="popover">
+    <%# Staff chip — opens the popover to switch %>
+    <button type="button"
+            class="<%= staff_chip_class.join(' ') %>"
+            data-action="popover#toggle"
+            data-popover-target="trigger"
+            aria-haspopup="true"
+            aria-expanded="false">
+      <span class="tasks-staff-chip-dot" aria-hidden="true"></span>
+      <span class="tasks-staff-chip-label">
+        <%= @current_staff_member&.display_name || "Pick staff" %>
+      </span>
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="m3 4.5 3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </button>
+
+    <%= form_with url: tasks_completing_as_path, method: :patch,
+          class: "popover-panel popover-panel-staff",
+          html: { hidden: true, "data-popover-target": "panel" } do |form| %>
+      <h3 class="popover-heading">Completing as</h3>
+      <p class="muted small">Staff attribution for this device — not a login.</p>
+      <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
+      <%= form.select :staff_member_id,
+            options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id),
+            { include_blank: "Select staff member" }, class: "compact-select" %>
+      <div class="popover-actions">
+        <%= link_to "Staff setup", tasks_staff_index_path, class: "button small" %>
+        <%= form.submit "Use staff", class: "button small primary" %>
       </div>
     <% end %>
   </div>
 
-  <div class="tasks-now-column">
-  <%= render layout: "shared/blocks/section_panel",
-    locals: {
-      title: "Now",
-      subtitle: "Visible task lists only. Late work appears first."
-    } do %>
-
-  <% if @grouped_today_occurrences.any? %>
-    <div class="task-list-stack">
-      <% @grouped_today_occurrences.each do |task_list, occurrences| %>
-        <section class="task-list-cluster">
-          <div class="task-list-cluster-header">
-            <div>
-              <h3><%= task_list.name %></h3>
-              <p><%= pluralize(occurrences.size, "task") %> ready now</p>
-            </div>
-            <span><%= task_list_display_window_label(task_list) %></span>
-          </div>
-
-          <div class="task-row-list">
-            <% occurrences.each do |occurrence| %>
-              <article class="task-row task-row-<%= occurrence.status %>">
-                <div class="task-row-check">
-                  <span class="task-circle task-circle-<%= occurrence.completed? ? "completed" : (occurrence.requires_photo_evidence? ? "photo" : "open") %>" aria-hidden="true"></span>
-                </div>
-
-                <div class="task-card-main">
-                  <div class="task-card-title">
-                    <strong><%= occurrence.snapshot_title %></strong>
-                    <span><%= task_due_label(occurrence) %></span>
-                  </div>
-                  <div class="task-row-meta">
-                    <%= task_status_badge(occurrence) %>
-                    <% if occurrence.requires_photo_evidence? %>
-                      <span class="badge badge-compact">Photo required</span>
-                    <% end %>
-                    <% if occurrence.active_completion.present? %>
-                      <span><%= task_completion_summary(occurrence.active_completion) %></span>
-                    <% end %>
-                  </div>
-                  <% if occurrence.snapshot_instructions.present? %>
-                    <details class="task-details">
-                      <summary>Instructions</summary>
-                      <p><%= occurrence.snapshot_instructions %></p>
-                    </details>
-                  <% end %>
-                </div>
-
-                <div class="task-card-actions">
-                  <% if occurrence.completed? %>
-                    <% if occurrence.undoable? %>
-                      <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete do |form| %>
-                        <%= hidden_field_tag :confirm_undo, "1" %>
-                        <%= form.submit "Undo", class: "button small" %>
-                      <% end %>
-                    <% else %>
-                      <span class="task-action-note">Undo closed</span>
-                    <% end %>
-                  <% elsif occurrence.requires_photo_evidence? %>
-                    <%= link_to "Add photo", tasks_occurrence_path(occurrence), class: "button primary button-success" %>
-                  <% else %>
-                    <%= form_with url: tasks_occurrence_completion_path(occurrence) do |form| %>
-                      <%= form.submit "Complete", class: "button primary button-success" %>
-                    <% end %>
-                  <% end %>
-                  <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
-                </div>
-              </article>
-            <% end %>
-          </div>
-        </section>
-      <% end %>
+  <%# Overflow menu — History / Manage / pick another list %>
+  <div class="tasks-page-header-overflow" data-controller="popover">
+    <button type="button"
+            class="icon-button"
+            data-action="popover#toggle"
+            data-popover-target="trigger"
+            aria-label="Tasks menu"
+            aria-haspopup="true"
+            aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="4" cy="10" r="1.6" fill="currentColor"/>
+        <circle cx="10" cy="10" r="1.6" fill="currentColor"/>
+        <circle cx="16" cy="10" r="1.6" fill="currentColor"/>
+      </svg>
+    </button>
+    <div class="popover-panel popover-panel-menu" hidden data-popover-target="panel" role="menu">
+      <%= link_to "Switch list", tasks_root_path(list: nil), role: "menuitem", class: "popover-item" %>
+      <%= link_to "History", tasks_history_path, role: "menuitem", class: "popover-item" %>
+      <%= link_to "Manage tasks", tasks_manage_path, role: "menuitem", class: "popover-item" %>
+      <%= link_to "Staff setup", tasks_staff_index_path, role: "menuitem", class: "popover-item" %>
     </div>
-  <% else %>
-    <p class="empty-state">No task lists are active right now.</p>
+  </div>
+</section>
+
+<%# ── Decision branch: pick a list, or work the active one ───────────── %>
+<% if @show_list_picker %>
+  <%= render "tasks/dashboard/list_picker" %>
+<% else %>
+  <%# Compact KPI squares — only the 3 that matter for "what do I do now" %>
+  <section class="tasks-kpi-squares" aria-label="Task dashboard metrics">
+    <article class="tasks-kpi <%= "tasks-kpi-danger" if @metrics[:late_today].to_i.positive? %>">
+      <span>Late</span>
+      <strong class="tnum"><%= @metrics[:late_today] %></strong>
+    </article>
+    <article class="tasks-kpi <%= "tasks-kpi-accent" if @metrics[:open_today].to_i.positive? %>">
+      <span>Open</span>
+      <strong class="tnum"><%= @metrics[:open_today] %></strong>
+    </article>
+    <article class="tasks-kpi tasks-kpi-ok">
+      <span>Done</span>
+      <strong class="tnum"><%= @metrics[:completed_today] %></strong>
+    </article>
+  </section>
+
+  <% if @metrics[:open_this_month].to_i.positive? || @metrics[:hidden_today].to_i.positive? %>
+    <details class="tasks-more-stats">
+      <summary>More stats</summary>
+      <dl>
+        <div><dt>Open this month</dt><dd class="tnum"><%= @metrics[:open_this_month] %></dd></div>
+        <div><dt>Hidden by display window</dt><dd class="tnum"><%= @metrics[:hidden_today] %></dd></div>
+      </dl>
+    </details>
   <% end %>
 
-  <% if @hidden_today_occurrences.any? %>
-    <section class="later-tasks-panel">
-      <strong><%= pluralize(@hidden_today_occurrences.size, "task") %> hidden by task-list display windows</strong>
-      <p class="field-hint">Those lists appear automatically during their configured start and end times.</p>
+  <%# ── Now ──────────────────────────────────────────────────────────── %>
+  <section class="tasks-now-panel">
+    <% if @grouped_today_occurrences.any? %>
+      <div class="task-list-stack">
+        <% @grouped_today_occurrences.each do |task_list, occurrences| %>
+          <section class="task-list-cluster">
+            <div class="task-list-cluster-header">
+              <div>
+                <h3><%= task_list.name %></h3>
+                <p><%= pluralize(occurrences.size, "task") %> ready now</p>
+              </div>
+              <span><%= task_list_display_window_label(task_list) %></span>
+            </div>
+
+            <div class="task-row-list">
+              <% occurrences.each do |occurrence| %>
+                <%= render "tasks/dashboard/task_row", occurrence: occurrence %>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="empty-state">
+        <strong>Nothing to do right now.</strong>
+        <span>Tasks appear here during their list's display window.</span>
+      </p>
+    <% end %>
+
+    <% if @hidden_today_occurrences.any? && @selected_task_list != :all %>
+      <section class="later-tasks-panel">
+        <strong><%= pluralize(@hidden_today_occurrences.size, "task") %> hidden by task-list display windows</strong>
+        <p class="field-hint">Those lists appear automatically during their configured start and end times.</p>
+      </section>
+    <% end %>
+  </section>
+
+  <%# ── This month ───────────────────────────────────────────────────── %>
+  <% if @grouped_monthly_occurrences.any? %>
+    <section class="tasks-month-panel">
+      <header class="task-list-cluster-header">
+        <div>
+          <h2>This month</h2>
+          <p>Monthly tasks can be completed any time this month.</p>
+        </div>
+      </header>
+      <div class="task-list-stack">
+        <% @grouped_monthly_occurrences.each do |task_list, occurrences| %>
+          <section class="task-list-cluster task-list-cluster-compact">
+            <div class="task-list-cluster-header">
+              <div>
+                <h3><%= task_list.name %></h3>
+                <p><%= pluralize(occurrences.size, "monthly task") %></p>
+              </div>
+            </div>
+            <div class="task-row-list">
+              <% occurrences.each do |occurrence| %>
+                <%= render "tasks/dashboard/task_row", occurrence: occurrence, monthly: true %>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      </div>
     </section>
   <% end %>
-  <% end %>
-  </div>
-
-  <div class="tasks-month-column">
-  <%= render layout: "shared/blocks/section_panel",
-    locals: {
-      title: "This month",
-      subtitle: "Monthly tasks can be completed any time this month.",
-      class_name: "tasks-month-panel"
-    } do %>
-
-  <% if @grouped_monthly_occurrences.any? %>
-    <div class="task-list-stack">
-      <% @grouped_monthly_occurrences.each do |task_list, occurrences| %>
-        <section class="task-list-cluster task-list-cluster-compact">
-          <div class="task-list-cluster-header">
-            <div>
-              <h3><%= task_list.name %></h3>
-              <p><%= pluralize(occurrences.size, "monthly task") %></p>
-            </div>
-          </div>
-
-          <div class="task-row-list">
-            <% occurrences.each do |occurrence| %>
-              <article class="task-row task-row-monthly">
-                <div class="task-row-check">
-                  <span class="task-circle task-circle-<%= occurrence.requires_photo_evidence? ? "photo" : "open" %>" aria-hidden="true"></span>
-                </div>
-                <div class="task-card-main">
-                  <div class="task-card-title">
-                    <strong><%= occurrence.snapshot_title %></strong>
-                    <span>This month</span>
-                  </div>
-                  <div class="task-row-meta">
-                    <%= task_status_badge(occurrence) %>
-                    <% if occurrence.requires_photo_evidence? %>
-                      <span class="badge badge-compact">Photo required</span>
-                    <% end %>
-                  </div>
-                  <% if occurrence.snapshot_instructions.present? %>
-                    <details class="task-details">
-                      <summary>Instructions</summary>
-                      <p><%= occurrence.snapshot_instructions %></p>
-                    </details>
-                  <% end %>
-                </div>
-
-                <div class="task-card-actions">
-                  <% if occurrence.requires_photo_evidence? %>
-                    <%= link_to "Add photo", tasks_occurrence_path(occurrence), class: "button primary button-success" %>
-                  <% else %>
-                    <%= form_with url: tasks_occurrence_completion_path(occurrence) do |form| %>
-                      <%= form.submit "Complete", class: "button primary button-success" %>
-                    <% end %>
-                  <% end %>
-                  <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
-                </div>
-              </article>
-            <% end %>
-          </div>
-        </section>
-      <% end %>
-    </div>
-  <% else %>
-    <p class="empty-state">No monthly tasks are open.</p>
-  <% end %>
-  <% end %>
-  </div>
-</div>
+<% end %>

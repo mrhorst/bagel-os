@@ -1033,10 +1033,13 @@
   /* ── Empty state ──────────────────────────────────────────────────── */
   .empty-state {
     color: var(--ink-muted);
+    overflow-wrap: break-word;
     padding: 22px;
     text-align: center;
+    word-break: normal;
   }
   .empty-state strong { color: var(--ink); display: block; font-weight: 600; margin-bottom: 4px; }
+  .empty-state span { display: block; max-width: 42ch; margin: 0 auto; }
 
   /* ── Counts (inventory) ──────────────────────────────────────────── */
   .count-grid {
@@ -1417,6 +1420,264 @@
   /* ── Mobile bottom tab bar (visible only at <640px) ───────────────── */
   .mobile-tabs { display: none; }
 
+  /* ── Icon button + popover (overflow menu / staff chip) ───────────── */
+  .icon-button {
+    align-items: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--ink-2);
+    cursor: pointer;
+    display: inline-flex;
+    height: 36px;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0;
+    width: 36px;
+  }
+  .icon-button:hover { background: var(--surface-3); color: var(--ink); }
+
+  .popover-panel {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e2);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+    padding: 10px;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 30;
+  }
+  .popover-panel[hidden] { display: none; }
+  .popover-heading { font-size: 0.94rem; font-weight: 600; margin: 0; }
+  .popover-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+  .popover-panel-menu { gap: 0; min-width: 180px; padding: 4px; }
+  .popover-item {
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 8px 10px;
+    text-decoration: none;
+  }
+  .popover-item:hover { background: var(--surface-3); text-decoration: none; }
+
+  /* ── Tasks page header v2 ─────────────────────────────────────────── */
+  .tasks-page-header-v2 {
+    align-items: center;
+    display: grid;
+    gap: 8px 10px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    margin-bottom: 14px;
+  }
+  .tasks-page-header-v2 > * { min-width: 0; }
+  .tasks-page-header-titles { min-width: 0; }
+  .tasks-page-header-titles h1 {
+    font-size: 1.4rem;
+    line-height: 1.15;
+    margin-bottom: 2px;
+  }
+  .tasks-page-header-titles p.small { font-size: 0.84rem; margin: 0; }
+  .tasks-page-header-tools,
+  .tasks-page-header-overflow {
+    position: relative;
+  }
+
+  .tasks-staff-chip {
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-pill);
+    color: var(--ink);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.84rem;
+    font-weight: 500;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px 0 8px;
+  }
+  .tasks-staff-chip:hover { background: var(--surface-3); }
+  .tasks-staff-chip-dot {
+    background: var(--ok);
+    border-radius: var(--radius-pill);
+    display: inline-block;
+    height: 8px;
+    width: 8px;
+  }
+  .tasks-staff-chip-empty {
+    background: var(--warn-soft);
+    border-color: color-mix(in oklch, var(--warn) 35%, transparent);
+    color: var(--warn-fg);
+  }
+  .tasks-staff-chip-empty .tasks-staff-chip-dot { background: var(--warn); }
+
+  .popover-panel-staff {
+    align-items: stretch;
+    min-width: 260px;
+  }
+  .popover-panel-staff .compact-select { min-height: 36px; }
+
+  /* ── Tasks compact KPI squares ────────────────────────────────────── */
+  .tasks-kpi-squares {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 12px;
+  }
+  .tasks-kpi {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 80px;
+    padding: 12px;
+  }
+  .tasks-kpi span {
+    color: var(--ink-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .tasks-kpi strong {
+    color: var(--ink);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .tasks-kpi-accent {
+    background: var(--accent-soft);
+    border-color: color-mix(in oklch, var(--accent) 35%, transparent);
+    box-shadow: inset 2px 0 0 var(--accent), var(--shadow-e1);
+  }
+  .tasks-kpi-danger {
+    background: var(--danger-soft);
+    border-color: color-mix(in oklch, var(--danger) 30%, transparent);
+    box-shadow: inset 2px 0 0 var(--danger), var(--shadow-e1);
+  }
+  .tasks-kpi-danger strong { color: var(--danger-fg); }
+  .tasks-kpi-ok {
+    background: var(--ok-soft);
+    border-color: color-mix(in oklch, var(--ok) 25%, transparent);
+  }
+
+  .tasks-more-stats {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    margin-bottom: 12px;
+    padding: 8px 12px;
+  }
+  .tasks-more-stats summary {
+    color: var(--ink-muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 4px 0;
+  }
+  .tasks-more-stats dl {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: 1fr auto;
+    margin: 6px 0 0;
+  }
+  .tasks-more-stats dl > div { display: contents; }
+  .tasks-more-stats dt { color: var(--ink-muted); font-size: 0.82rem; }
+  .tasks-more-stats dd { color: var(--ink); margin: 0; font-size: 0.88rem; }
+
+  /* ── Tasks list picker (default screen) ───────────────────────────── */
+  .tasks-list-picker {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    margin-bottom: 16px;
+    padding: 18px;
+  }
+  .tasks-list-picker-header { margin-bottom: 14px; }
+  .tasks-list-picker-header h2 { font-size: 1.05rem; margin-bottom: 4px; }
+  .tasks-list-picker-header p { color: var(--ink-muted); font-size: 0.88rem; margin: 0; }
+  .tasks-list-picker-cards {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .tasks-list-picker-card {
+    align-items: center;
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    color: var(--ink);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    min-height: 76px;
+    padding: 14px;
+    text-decoration: none;
+    transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+  }
+  .tasks-list-picker-card:hover {
+    background: var(--surface-2);
+    border-color: var(--line-2);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+  .tasks-list-picker-card-meta strong { color: var(--ink); display: block; font-size: 1rem; }
+  .tasks-list-picker-card-meta small { color: var(--ink-muted); display: block; font-size: 0.78rem; margin-top: 2px; }
+  .tasks-list-picker-card-stat {
+    align-items: baseline;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 70px;
+    padding: 6px 10px;
+    text-align: right;
+  }
+  .tasks-list-picker-card-stat strong {
+    color: var(--ink);
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .tasks-list-picker-card-stat small {
+    color: var(--ink-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .tasks-list-picker-all {
+    color: var(--info-fg);
+    display: inline-block;
+    font-size: 0.86rem;
+    font-weight: 500;
+    margin-top: 14px;
+  }
+
+  /* ── Tasks Now panel (replaces the old workspace grid) ───────────── */
+  .tasks-now-panel { margin-bottom: 16px; }
+  .tasks-month-panel { margin-top: 18px; }
+  .tasks-month-panel > .task-list-cluster-header { margin-bottom: 10px; }
+
   /* ── Responsive ───────────────────────────────────────────────────── */
   @media (max-width: 1024px) {
     .app-shell { grid-template-columns: 1fr; }
@@ -1575,6 +1836,31 @@
     /* Make room for the fixed bottom nav */
     .app-main { padding-bottom: 88px; }
 
+    /* Tasks page header stays one row on mobile */
+    .tasks-page-header-v2 {
+      gap: 6px 8px;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+    }
+    .tasks-page-header-titles h1 { font-size: 1.3rem; }
+    .tasks-staff-chip {
+      max-width: 130px;
+      overflow: hidden;
+    }
+    .tasks-staff-chip-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    /* KPI squares stay 3-up even at 390 — that's the whole point */
+    .tasks-kpi-squares { gap: 6px; }
+    .tasks-kpi { min-height: 72px; padding: 10px; }
+    .tasks-kpi strong { font-size: 1.4rem; }
+
+    /* Popover panels span the full content width on mobile so they don't
+       clip off the right edge */
+    .popover-panel { left: auto; right: 0; }
+    .popover-panel-staff { right: -8px; }
+
     .tasks-metrics .block-stat-grid-balanced {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1582,16 +1868,15 @@
     .topbar { display: none; }
 
     .app-main {
-      align-items: flex-start;
       box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
+      display: block;
       margin: 0;
       max-width: 100%;
       overflow-x: hidden;
       padding: 14px 16px 32px;
       width: 100%;
     }
+    .app-main > * { max-width: 100%; }
 
     .block-page-header {
       gap: 10px; margin-bottom: 10px;

@@ -1,0 +1,49 @@
+<%# locals: occurrence, monthly (default: false) %>
+<% monthly = local_assigns.fetch(:monthly, false) %>
+<article class="task-row <%= monthly ? 'task-row-monthly' : "task-row-#{occurrence.status}" %>">
+  <div class="task-row-check">
+    <span class="task-circle task-circle-<%= occurrence.completed? ? "completed" : (occurrence.requires_photo_evidence? ? "photo" : "open") %>" aria-hidden="true"></span>
+  </div>
+
+  <div class="task-card-main">
+    <div class="task-card-title">
+      <strong><%= occurrence.snapshot_title %></strong>
+      <span><%= monthly ? "This month" : task_due_label(occurrence) %></span>
+    </div>
+    <div class="task-row-meta">
+      <%= task_status_badge(occurrence) %>
+      <% if occurrence.requires_photo_evidence? %>
+        <span class="badge badge-compact">Photo required</span>
+      <% end %>
+      <% if !monthly && occurrence.active_completion.present? %>
+        <span><%= task_completion_summary(occurrence.active_completion) %></span>
+      <% end %>
+    </div>
+    <% if occurrence.snapshot_instructions.present? %>
+      <details class="task-details">
+        <summary>Instructions</summary>
+        <p><%= occurrence.snapshot_instructions %></p>
+      </details>
+    <% end %>
+  </div>
+
+  <div class="task-card-actions">
+    <% if !monthly && occurrence.completed? %>
+      <% if occurrence.undoable? %>
+        <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete do |form| %>
+          <%= hidden_field_tag :confirm_undo, "1" %>
+          <%= form.submit "Undo", class: "button small" %>
+        <% end %>
+      <% else %>
+        <span class="task-action-note">Undo closed</span>
+      <% end %>
+    <% elsif occurrence.requires_photo_evidence? %>
+      <%= link_to "Add photo", tasks_occurrence_path(occurrence), class: "button primary button-success" %>
+    <% else %>
+      <%= form_with url: tasks_occurrence_completion_path(occurrence) do |form| %>
+        <%= form.submit "Complete", class: "button primary button-success" %>
+      <% end %>
+    <% end %>
+    <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
+  </div>
+</article>

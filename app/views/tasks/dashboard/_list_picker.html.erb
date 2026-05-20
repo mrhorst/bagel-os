@@ -1,0 +1,24 @@
+<%# Default landing when there's more than one active list — let the user
+    pick the list they actually came to work on. %>
+<section class="tasks-list-picker">
+  <header class="tasks-list-picker-header">
+    <h2>Pick a list</h2>
+    <p>You have <%= pluralize(@all_task_lists.size, "active list") %> today. Choose what you're working on.</p>
+  </header>
+  <ul class="tasks-list-picker-cards">
+    <% @all_task_lists.each do |list| %>
+      <% open_count = @list_open_counts.fetch(list.id, 0) %>
+      <%= link_to tasks_root_path(list: list.id), class: "tasks-list-picker-card" do %>
+        <span class="tasks-list-picker-card-meta">
+          <strong><%= list.name %></strong>
+          <small><%= task_list_display_window_label(list) %></small>
+        </span>
+        <span class="tasks-list-picker-card-stat">
+          <strong class="tnum"><%= open_count %></strong>
+          <small><%= open_count == 1 ? "open task" : "open tasks" %></small>
+        </span>
+      <% end %>
+    <% end %>
+  </ul>
+  <%= link_to "Show all lists together", tasks_root_path(list: "all"), class: "tasks-list-picker-all" %>
+</section>
