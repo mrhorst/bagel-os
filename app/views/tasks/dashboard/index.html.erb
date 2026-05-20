@@ -69,7 +69,7 @@
       </svg>
     </button>
     <div class="popover-panel popover-panel-menu" hidden data-popover-target="panel" role="menu">
-      <%= link_to "Switch list", tasks_root_path(list: nil), role: "menuitem", class: "popover-item" %>
+      <%= link_to "Switch list", tasks_root_path(list: ""), role: "menuitem", class: "popover-item" %>
       <%= link_to "History", tasks_history_path, role: "menuitem", class: "popover-item" %>
       <%= link_to "Manage tasks", tasks_manage_path, role: "menuitem", class: "popover-item" %>
       <%= link_to "Staff setup", tasks_staff_index_path, role: "menuitem", class: "popover-item" %>

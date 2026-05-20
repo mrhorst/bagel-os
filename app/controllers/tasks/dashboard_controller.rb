@@ -48,13 +48,14 @@ module Tasks
     private
 
     # Resolution order: explicit ?list= param → cookie → nil (picker).
+    # An empty `?list=` means "clear my preference, show me the picker."
     # `?list=all` opts in to the combined view; we honor and remember it.
     def resolve_selected_list(lists)
-      raw = params[:list].presence || cookies[LIST_COOKIE]
+      raw = (params.key?(:list) ? params[:list] : cookies[LIST_COOKIE]).to_s
       return nil if raw.blank?
-      return :all if raw.to_s == ALL_LISTS
+      return :all if raw == ALL_LISTS
 
-      lists.find { |l| l.id.to_s == raw.to_s }
+      lists.find { |l| l.id.to_s == raw }
     end
 
     def should_show_picker?
@@ -64,17 +65,15 @@ module Tasks
     end
 
     # Only persist when the user made an explicit choice this request.
+    # An empty/missing selection clears the cookie so the picker comes back.
     def persist_list_selection
       return unless params.key?(:list)
 
-      value =
-        case @selected_task_list
-        when :all then ALL_LISTS
-        when TaskList then @selected_task_list.id.to_s
-        end
-
-      if value
-        cookies[LIST_COOKIE] = { value: value, expires: 90.days.from_now }
+      case @selected_task_list
+      when :all
+        cookies[LIST_COOKIE] = { value: ALL_LISTS, expires: 90.days.from_now }
+      when TaskList
+        cookies[LIST_COOKIE] = { value: @selected_task_list.id.to_s, expires: 90.days.from_now }
       else
         cookies.delete(LIST_COOKIE)
       end
