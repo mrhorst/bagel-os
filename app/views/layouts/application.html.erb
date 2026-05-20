@@ -10,6 +10,10 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+
     <%= yield :head %>
 
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
@@ -23,7 +27,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="min-h-screen bg-slate-50 text-slate-950 antialiased">
+  <body class="min-h-screen bg-surface text-ink antialiased">
     <div class="app-shell">
       <aside class="app-sidebar">
         <div class="sidebar-brand">
@@ -54,7 +58,6 @@
       <div class="app-content">
         <header class="topbar">
           <div>
-            <p class="topbar-kicker">Restaurant purchasing system</p>
             <p class="topbar-description"><%= app_branding.description %></p>
           </div>
         </header>
@@ -71,5 +74,6 @@
         </main>
       </div>
     </div>
+    <%= render "layouts/mobile_tabs" %>
   </body>
 </html>

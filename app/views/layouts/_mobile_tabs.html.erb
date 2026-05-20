@@ -1,0 +1,18 @@
+<%# Bottom tab bar — visible only at <640px (kitchen / on-the-floor use). %>
+<%
+  mobile_tabs = [
+    { label: "Home",   path: root_path,                  icon: "chart",     match_with: app_nav_items[0] },
+    { label: "Tasks",  path: tasks_root_path,            icon: "check",     match_with: app_nav_items[2] },
+    { label: "Guides", path: order_guides_path,          icon: "clipboard", match_with: app_nav_items[3] },
+    { label: "Review", path: normalization_reviews_path, icon: "alert",     match_with: app_nav_items[6] },
+    { label: "More",   path: products_path,              icon: "package",   match_with: app_nav_items[5] }
+  ]
+%>
+<nav class="mobile-tabs" aria-label="Primary (mobile)">
+  <% mobile_tabs.each do |tab| %>
+    <%= link_to tab[:path], class: ["mobile-tab", ("active" if active_nav_item?(tab[:match_with]))] do %>
+      <%= nav_icon(tab[:icon]) %>
+      <span><%= tab[:label] %></span>
+    <% end %>
+  <% end %>
+</nav>
