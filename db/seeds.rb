@@ -85,4 +85,58 @@ if Rails.env.development?
     item.save!
     item.assign_primary_order_guide!(demo_guides.fetch(seed_item.fetch(:guide)))
   end
+
+  # ── Demo task lists ──────────────────────────────────────────────────
+  # Three always-visible lists (no display_start_time / display_end_time)
+  # so the dashboard's list picker has real choices to offer, and the
+  # tasks themselves don't go "late" because they have no due_time.
+  demo_task_lists = [
+    { name: "Prep", position: 1 },
+    { name: "Front of house", position: 2 },
+    { name: "Cleaning", position: 3 }
+  ].map do |list_attrs|
+    list = TaskList.find_or_initialize_by(key: TaskList.key_for(list_attrs.fetch(:name)))
+    list.name = list_attrs.fetch(:name)
+    list.position = list_attrs.fetch(:position)
+    list.active = true
+    list.display_start_time = nil
+    list.display_end_time = nil
+    list.save!
+    [ list_attrs.fetch(:name), list ]
+  end.to_h
+
+  # Model requires due_time for daily/weekly tasks — use end-of-day so
+  # they stay "open" all day instead of going late. Monthly tasks don't
+  # need a due_time at all.
+  end_of_day = Time.zone.parse("23:59")
+
+  demo_tasks = [
+    # Prep — daily, due by end of day
+    { list: "Prep", title: "Pull cream cheese from walk-in",      recurrence_type: "daily", position: 1, due_time: end_of_day },
+    { list: "Prep", title: "Slice tomatoes for the line",         recurrence_type: "daily", position: 2, due_time: end_of_day },
+    { list: "Prep", title: "Restock cream cheese station",        recurrence_type: "daily", position: 3, due_time: end_of_day, requires_photo_evidence: true },
+
+    # Front of house — daily, due by end of day
+    { list: "Front of house", title: "Wipe down counters",        recurrence_type: "daily", position: 1, due_time: end_of_day },
+    { list: "Front of house", title: "Refill napkin dispensers",  recurrence_type: "daily", position: 2, due_time: end_of_day },
+    { list: "Front of house", title: "Check napkin stock under register", recurrence_type: "daily", position: 3, due_time: end_of_day },
+
+    # Cleaning — mix of daily + weekly + monthly (monthly = no due time)
+    { list: "Cleaning", title: "Sweep front of house",            recurrence_type: "daily",   position: 1, due_time: end_of_day },
+    { list: "Cleaning", title: "Deep-clean espresso machine",     recurrence_type: "weekly",  position: 2, due_time: end_of_day, weekdays: [ 1 ] },
+    { list: "Cleaning", title: "Descale dish sink",               recurrence_type: "monthly", position: 3 }
+  ]
+
+  demo_tasks.each do |attrs|
+    list = demo_task_lists.fetch(attrs.fetch(:list))
+    task = list.tasks.find_or_initialize_by(title: attrs.fetch(:title))
+    task.recurrence_type        = attrs.fetch(:recurrence_type)
+    task.position               = attrs.fetch(:position)
+    task.requires_photo_evidence = attrs.fetch(:requires_photo_evidence, false)
+    task.due_time               = attrs[:due_time]
+    task.weekdays               = attrs[:weekdays] if attrs[:weekdays].present?
+    task.starts_on              ||= Date.current - 1
+    task.active                 = true
+    task.save!
+  end
 end
