@@ -1,0 +1,24 @@
+<%# locals: task_list:, task_count:
+
+  One row in the lists-management index. Status comes from a 2px left rule
+  (per design system), not a painted background. Primary action is "Edit",
+  reached by tapping the row or the explicit button.
+%>
+<%= link_to edit_tasks_manage_list_path(task_list), class: "manage-row #{'manage-row-archived' unless task_list.active?}" do %>
+  <div class="manage-row-main">
+    <div class="manage-row-title">
+      <h3><%= task_list.name %></h3>
+      <% unless task_list.active? %>
+        <span class="badge">Archived</span>
+      <% end %>
+    </div>
+    <p class="muted small">
+      <%= task_list_display_window_label(task_list) %>
+      · Sort <%= task_list.position %>
+      · <%= pluralize(task_count, "active task") %>
+    </p>
+  </div>
+  <svg class="manage-row-arrow" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+    <path d="m5 3 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+<% end %>

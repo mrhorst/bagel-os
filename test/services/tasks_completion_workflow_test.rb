@@ -5,12 +5,12 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
     occurrence = task_occurrence(requires_photo_evidence: false)
     staff = StaffMember.create!(display_name: "Demo Staff")
 
-    completion = Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 11)).call(occurrence: occurrence, staff_member: staff, notes: "Done before lunch.")
+    completion = Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11))).call(occurrence: occurrence, staff_member: staff, notes: "Done before lunch.")
 
     assert completion.persisted?
     assert_equal "Demo Staff", completion.snapshot_staff_name
     assert_equal "Done before lunch.", completion.notes
-    assert_equal "completed", occurrence.reload.status(now: Time.zone.local(2026, 5, 18, 11))
+    assert_equal "completed", occurrence.reload.status(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11)))
   end
 
   test "photo-required occurrence rejects completion without photo" do
@@ -18,7 +18,7 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
     staff = StaffMember.create!(display_name: "Demo Staff")
 
     error = assert_raises(ActiveRecord::RecordInvalid) do
-      Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 11)).call(occurrence: occurrence, staff_member: staff)
+      Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11))).call(occurrence: occurrence, staff_member: staff)
     end
 
     assert_includes error.record.errors[:photo], "is required for this task"
@@ -28,7 +28,7 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
     occurrence = task_occurrence(requires_photo_evidence: true)
     staff = StaffMember.create!(display_name: "Demo Staff")
 
-    completion = Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 11)).call(
+    completion = Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11))).call(
       occurrence: occurrence,
       staff_member: staff,
       photo: photo_upload
@@ -42,7 +42,7 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
     staff = StaffMember.create!(display_name: "Demo Staff")
 
     error = assert_raises(ActiveRecord::RecordInvalid) do
-      Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 11)).call(
+      Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11))).call(
         occurrence: occurrence,
         staff_member: staff,
         photo: photo_upload
@@ -61,7 +61,7 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
     staff = StaffMember.create!(display_name: "Demo Staff")
 
     error = assert_raises(ArgumentError) do
-      Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 9)).call(occurrence: occurrence, staff_member: staff)
+      Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 9))).call(occurrence: occurrence, staff_member: staff)
     end
 
     assert_equal "Missed tasks cannot be completed.", error.message
@@ -71,13 +71,13 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
     occurrence = task_occurrence(requires_photo_evidence: true)
     staff = StaffMember.create!(display_name: "Demo Staff")
     undo_staff = StaffMember.create!(display_name: "Demo Manager")
-    completion = Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 11)).call(
+    completion = Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11))).call(
       occurrence: occurrence,
       staff_member: staff,
       photo: photo_upload("first.jpg")
     )
 
-    undone = Tasks::UndoCompletion.new(now: Time.zone.local(2026, 5, 18, 11, 5)).call(
+    undone = Tasks::UndoCompletion.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11, 5))).call(
       completion: completion,
       staff_member: undo_staff,
       note: "Wrong photo."
@@ -87,9 +87,9 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
     assert undone.photo.attached?
     assert_equal "Demo Manager", undone.snapshot_undone_by_staff_name
     assert_equal "Wrong photo.", undone.undone_note
-    assert_equal "late", occurrence.reload.status(now: Time.zone.local(2026, 5, 18, 12, 30))
+    assert_equal "late", occurrence.reload.status(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 30)))
 
-    corrected = Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 12, 30)).call(
+    corrected = Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 30))).call(
       occurrence: occurrence,
       staff_member: staff,
       photo: photo_upload("corrected.jpg")
@@ -102,10 +102,10 @@ class TasksCompletionWorkflowTest < ActiveSupport::TestCase
   test "undo is rejected after the completion operating day" do
     occurrence = task_occurrence(requires_photo_evidence: false)
     staff = StaffMember.create!(display_name: "Demo Staff")
-    completion = Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 11)).call(occurrence: occurrence, staff_member: staff)
+    completion = Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 11))).call(occurrence: occurrence, staff_member: staff)
 
     error = assert_raises(ArgumentError) do
-      Tasks::UndoCompletion.new(now: Time.zone.local(2026, 5, 19, 8)).call(completion: completion, staff_member: staff)
+      Tasks::UndoCompletion.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 19, 8))).call(completion: completion, staff_member: staff)
     end
 
     assert_equal "Completion can only be undone during the same operating day.", error.message

@@ -1,0 +1,30 @@
+<%# locals: title:, back_path: tasks_root_path, back_label: "Tasks", subtitle: nil, actions: nil
+
+  Standard header for every sub-page under /tasks. Always carries a back
+  arrow so users have one obvious way out — no orphan pages.
+%>
+<%
+  back_path  = local_assigns.fetch(:back_path, tasks_root_path)
+  back_label = local_assigns.fetch(:back_label, "Tasks")
+  subtitle   = local_assigns[:subtitle]
+  actions    = local_assigns[:actions]
+%>
+<section class="subpage-header">
+  <%= link_to back_path, class: "subpage-back", aria: { label: "Back to #{back_label}" } do %>
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span><%= back_label %></span>
+  <% end %>
+
+  <div class="subpage-header-titles">
+    <h1><%= title %></h1>
+    <% if subtitle.present? %>
+      <p class="muted small"><%= subtitle %></p>
+    <% end %>
+  </div>
+
+  <% if actions.present? %>
+    <div class="subpage-header-actions"><%= actions %></div>
+  <% end %>
+</section>

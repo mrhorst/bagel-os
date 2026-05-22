@@ -1,0 +1,22 @@
+<%# locals: metrics: {late_today:, open_today:, completed_today:}, dom_id: "task_list_kpis"
+
+  Three at-a-glance counters for the current scope (a list, the dashboard,
+  whatever). Rendered with a stable id so the completions controller can
+  swap it in place via Turbo Stream when a row changes status.
+%>
+<section id="<%= local_assigns.fetch(:dom_id, "task_list_kpis") %>"
+         class="tasks-kpi-squares"
+         aria-label="Task metrics for today">
+  <article class="tasks-kpi <%= "tasks-kpi-danger" if metrics[:late_today].to_i.positive? %>">
+    <span>Late</span>
+    <strong class="tnum"><%= metrics[:late_today] %></strong>
+  </article>
+  <article class="tasks-kpi <%= "tasks-kpi-accent" if metrics[:open_today].to_i.positive? %>">
+    <span>Open</span>
+    <strong class="tnum"><%= metrics[:open_today] %></strong>
+  </article>
+  <article class="tasks-kpi tasks-kpi-ok">
+    <span>Done</span>
+    <strong class="tnum"><%= metrics[:completed_today] %></strong>
+  </article>
+</section>

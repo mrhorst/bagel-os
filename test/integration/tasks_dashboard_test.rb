@@ -3,7 +3,7 @@ require "test_helper"
 class TasksDashboardTest < ActionDispatch::IntegrationTest
   include ActiveSupport::Testing::TimeHelpers
 
-  test "shows today's tasks and this month section" do
+  test "dashboard shows a card per list with today's counts" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       list = TaskList.create!(name: "Opening", position: 1)
       list.tasks.create!(
@@ -22,8 +22,35 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select "h1", "Tasks"
-      assert_select ".task-staff-warning", text: "Select a staff member before completing tasks."
-      assert_select ".block-stat-card strong", text: "1", minimum: 2
+      assert_select ".tasks-staff-chip-empty", text: /Pick staff/
+      assert_select ".tasks-kpi strong", text: "1", minimum: 1
+      assert_select ".tasks-list-picker-card h2", text: "Opening"
+      assert_select ".tasks-list-picker-card .badge", text: /1 late/
+      assert_select ".tasks-list-picker-card .badge", text: /1 monthly/
+      # The dashboard is a list picker now; tasks themselves are not rendered here.
+      assert_select ".task-card-title", count: 0
+    end
+  end
+
+  test "focused list view renders today and monthly tasks for that list" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      list.tasks.create!(
+        title: "Check display case",
+        recurrence_type: "daily",
+        starts_on: Date.new(2026, 5, 18),
+        due_time: Time.zone.parse("08:00")
+      )
+      list.tasks.create!(
+        title: "Change AC filter",
+        recurrence_type: "monthly",
+        starts_on: Date.new(2026, 5, 1)
+      )
+
+      get tasks_list_path(list)
+
+      assert_response :success
+      assert_select "h1", "Opening"
       assert_select ".task-card-title", text: /Check display case/
       assert_select ".badge", text: "Late"
       assert_select "h2", text: "This month"
@@ -31,7 +58,7 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "hides task lists outside their display window" do
+  test "lists outside their display window still appear on the dashboard but are dimmed" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       opening = TaskList.create!(name: "Opening", position: 1)
       closing = TaskList.create!(
@@ -56,19 +83,9 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       get tasks_root_path
 
       assert_response :success
-      assert_select ".task-list-cluster h3", text: "Opening"
-      assert_select ".task-list-cluster h3", text: "Closing", count: 0
-      assert_select ".task-card-title", text: /Check display case/
-      assert_select ".task-card-title", text: /Clean slicer/, count: 0
-      assert_select ".later-tasks-panel", text: /1 task hidden/
-    end
-
-    travel_to Time.zone.local(2026, 5, 18, 12) do
-      get tasks_root_path
-
-      assert_response :success
-      assert_select ".task-list-cluster h3", text: "Closing"
-      assert_select ".task-card-title", text: /Clean slicer/
+      assert_select ".tasks-list-picker-card h2", text: "Opening"
+      # Closing list is still tappable — just dimmed because its window is closed.
+      assert_select ".tasks-list-picker-card-quiet h2", text: "Closing"
     end
   end
 
@@ -93,10 +110,14 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       patch tasks_completing_as_path, params: { staff_member_id: staff.id }
       post tasks_occurrence_completion_path(occurrence), params: { notes: "Done before lunch." }
 
+      # No referer in the test → fallback to /tasks.
       assert_redirected_to tasks_root_path
       follow_redirect!
       assert_match "Completed Check display case.", response.body
       assert_equal "completed", occurrence.reload.status
+
+      # Per-task completion details live on the focused list view now.
+      get tasks_list_path(occurrence.task_list)
       assert_match "Completed by Demo Staff", response.body
 
       delete tasks_occurrence_completion_path(occurrence), params: { undone_note: "Wrong tap." }

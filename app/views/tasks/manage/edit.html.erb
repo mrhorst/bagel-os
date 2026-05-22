@@ -1,0 +1,31 @@
+<% content_for :title, "Edit #{@task.title}" %>
+
+<%=
+  render "tasks/subpage_header",
+    title: "Edit task",
+    subtitle: "#{@task.task_list.name} · #{task_recurrence_label(@task)}",
+    back_path: tasks_manage_tasks_path,
+    back_label: "Tasks"
+%>
+
+<section class="panel panel-compact">
+  <%= render "task_form", task: @task, url: tasks_manage_task_path(@task), method: :patch, submit_label: "Save task" %>
+</section>
+
+<section class="panel panel-compact panel-danger-zone">
+  <h2>Archive</h2>
+  <% if @task.active? %>
+    <p class="muted small">Archiving stops generating future occurrences. Past completions stay in history and you can reactivate the task later.</p>
+    <%= button_to "Archive this task",
+          archive_tasks_manage_task_path(@task),
+          method: :patch,
+          class: "button",
+          data: { turbo_confirm: "Archive #{@task.title}?" } %>
+  <% else %>
+    <p class="muted small">This task is archived. Reactivating will resume occurrence generation from today.</p>
+    <%= button_to "Reactivate this task",
+          reactivate_tasks_manage_task_path(@task),
+          method: :patch,
+          class: "button" %>
+  <% end %>
+</section>

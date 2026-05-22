@@ -12,7 +12,7 @@ class TasksOccurrenceBuilderTest < ActiveSupport::TestCase
       position: 2
     )
 
-    Tasks::OccurrenceBuilder.new(now: Time.zone.local(2026, 5, 18, 7)).build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
+    Tasks::OccurrenceBuilder.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 7))).build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
 
     occurrence = task.task_occurrences.sole
     assert_equal "day", occurrence.period_kind
@@ -53,8 +53,8 @@ class TasksOccurrenceBuilderTest < ActiveSupport::TestCase
     occurrence = task.task_occurrences.sole
     assert_equal "Eastern Time (US & Canada)", Time.zone.name
     assert_equal Time.utc(2026, 5, 18, 19), occurrence.due_at.utc
-    assert_equal "open", occurrence.status(now: Time.zone.local(2026, 5, 18, 14, 59))
-    assert_equal "late", occurrence.status(now: Time.zone.local(2026, 5, 18, 15))
+    assert_equal "open", occurrence.status(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 14, 59)))
+    assert_equal "late", occurrence.status(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 15)))
   end
 
   test "builds monthly occurrences as calendar month windows" do
@@ -88,8 +88,8 @@ class TasksOccurrenceBuilderTest < ActiveSupport::TestCase
     occurrence = task.task_occurrences.sole
     assert_equal Date.new(2026, 5, 10), occurrence.period_starts_on
     assert_nil occurrence.completion_window_ends_at
-    assert_equal "late", occurrence.status(now: Time.zone.local(2026, 5, 18, 9))
-    assert occurrence.completable?(now: Time.zone.local(2026, 5, 18, 9))
+    assert_equal "late", occurrence.status(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 9)))
+    assert occurrence.completable?(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 9)))
   end
 
   test "builder refreshes open snapshots but not completed history" do
@@ -101,11 +101,11 @@ class TasksOccurrenceBuilderTest < ActiveSupport::TestCase
       starts_on: Date.new(2026, 5, 18),
       due_time: Time.zone.parse("08:00")
     )
-    builder = Tasks::OccurrenceBuilder.new(now: Time.zone.local(2026, 5, 18, 7))
+    builder = Tasks::OccurrenceBuilder.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 7)))
     builder.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
 
     occurrence = task.task_occurrences.sole
-    Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 7, 30)).call(occurrence: occurrence, staff_member: staff)
+    Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 7, 30))).call(occurrence: occurrence, staff_member: staff)
     task.update!(title: "Check front case")
     builder.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
 

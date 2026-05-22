@@ -1,0 +1,13 @@
+<% content_for :title, "New task list" %>
+
+<%=
+  render "tasks/subpage_header",
+    title: "New task list",
+    subtitle: "Group related tasks — e.g. Prep, Cleaning, Closing.",
+    back_path: tasks_manage_lists_path,
+    back_label: "Task lists"
+%>
+
+<section class="panel panel-compact">
+  <%= render "form", task_list: @task_list, url: tasks_manage_lists_path, method: :post, submit_label: "Create list" %>
+</section>

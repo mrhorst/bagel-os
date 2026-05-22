@@ -1,15 +1,13 @@
 <% content_for :title, @occurrence.snapshot_title %>
 
-<div class="page-heading">
-  <div>
-    <h1><%= @occurrence.snapshot_title %></h1>
-    <p><%= @occurrence.snapshot_list_name %> task for <%= task_period_label(@occurrence) %>.</p>
-  </div>
-  <div class="button-row">
-    <%= link_to "Tasks", tasks_root_path, class: "button" %>
-    <%= link_to "History", tasks_history_path, class: "button" %>
-  </div>
-</div>
+<%=
+  render "tasks/subpage_header",
+    title: @occurrence.snapshot_title,
+    subtitle: "#{@occurrence.snapshot_list_name} · #{task_period_label(@occurrence)}",
+    back_path: @back_path,
+    back_label: @back_label,
+    actions: link_to("History", tasks_history_path, class: "button small")
+%>
 
 <section class="grid two">
   <section class="panel">

@@ -1,15 +1,10 @@
 <% content_for :title, "Task History" %>
 
-<div class="page-heading">
-  <div>
-    <h1>Task History</h1>
-    <p>Review what was open, late, missed, completed, or undone.</p>
-  </div>
-  <div class="button-row">
-    <%= link_to "Tasks", tasks_root_path, class: "button" %>
-    <%= link_to "Manage tasks", tasks_manage_path, class: "button" %>
-  </div>
-</div>
+<%=
+  render "tasks/subpage_header",
+    title: "History",
+    subtitle: "Open, late, missed, completed, undone — across every list."
+%>
 
 <section class="panel">
   <%= form_with url: tasks_history_path, method: :get, class: "filters" do |form| %>

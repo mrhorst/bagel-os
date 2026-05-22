@@ -5,24 +5,24 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
 
   test "creates staff members, task lists, and tasks from setup screens" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
-      get tasks_staff_index_path
+      get tasks_manage_staff_index_path
       assert_response :success
-      assert_select "h1", "Task Staff"
+      assert_select "h1", "Staff"
 
-      post tasks_staff_index_path, params: {
+      post tasks_manage_staff_index_path, params: {
         staff_member: {
           display_name: "Maria",
           notes: "Morning lead"
         }
       }
-      assert_redirected_to tasks_staff_index_path
+      assert_redirected_to tasks_manage_staff_index_path
       assert_equal "Maria", StaffMember.sole.display_name
 
-      get tasks_lists_path
+      get tasks_manage_lists_path
       assert_response :success
-      assert_select "h1", "Task Lists"
+      assert_select "h1", "Task lists"
 
-      post tasks_lists_path, params: {
+      post tasks_manage_lists_path, params: {
         task_list: {
           name: "Opening",
           position: 1,
@@ -31,13 +31,13 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
           notes: "Before doors open"
         }
       }
-      assert_redirected_to tasks_lists_path
+      assert_redirected_to tasks_manage_lists_path
       task_list = TaskList.sole
       assert_equal "Opening", task_list.name
       assert_equal "05:00", task_list.display_start_time.strftime("%H:%M")
       assert_equal "11:00", task_list.display_end_time.strftime("%H:%M")
 
-      post tasks_manage_path, params: {
+      post tasks_manage_tasks_path, params: {
         task: {
           task_list_id: task_list.id,
           title: "Check display case",
@@ -49,16 +49,16 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
           requires_photo_evidence: "1"
         }
       }
-      assert_redirected_to tasks_manage_path
+      assert_redirected_to tasks_manage_tasks_path
 
       task = Task.sole
       assert_equal "Check display case", task.title
       assert task.requires_photo_evidence?
 
-      get tasks_manage_path
+      get tasks_manage_tasks_path
       assert_response :success
-      assert_select "h1", "Manage Tasks"
-      assert_select ".badge", "Photo required"
+      assert_select "h1", "Tasks"
+      assert_select ".badge", "Photo"
       assert_select "h3", "Check display case"
     end
   end
@@ -75,22 +75,22 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
       )
       Tasks::OccurrenceBuilder.new.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
       occurrence = task.task_occurrences.sole
-      Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 9)).call(occurrence: occurrence, staff_member: staff)
+      Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 9))).call(occurrence: occurrence, staff_member: staff)
 
-      patch archive_tasks_list_path(task_list)
+      patch archive_tasks_manage_list_path(task_list)
 
-      assert_redirected_to tasks_lists_path
+      assert_redirected_to tasks_manage_lists_path
       assert task_list.reload.archived?
       assert task.reload.archived?
       assert TaskOccurrence.exists?(occurrence.id)
 
-      patch reactivate_tasks_list_path(task_list)
-      assert_redirected_to tasks_lists_path
+      patch reactivate_tasks_manage_list_path(task_list)
+      assert_redirected_to tasks_manage_lists_path
       assert task_list.reload.active?
       assert task.reload.archived?
 
-      patch tasks_reactivate_managed_task_path(task)
-      assert_redirected_to tasks_manage_path
+      patch reactivate_tasks_manage_task_path(task)
+      assert_redirected_to tasks_manage_tasks_path
       assert task.reload.active?
     end
   end
@@ -108,17 +108,17 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
       Tasks::OccurrenceBuilder.new.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
       occurrence = task.task_occurrences.sole
 
-      first_completion = Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 12, 20)).call(
+      first_completion = Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 20))).call(
         occurrence: occurrence,
         staff_member: staff,
         notes: "Done after lunch."
       )
-      Tasks::UndoCompletion.new(now: Time.zone.local(2026, 5, 18, 12, 30)).call(
+      Tasks::UndoCompletion.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 30))).call(
         completion: first_completion,
         staff_member: staff,
         note: "Wrong task."
       )
-      Tasks::CompleteOccurrence.new(now: Time.zone.local(2026, 5, 18, 12, 40)).call(
+      Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 40))).call(
         occurrence: occurrence,
         staff_member: staff
       )
@@ -131,7 +131,7 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
       }
 
       assert_response :success
-      assert_select "h1", "Task History"
+      assert_select "h1", "History"
       assert_select "td", text: /Clean slicer/
       assert_select "td", text: /Completed by Maria/
 

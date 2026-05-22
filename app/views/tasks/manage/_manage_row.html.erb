@@ -1,0 +1,21 @@
+<%# locals: task: %>
+<%= link_to edit_tasks_manage_task_path(task), class: "manage-row #{'manage-row-archived' unless task.active?}" do %>
+  <div class="manage-row-main">
+    <div class="manage-row-title">
+      <h3><%= task.title %></h3>
+      <% if task.requires_photo_evidence? %>
+        <span class="badge badge-compact">Photo</span>
+      <% end %>
+      <% unless task.active? %>
+        <span class="badge">Archived</span>
+      <% end %>
+    </div>
+    <p class="muted small">
+      <%= task_recurrence_label(task) %>
+      · <%= task.task_list.name %>
+    </p>
+  </div>
+  <svg class="manage-row-arrow" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+    <path d="m5 3 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+<% end %>

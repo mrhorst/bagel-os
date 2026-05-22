@@ -893,18 +893,18 @@ textarea {
   color: #5f6b66;
 }
 
-.task-row-check {
+.task-checkbox-cell {
   align-items: center;
   display: flex;
   justify-content: center;
 }
 
-.circle-form {
+.task-checkbox-form {
   line-height: 0;
   margin: 0;
 }
 
-.task-circle {
+.task-checkbox {
   align-items: center;
   appearance: none;
   background: #fff;
@@ -921,18 +921,18 @@ textarea {
   width: 32px;
 }
 
-.task-circle-open:hover,
-.task-circle-photo:hover {
+.task-checkbox-open:hover,
+.task-checkbox-photo:hover {
   border-color: #247244;
   box-shadow: 0 0 0 4px rgba(36, 114, 68, 0.12);
 }
 
-.task-circle-completed {
+.task-checkbox-completed {
   background: #247244;
   border-color: #247244;
 }
 
-.task-circle-completed::after {
+.task-checkbox-completed::after {
   border: solid #fff;
   border-width: 0 2px 2px 0;
   content: "";
@@ -941,7 +941,7 @@ textarea {
   width: 6px;
 }
 
-.task-circle-photo::after {
+.task-checkbox-photo::after {
   background: #247244;
   border-radius: 2px;
   content: "";
@@ -949,11 +949,11 @@ textarea {
   width: 14px;
 }
 
-.task-circle-undo {
+.task-checkbox-undo {
   border-color: #9fb0b7;
 }
 
-.task-circle-undo::before {
+.task-checkbox-undo::before {
   border: solid #5f6b66;
   border-width: 2px 0 0 2px;
   content: "";
@@ -1415,7 +1415,7 @@ tr:target {
     align-items: stretch;
   }
 
-  .task-row-check {
+  .task-checkbox-cell {
     justify-content: flex-start;
   }
 

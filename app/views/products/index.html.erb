@@ -61,17 +61,17 @@
     <% end %>
   </div>
 
-  <table>
+  <table class="responsive-table">
     <thead>
       <tr>
         <th>Product</th>
         <th>Category</th>
-        <th>SKU</th>
+        <th class="hide-on-mobile">SKU</th>
         <th class="numeric">Latest</th>
-        <th class="numeric">Avg</th>
-        <th class="numeric">Low</th>
-        <th class="numeric">High</th>
-        <th class="numeric">Times</th>
+        <th class="numeric hide-on-mobile">Avg</th>
+        <th class="numeric hide-on-mobile">Low</th>
+        <th class="numeric hide-on-mobile">High</th>
+        <th class="numeric hide-on-mobile">Times</th>
         <th class="numeric">Spend</th>
         <th>Review</th>
       </tr>
@@ -80,16 +80,16 @@
       <% @products.each do |product| %>
         <% stats = product.price_stats %>
         <tr>
-          <td><%= link_to product.canonical_name, product %></td>
-          <td><%= product.category_name %></td>
-          <td><%= product.supplier_sku_summary %></td>
-          <td class="numeric"><%= money(stats[:latest_price]) %></td>
-          <td class="numeric"><%= money(stats[:average_price]) %></td>
-          <td class="numeric"><%= money(stats[:lowest_price]) %></td>
-          <td class="numeric"><%= money(stats[:highest_price]) %></td>
-          <td class="numeric"><%= stats[:total_times_purchased] %></td>
-          <td class="numeric"><%= money(stats[:total_spend]) %></td>
-          <td><%= review_badge(product) %></td>
+          <td data-label="Product"><%= link_to product.canonical_name, product %></td>
+          <td data-label="Category"><%= product.category_name %></td>
+          <td class="hide-on-mobile" data-label="SKU"><%= product.supplier_sku_summary %></td>
+          <td class="numeric" data-label="Latest price"><%= money(stats[:latest_price]) %></td>
+          <td class="numeric hide-on-mobile" data-label="Avg"><%= money(stats[:average_price]) %></td>
+          <td class="numeric hide-on-mobile" data-label="Low"><%= money(stats[:lowest_price]) %></td>
+          <td class="numeric hide-on-mobile" data-label="High"><%= money(stats[:highest_price]) %></td>
+          <td class="numeric hide-on-mobile" data-label="Times"><%= stats[:total_times_purchased] %></td>
+          <td class="numeric" data-label="Total spend"><%= money(stats[:total_spend]) %></td>
+          <td data-label="Review"><%= review_badge(product) %></td>
         </tr>
       <% end %>
     </tbody>

@@ -1,15 +1,6 @@
 <% content_for :title, "Tasks" %>
 
 <%
-  # Context line: day of week + active list name (or "All lists" for the
-  # combined view). Keeps the user oriented without a verbose subtitle.
-  context_parts = [ Time.zone.now.strftime("%a") ]
-  context_parts << case @selected_task_list
-                    when :all then "All lists"
-                    when TaskList then @selected_task_list.name
-                    end
-  context_line = context_parts.compact.join(" · ")
-
   staff_chip_class = [ "tasks-staff-chip", ("tasks-staff-chip-empty" if @current_staff_member.blank?) ].compact
 %>
 
@@ -17,11 +8,10 @@
 <section class="tasks-page-header-v2">
   <div class="tasks-page-header-titles">
     <h1>Tasks</h1>
-    <p class="muted small"><%= context_line %></p>
+    <p class="muted small"><%= Time.zone.now.strftime("%A, %b %-d") %></p>
   </div>
 
   <div class="tasks-page-header-tools" data-controller="popover">
-    <%# Staff chip — opens the popover to switch %>
     <button type="button"
             class="<%= staff_chip_class.join(' ') %>"
             data-action="popover#toggle"
@@ -47,13 +37,12 @@
             options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id),
             { include_blank: "Select staff member" }, class: "compact-select" %>
       <div class="popover-actions">
-        <%= link_to "Staff setup", tasks_staff_index_path, class: "button small" %>
+        <%= link_to "Manage staff", tasks_manage_staff_index_path, class: "button small" %>
         <%= form.submit "Use staff", class: "button small primary" %>
       </div>
     <% end %>
   </div>
 
-  <%# Overflow menu — History / Manage / pick another list %>
   <div class="tasks-page-header-overflow" data-controller="popover">
     <button type="button"
             class="icon-button"
@@ -69,107 +58,49 @@
       </svg>
     </button>
     <div class="popover-panel popover-panel-menu" hidden data-popover-target="panel" role="menu">
-      <%= link_to "Switch list", tasks_root_path(list: ""), role: "menuitem", class: "popover-item" %>
-      <%= link_to "History", tasks_history_path, role: "menuitem", class: "popover-item" %>
-      <%= link_to "Manage tasks", tasks_manage_path, role: "menuitem", class: "popover-item" %>
-      <%= link_to "Staff setup", tasks_staff_index_path, role: "menuitem", class: "popover-item" %>
+      <%= link_to "History",  tasks_history_path, role: "menuitem", class: "popover-item" %>
+      <%= link_to "Settings", tasks_manage_path,  role: "menuitem", class: "popover-item" %>
     </div>
   </div>
 </section>
 
-<%# ── Decision branch: pick a list, or work the active one ───────────── %>
-<% if @show_list_picker %>
-  <%= render "tasks/dashboard/list_picker" %>
-<% else %>
-  <%# Compact KPI squares — only the 3 that matter for "what do I do now" %>
-  <section class="tasks-kpi-squares" aria-label="Task dashboard metrics">
-    <article class="tasks-kpi <%= "tasks-kpi-danger" if @metrics[:late_today].to_i.positive? %>">
-      <span>Late</span>
-      <strong class="tnum"><%= @metrics[:late_today] %></strong>
-    </article>
-    <article class="tasks-kpi <%= "tasks-kpi-accent" if @metrics[:open_today].to_i.positive? %>">
-      <span>Open</span>
-      <strong class="tnum"><%= @metrics[:open_today] %></strong>
-    </article>
-    <article class="tasks-kpi tasks-kpi-ok">
-      <span>Done</span>
-      <strong class="tnum"><%= @metrics[:completed_today] %></strong>
-    </article>
-  </section>
+<%# Totals across every list — quick "what's the day look like" %>
+<%= render "tasks/kpi_squares", metrics: @metrics, dom_id: "tasks_dashboard_kpis" %>
 
-  <% if @metrics[:open_this_month].to_i.positive? || @metrics[:hidden_today].to_i.positive? %>
-    <details class="tasks-more-stats">
-      <summary>More stats</summary>
-      <dl>
-        <div><dt>Open this month</dt><dd class="tnum"><%= @metrics[:open_this_month] %></dd></div>
-        <div><dt>Hidden by display window</dt><dd class="tnum"><%= @metrics[:hidden_today] %></dd></div>
-      </dl>
-    </details>
-  <% end %>
-
-  <%# ── Now ──────────────────────────────────────────────────────────── %>
-  <section class="tasks-now-panel">
-    <% if @grouped_today_occurrences.any? %>
-      <div class="task-list-stack">
-        <% @grouped_today_occurrences.each do |task_list, occurrences| %>
-          <section class="task-list-cluster">
-            <div class="task-list-cluster-header">
-              <div>
-                <h3><%= task_list.name %></h3>
-                <p><%= pluralize(occurrences.size, "task") %> ready now</p>
-              </div>
-              <span><%= task_list_display_window_label(task_list) %></span>
-            </div>
-
-            <div class="task-row-list">
-              <% occurrences.each do |occurrence| %>
-                <%= render "tasks/dashboard/task_row", occurrence: occurrence %>
-              <% end %>
-            </div>
-          </section>
-        <% end %>
-      </div>
-    <% else %>
-      <p class="empty-state">
-        <strong>Nothing to do right now.</strong>
-        <span>Tasks appear here during their list's display window.</span>
-      </p>
-    <% end %>
-
-    <% if @hidden_today_occurrences.any? && @selected_task_list != :all %>
-      <section class="later-tasks-panel">
-        <strong><%= pluralize(@hidden_today_occurrences.size, "task") %> hidden by task-list display windows</strong>
-        <p class="field-hint">Those lists appear automatically during their configured start and end times.</p>
-      </section>
-    <% end %>
-  </section>
-
-  <%# ── This month ───────────────────────────────────────────────────── %>
-  <% if @grouped_monthly_occurrences.any? %>
-    <section class="tasks-month-panel">
-      <header class="task-list-cluster-header">
-        <div>
-          <h2>This month</h2>
-          <p>Monthly tasks can be completed any time this month.</p>
+<%# ── One card per list. Tap a card to work it. ─────────────────────── %>
+<section class="tasks-list-picker" aria-label="Task lists">
+  <% if @list_summaries.any? %>
+    <% @list_summaries.each do |summary| %>
+      <% list = summary[:list] %>
+      <%= link_to tasks_list_path(list), class: "tasks-list-picker-card #{'tasks-list-picker-card-quiet' unless summary[:visible_now]}" do %>
+        <div class="tasks-list-picker-card-main">
+          <h2><%= list.name %></h2>
+          <p class="muted small"><%= task_list_display_window_label(list) %></p>
         </div>
-      </header>
-      <div class="task-list-stack">
-        <% @grouped_monthly_occurrences.each do |task_list, occurrences| %>
-          <section class="task-list-cluster task-list-cluster-compact">
-            <div class="task-list-cluster-header">
-              <div>
-                <h3><%= task_list.name %></h3>
-                <p><%= pluralize(occurrences.size, "monthly task") %></p>
-              </div>
-            </div>
-            <div class="task-row-list">
-              <% occurrences.each do |occurrence| %>
-                <%= render "tasks/dashboard/task_row", occurrence: occurrence, monthly: true %>
-              <% end %>
-            </div>
-          </section>
-        <% end %>
-      </div>
-    </section>
+
+        <div class="tasks-list-picker-card-counts">
+          <% if summary[:late].positive? %>
+            <span class="badge badge-warn tnum"><%= summary[:late] %> late</span>
+          <% end %>
+          <% if summary[:open].positive? %>
+            <span class="badge tnum"><%= summary[:open] %> open</span>
+          <% elsif summary[:late].zero? && summary[:completed].positive? %>
+            <span class="badge badge-ok tnum">All done</span>
+          <% end %>
+          <% if summary[:monthly_open].positive? %>
+            <span class="badge badge-compact tnum"><%= summary[:monthly_open] %> monthly</span>
+          <% end %>
+        </div>
+
+        <svg class="tasks-list-picker-card-arrow" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p class="empty-state">
+      <strong>No active task lists.</strong>
+      <span>Create a list and some tasks under <%= link_to "Settings", tasks_manage_path %>.</span>
+    </p>
   <% end %>
-<% end %>
+</section>

@@ -1,0 +1,48 @@
+<% content_for :title, @task_list.name %>
+
+<%# The focused list view shows live completion state. Don't let Turbo
+    Drive show a cached preview from a previous visit — it's confusing
+    when a row appears "open" momentarily before being replaced. %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-preview">
+<% end %>
+
+<%=
+  render "tasks/subpage_header",
+    title: @task_list.name,
+    subtitle: task_list_display_window_label(@task_list),
+    actions: link_to("Edit list", tasks_manage_lists_path(anchor: dom_id(@task_list)), class: "button small")
+%>
+
+<%= render "tasks/kpi_squares", metrics: @metrics, dom_id: "task_list_kpis_#{@task_list.id}" %>
+
+<section class="tasks-now-panel">
+  <% if @today_occurrences.any? %>
+    <div class="task-row-list">
+      <% @today_occurrences.each do |occurrence| %>
+        <%= render "tasks/dashboard/task_row", occurrence: occurrence %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">
+      <strong>Nothing on this list today.</strong>
+      <span>Daily and weekly tasks for this list will appear here when they're due.</span>
+    </p>
+  <% end %>
+</section>
+
+<% if @monthly_occurrences.any? %>
+  <section class="tasks-month-panel">
+    <header class="task-list-cluster-header">
+      <div>
+        <h2>This month</h2>
+        <p>Monthly tasks can be completed any time this month.</p>
+      </div>
+    </header>
+    <div class="task-row-list">
+      <% @monthly_occurrences.each do |occurrence| %>
+        <%= render "tasks/dashboard/task_row", occurrence: occurrence, monthly: true %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

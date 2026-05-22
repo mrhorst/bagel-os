@@ -1,15 +1,12 @@
 <% content_for :title, "Task Staff" %>
 
-<div class="page-heading">
-  <div>
-    <h1>Task Staff</h1>
-    <p>Names used for task completion attribution.</p>
-  </div>
-  <div class="button-row">
-    <%= link_to "Tasks", tasks_root_path, class: "button" %>
-    <%= link_to "Manage tasks", tasks_manage_path, class: "button" %>
-  </div>
-</div>
+<%=
+  render "tasks/subpage_header",
+    title: "Staff",
+    subtitle: "Names used to attribute task completions. Not logins.",
+    back_path: tasks_manage_path,
+    back_label: "Settings"
+%>
 
 <section class="grid two">
   <section class="panel">
@@ -20,7 +17,7 @@
       </div>
     </div>
 
-    <%= form_with model: StaffMember.new, url: tasks_staff_index_path, class: "stacked-form" do |form| %>
+    <%= form_with model: StaffMember.new, url: tasks_manage_staff_index_path, class: "stacked-form" do |form| %>
       <div class="field">
         <%= form.label :display_name, "Display name" %>
         <%= form.text_field :display_name, required: true, placeholder: "Maria" %>
@@ -56,7 +53,7 @@
               </div>
             </div>
 
-            <%= form_with model: staff_member, url: tasks_staff_path(staff_member), method: :patch, class: "stacked-form" do |form| %>
+            <%= form_with model: staff_member, url: tasks_manage_staff_path(staff_member), method: :patch, class: "stacked-form" do |form| %>
               <div class="field">
                 <%= form.label :display_name, "Display name" %>
                 <%= form.text_field :display_name, required: true %>
@@ -70,9 +67,9 @@
 
             <div class="button-row">
               <% if staff_member.active? %>
-                <%= button_to "Deactivate", deactivate_tasks_staff_path(staff_member), method: :patch, class: "button small" %>
+                <%= button_to "Deactivate", deactivate_tasks_manage_staff_path(staff_member), method: :patch, class: "button small" %>
               <% else %>
-                <%= button_to "Reactivate", reactivate_tasks_staff_path(staff_member), method: :patch, class: "button small" %>
+                <%= button_to "Reactivate", reactivate_tasks_manage_staff_path(staff_member), method: :patch, class: "button small" %>
               <% end %>
             </div>
           </article>

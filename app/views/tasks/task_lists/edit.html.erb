@@ -1,0 +1,31 @@
+<% content_for :title, "Edit #{@task_list.name}" %>
+
+<%=
+  render "tasks/subpage_header",
+    title: "Edit list",
+    subtitle: @task_list.name,
+    back_path: tasks_manage_lists_path,
+    back_label: "Task lists"
+%>
+
+<section class="panel panel-compact">
+  <%= render "form", task_list: @task_list, url: tasks_manage_list_path(@task_list), method: :patch, submit_label: "Save list" %>
+</section>
+
+<section class="panel panel-compact panel-danger-zone">
+  <h2>Archive</h2>
+  <% if @task_list.active? %>
+    <p class="muted small">Archiving stops new occurrences from generating. Past history stays intact and the list can be reactivated later.</p>
+    <%= button_to "Archive this list",
+          archive_tasks_manage_list_path(@task_list),
+          method: :patch,
+          class: "button",
+          data: { turbo_confirm: "Archive #{@task_list.name}?" } %>
+  <% else %>
+    <p class="muted small">This list is archived. Reactivating resumes occurrence generation for any active tasks inside it.</p>
+    <%= button_to "Reactivate this list",
+          reactivate_tasks_manage_list_path(@task_list),
+          method: :patch,
+          class: "button" %>
+  <% end %>
+</section>

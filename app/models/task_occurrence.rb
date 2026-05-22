@@ -24,10 +24,10 @@ class TaskOccurrence < ApplicationRecord
   scope :monthly, -> { where(period_kind: "month") }
   scope :daily, -> { where(period_kind: "day") }
 
-  def status(now: Time.current)
+  def status(operating_day: Tasks::OperatingDay.new)
     return "completed" if active_completion.present?
-    return "missed" if missed?(now: now)
-    return "late" if late?(now: now)
+    return "missed" if missed?(operating_day: operating_day)
+    return "late" if late?(operating_day: operating_day)
 
     "open"
   end
@@ -36,32 +36,32 @@ class TaskOccurrence < ApplicationRecord
     active_completion.present?
   end
 
-  def missed?(now: Time.current)
-    active_completion.blank? && completion_window_ends_at.present? && now >= completion_window_ends_at
+  def missed?(operating_day: Tasks::OperatingDay.new)
+    active_completion.blank? && operating_day.passed?(completion_window_ends_at)
   end
 
-  def late?(now: Time.current)
-    active_completion.blank? && !missed?(now: now) && due_at.present? && now >= due_at
+  def late?(operating_day: Tasks::OperatingDay.new)
+    active_completion.blank? && !missed?(operating_day: operating_day) && operating_day.passed?(due_at)
   end
 
-  def open?(now: Time.current)
-    status(now: now) == "open"
+  def open?(operating_day: Tasks::OperatingDay.new)
+    status(operating_day: operating_day) == "open"
   end
 
-  def completable?(now: Time.current)
-    !missed?(now: now)
+  def completable?(operating_day: Tasks::OperatingDay.new)
+    !missed?(operating_day: operating_day)
   end
 
-  def undoable?(now: Time.current)
-    active_completion.present? && active_completion.completed_at.to_date == now.to_date
+  def undoable?(operating_day: Tasks::OperatingDay.new)
+    active_completion.present? && operating_day.same_day_as?(active_completion.completed_at)
   end
 
-  def refreshable?(now: Time.current)
-    active_completion.blank? && !missed?(now: now)
+  def refreshable?(operating_day: Tasks::OperatingDay.new)
+    active_completion.blank? && !missed?(operating_day: operating_day)
   end
 
-  def removable_when_task_archived?(now: Time.current)
-    refreshable?(now: now)
+  def removable_when_task_archived?(operating_day: Tasks::OperatingDay.new)
+    refreshable?(operating_day: operating_day)
   end
 
   private

@@ -1,121 +1,56 @@
 module Tasks
+  # GET /tasks — the “pick a list” screen. We deliberately do NOT render
+  # individual tasks here: that's the focused list view's job. This page
+  # exists to (a) show totals across everything and (b) hand the user off
+  # to the list they actually want to work.
   class DashboardController < ApplicationController
-    LIST_COOKIE = :tasks_selected_list_id
-    ALL_LISTS = "all".freeze
-
     def index
-      today = Time.zone.today
-      OccurrenceBuilder.new.build!(from: today, to: today)
-      OccurrenceBuilder.new.build!(from: today.beginning_of_month, to: today.end_of_month)
+      operating_day = OperatingDay.new
+      OccurrenceBuilder.new(operating_day: operating_day).build!(from: operating_day.today, to: operating_day.today)
+      OccurrenceBuilder.new(operating_day: operating_day).build!(from: operating_day.today.beginning_of_month, to: operating_day.today.end_of_month)
 
-      @staff_members = StaffMember.active.ordered
+      @staff_members        = StaffMember.active.ordered
       @current_staff_member = current_task_staff_member
 
-      all_today   = actionable_day_occurrences(today)
-      all_monthly = current_month_occurrences(today)
-      @hidden_today_occurrences   = all_today.reject   { |o| o.task_list.visible_at?(Time.current) }
-      @hidden_monthly_occurrences = all_monthly.reject { |o| o.task_list.visible_at?(Time.current) }
-      visible_today   = all_today   - @hidden_today_occurrences
-      visible_monthly = all_monthly - @hidden_monthly_occurrences
+      daily   = actionable_day_occurrences(operating_day)
+      monthly = current_month_occurrences(operating_day)
 
-      # The user's effective universe — every list with any occurrence today
-      # or this month, whether currently visible by display window or not.
-      universe = visible_today + @hidden_today_occurrences + visible_monthly + @hidden_monthly_occurrences
-      @all_task_lists = universe.map(&:task_list).uniq.sort_by { |list| [ list.position, list.name ] }
-
-      @selected_task_list = resolve_selected_list(@all_task_lists)
-      @show_list_picker   = should_show_picker?
-
-      if @selected_task_list.is_a?(TaskList)
-        visible_today   = visible_today.select   { |o| o.task_list_id == @selected_task_list.id }
-        visible_monthly = visible_monthly.select { |o| o.task_list_id == @selected_task_list.id }
-      end
-
-      @today_occurrences   = visible_today
-      @monthly_occurrences = visible_monthly
-      @grouped_today_occurrences   = grouped_occurrences(@today_occurrences)
-      @grouped_monthly_occurrences = grouped_occurrences(@monthly_occurrences)
-      @metrics = board_metrics(@today_occurrences, @monthly_occurrences, @hidden_today_occurrences + @hidden_monthly_occurrences)
-
-      # Per-list open counts power the picker's "X open" labels.
-      @list_open_counts = (all_today + all_monthly)
-        .group_by(&:task_list_id)
-        .transform_values { |occs| occs.count { |o| !o.completed? && !o.missed? } }
-
-      persist_list_selection
+      @metrics = TaskMetrics.new(daily: daily, monthly: monthly, operating_day: operating_day).summary.to_h_with_today_suffix
+      @list_summaries = build_list_summaries(daily, monthly, operating_day)
     end
 
     private
 
-    # Resolution order: explicit ?list= param → cookie → nil (picker).
-    # An empty `?list=` means "clear my preference, show me the picker."
-    # `?list=all` opts in to the combined view; we honor and remember it.
-    def resolve_selected_list(lists)
-      raw = (params.key?(:list) ? params[:list] : cookies[LIST_COOKIE]).to_s
-      return nil if raw.blank?
-      return :all if raw == ALL_LISTS
+    # One row per active list with any occurrences today or this month.
+    # Each summary carries the counts that drive the card UI — we don't
+    # send raw occurrences to the view, on purpose.
+    def build_list_summaries(daily, monthly, operating_day)
+      grouped_daily   = daily.group_by(&:task_list)
+      grouped_monthly = monthly.group_by(&:task_list)
 
-      lists.find { |l| l.id.to_s == raw }
-    end
+      lists = (grouped_daily.keys + grouped_monthly.keys).uniq
+      lists.sort_by { |list| [ list.position, list.name ] }.map do |list|
+        metrics = TaskMetrics.new(
+          daily: grouped_daily[list] || [],
+          monthly: grouped_monthly[list] || [],
+          operating_day: operating_day
+        ).summary
 
-    def should_show_picker?
-      return false if @selected_task_list == :all
-      return false if @selected_task_list.is_a?(TaskList)
-      @all_task_lists.size >= 2
-    end
-
-    # Only persist when the user made an explicit choice this request.
-    # An empty/missing selection clears the cookie so the picker comes back.
-    def persist_list_selection
-      return unless params.key?(:list)
-
-      case @selected_task_list
-      when :all
-        cookies[LIST_COOKIE] = { value: ALL_LISTS, expires: 90.days.from_now }
-      when TaskList
-        cookies[LIST_COOKIE] = { value: @selected_task_list.id.to_s, expires: 90.days.from_now }
-      else
-        cookies.delete(LIST_COOKIE)
+        metrics.to_h_no_suffix.merge(list: list, visible_now: list.visible_at?(operating_day.now))
       end
     end
 
-    def actionable_day_occurrences(today)
-      TaskOccurrence
-        .daily
+    def actionable_day_occurrences(operating_day)
+      operating_day.actionable_daily_scope
         .includes(:task_list, :active_completion)
-        .where("period_starts_on = ? OR (completion_window_ends_at IS NULL AND period_starts_on <= ?)", today, today)
-        .reject { |occurrence| occurrence.missed? }
-        .sort_by { |occurrence| sort_key_for(occurrence) }
+        .reject { |occurrence| occurrence.missed?(operating_day: operating_day) }
     end
 
-    def current_month_occurrences(today)
-      TaskOccurrence
-        .monthly
+    def current_month_occurrences(operating_day)
+      operating_day.actionable_monthly_scope
         .includes(:task_list, :active_completion)
-        .where(period_starts_on: today.beginning_of_month)
         .reject(&:completed?)
-        .reject(&:missed?)
-        .sort_by { |occurrence| [ occurrence.task_list.position, occurrence.position, occurrence.snapshot_title ] }
-    end
-
-    def grouped_occurrences(occurrences)
-      occurrences.group_by(&:task_list).sort_by { |task_list, _items| [ task_list.position, task_list.name ] }
-    end
-
-    def board_metrics(today_occurrences, monthly_occurrences, hidden_today_occurrences)
-      statuses = today_occurrences.map { |occurrence| occurrence.status }
-      {
-        open_today: statuses.count("open"),
-        late_today: statuses.count("late"),
-        completed_today: statuses.count("completed"),
-        open_this_month: monthly_occurrences.size,
-        hidden_today: hidden_today_occurrences.size
-      }
-    end
-
-    def sort_key_for(occurrence)
-      rank = { "late" => 0, "open" => 1, "completed" => 2 }.fetch(occurrence.status, 3)
-      [ rank, occurrence.due_at || Time.zone.local(9999, 1, 1), occurrence.position, occurrence.snapshot_title ]
+        .reject { |occurrence| occurrence.missed?(operating_day: operating_day) }
     end
   end
 end

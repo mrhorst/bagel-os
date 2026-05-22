@@ -29,3 +29,4 @@ registerChartDataLabels()
 
 import "chartkick"
 import "controllers"
+import "@hotwired/turbo-rails"

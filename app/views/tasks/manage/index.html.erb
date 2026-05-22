@@ -1,78 +1,66 @@
-<% content_for :title, "Manage Tasks" %>
+<% content_for :title, "Tasks" %>
 
-<div class="page-heading">
-  <div>
-    <h1>Manage Tasks</h1>
-    <p>Create recurring staff tasks and archive old work without losing history.</p>
-  </div>
-  <div class="button-row">
-    <%= link_to "Tasks", tasks_root_path, class: "button" %>
-    <%= link_to "Task lists", tasks_lists_path, class: "button" %>
-    <%= link_to "Staff", tasks_staff_index_path, class: "button" %>
-  </div>
-</div>
+<%
+  has_lists = @task_lists.any?
+  add_action = if has_lists
+    link_to("Add task", new_tasks_manage_task_path, class: "button primary")
+  else
+    link_to("Create a list first", tasks_manage_lists_path, class: "button")
+  end
+%>
 
-<section class="panel">
-  <div class="panel-heading">
-    <div>
-      <h2>New Task</h2>
-      <p class="muted">Use monthly for work that can happen any time before the month closes.</p>
-    </div>
-  </div>
+<%=
+  render "tasks/subpage_header",
+    title: "Tasks",
+    subtitle: "Recurring staff work. Archive instead of deleting — history is preserved.",
+    back_path: tasks_manage_path,
+    back_label: "Settings",
+    actions: add_action
+%>
 
-  <% if @task_lists.any? %>
-    <%= render "task_form", task: @task, url: tasks_manage_path, method: :post, submit_label: "Create task" %>
-  <% else %>
-    <p class="empty-state">Create a task list before adding tasks.</p>
-  <% end %>
-</section>
+<% active_tasks, archived_tasks = @tasks.partition(&:active?) %>
 
-<section class="panel">
-  <div class="panel-heading">
-    <div>
-      <h2>Existing Tasks</h2>
-      <p class="muted"><%= pluralize(@tasks.size, "task") %></p>
-    </div>
-  </div>
-
-  <% if @tasks.any? %>
-    <div class="manage-task-list">
-      <% @tasks.each do |task| %>
-        <article class="manage-task-row">
-          <div class="manage-task-summary">
-            <div>
-              <h3><%= task.title %></h3>
-              <div class="status-row">
-                <% if task.active? %>
-                  <span class="badge badge-ok">Active</span>
-                <% else %>
-                  <span class="badge">Archived</span>
-                <% end %>
-                <% if task.requires_photo_evidence? %>
-                  <span class="badge badge-compact">Photo required</span>
-                <% end %>
-                <span class="muted"><%= task.task_list.name %></span>
-              </div>
-            </div>
-            <span class="muted"><%= task_recurrence_label(task) %></span>
-          </div>
-
-          <details class="form-disclosure">
-            <summary>Edit task</summary>
-            <%= render "task_form", task: task, url: tasks_managed_task_path(task), method: :patch, submit_label: "Save task" %>
-          </details>
-
-          <div class="button-row">
-            <% if task.active? %>
-              <%= button_to "Archive task", tasks_archive_managed_task_path(task), method: :patch, class: "button small" %>
-            <% else %>
-              <%= button_to "Reactivate task", tasks_reactivate_managed_task_path(task), method: :patch, class: "button small" %>
-            <% end %>
-          </div>
-        </article>
+<% if active_tasks.any? %>
+  <section class="manage-stack">
+    <% active_tasks.group_by(&:task_list).each do |task_list, tasks| %>
+      <header class="manage-stack-group-header">
+        <h2><%= task_list.name %></h2>
+        <span class="muted small"><%= pluralize(tasks.size, "task") %></span>
+      </header>
+      <% tasks.each do |task| %>
+        <%= render "manage_row", task: task %>
       <% end %>
+    <% end %>
+  </section>
+<% elsif has_lists %>
+  <section class="panel panel-compact">
+    <p class="empty-state">
+      <strong>No active tasks yet.</strong>
+      <span>Add daily, weekly, or monthly work for any of your lists.</span>
+    </p>
+    <div class="form-footer">
+      <%= link_to "Add your first task", new_tasks_manage_task_path, class: "button primary" %>
     </div>
-  <% else %>
-    <p class="empty-state">No tasks yet.</p>
-  <% end %>
-</section>
+  </section>
+<% else %>
+  <section class="panel panel-compact">
+    <p class="empty-state">
+      <strong>You need a list before you can add tasks.</strong>
+      <span>Lists group tasks (e.g. Prep, Cleaning) and control when they appear on the dashboard.</span>
+    </p>
+    <div class="form-footer">
+      <%= link_to "Go to task lists", tasks_manage_lists_path, class: "button primary" %>
+    </div>
+  </section>
+<% end %>
+
+<% if archived_tasks.any? %>
+  <details class="manage-archive">
+    <summary><%= pluralize(archived_tasks.size, "archived task") %></summary>
+    <section class="manage-stack">
+      <% archived_tasks.each do |task| %>
+        <%= render "manage_row", task: task %>
+      <% end %>
+    </section>
+  </details>
+<% end %>

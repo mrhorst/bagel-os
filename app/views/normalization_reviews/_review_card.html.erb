@@ -1,0 +1,55 @@
+<% line = review.receipt_line_item %>
+<article class="panel review-card decision-card">
+  <header class="decision-card-header">
+    <div class="decision-card-meta">
+      <span class="badge badge-warning"><%= review.issue_type.humanize %></span>
+      <span class="muted">
+        Receipt <%= line.receipt.receipt_number %> ·
+        <%= line.display_quantity %> ·
+        <%= money(line.line_total) %>
+      </span>
+    </div>
+    <%= link_to "Open import", import_batch_path(line.import_batch), class: "button small" %>
+  </header>
+
+  <div class="decision-card-body">
+    <h2><%= line.raw_name %></h2>
+    <p class="muted"><%= review.description %></p>
+    <p class="muted small">
+      SKU <%= line.raw_sku.presence || "n/a" %> ·
+      <%= line.import_batch.source_filename %>
+    </p>
+  </div>
+
+  <div class="decision-card-actions">
+    <section class="decision-action decision-action-primary">
+      <h3>Assign to existing product</h3>
+      <%= form_with url: assign_product_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
+        <%= select_tag :product_id,
+          options_from_collection_for_select(products, :id, :canonical_name),
+          prompt: "Choose product" %>
+        <%= form.submit "Assign", class: "button primary" %>
+      <% end %>
+    </section>
+
+    <section class="decision-action">
+      <h3>Or create new</h3>
+      <%= form_with url: create_product_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
+        <%= text_field_tag :canonical_name, line.raw_name, placeholder: "Canonical name" %>
+        <%= select_tag :product_category_id,
+          options_from_collection_for_select(categories, :id, :name),
+          prompt: "Choose category" %>
+        <%= form.submit "Create", class: "button" %>
+      <% end %>
+    </section>
+
+    <section class="decision-action decision-action-tertiary">
+      <h3>Or resolve / ignore</h3>
+      <%= form_with url: resolve_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
+        <%= select_tag :review_status, options_for_select([ [ "Resolved", "resolved" ], [ "Ignored", "ignored" ] ]) %>
+        <%= text_field_tag :resolution_notes, nil, placeholder: "Resolution note" %>
+        <%= form.submit "Update", class: "button" %>
+      <% end %>
+    </section>
+  </div>
+</article>

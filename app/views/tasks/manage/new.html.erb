@@ -1,0 +1,13 @@
+<% content_for :title, "New task" %>
+
+<%=
+  render "tasks/subpage_header",
+    title: "New task",
+    subtitle: "Recurring or one-time work for any active list.",
+    back_path: tasks_manage_tasks_path,
+    back_label: "Tasks"
+%>
+
+<section class="panel panel-compact">
+  <%= render "task_form", task: @task, url: tasks_manage_tasks_path, method: :post, submit_label: "Create task" %>
+</section>

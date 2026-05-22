@@ -1,11 +1,14 @@
-<%# locals: occurrence, monthly (default: false) %>
-<% monthly = local_assigns.fetch(:monthly, false) %>
-<article class="task-row <%= monthly ? 'task-row-monthly' : "task-row-#{occurrence.status}" %>">
-  <div class="task-row-check">
-    <span class="task-circle task-circle-<%= occurrence.completed? ? "completed" : (occurrence.requires_photo_evidence? ? "photo" : "open") %>" aria-hidden="true"></span>
-  </div>
+<%# locals: occurrence, monthly (default: false)
 
-  <div class="task-card-main">
+  Row layout: title (tap → details) on the left, completion circle on the
+  right. The circle is the action target — submit for open, link for
+  photo-required, undo form for undoable completed, static badge otherwise.
+%>
+<% monthly = local_assigns.fetch(:monthly, false) %>
+<article id="<%= dom_id(occurrence) %>"
+         class="task-row <%= monthly ? 'task-row-monthly' : "task-row-#{occurrence.status}" %>"
+         data-monthly="<%= monthly %>">
+  <%= link_to tasks_occurrence_path(occurrence), class: "task-card-main task-card-link" do %>
     <div class="task-card-title">
       <strong><%= occurrence.snapshot_title %></strong>
       <span><%= monthly ? "This month" : task_due_label(occurrence) %></span>
@@ -19,31 +22,47 @@
         <span><%= task_completion_summary(occurrence.active_completion) %></span>
       <% end %>
     </div>
-    <% if occurrence.snapshot_instructions.present? %>
-      <details class="task-details">
-        <summary>Instructions</summary>
-        <p><%= occurrence.snapshot_instructions %></p>
-      </details>
-    <% end %>
-  </div>
+  <% end %>
 
-  <div class="task-card-actions">
+  <div class="task-checkbox-cell">
     <% if !monthly && occurrence.completed? %>
       <% if occurrence.undoable? %>
-        <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete do |form| %>
+        <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "task-checkbox-form" do |form| %>
           <%= hidden_field_tag :confirm_undo, "1" %>
-          <%= form.submit "Undo", class: "button small" %>
+          <%= form.button type: "submit",
+                class: "task-checkbox task-checkbox-completed",
+                aria: { label: "Undo completion" },
+                title: "Undo" do %><% end %>
         <% end %>
       <% else %>
-        <span class="task-action-note">Undo closed</span>
+        <span class="task-checkbox task-checkbox-completed" aria-label="Completed" role="img"></span>
       <% end %>
     <% elsif occurrence.requires_photo_evidence? %>
-      <%= link_to "Add photo", tasks_occurrence_path(occurrence), class: "button primary button-success" %>
+      <%# Hidden file input behind the circle. The `capture` attribute opens
+          the rear camera directly on mobile; on desktop it falls back to a
+          file picker. Selecting a file auto-submits the form. %>
+      <%= form_with url: tasks_occurrence_completion_path(occurrence),
+            multipart: true,
+            class: "task-checkbox-form",
+            data: { controller: "auto-submit" } do |form| %>
+        <label class="task-checkbox task-checkbox-photo"
+               aria-label="Take photo to complete"
+               title="Take photo"
+               tabindex="0">
+          <%= form.file_field :photo,
+                accept: "image/*",
+                capture: "environment",
+                class: "sr-only",
+                data: { action: "change->auto-submit#submit" } %>
+        </label>
+      <% end %>
     <% else %>
-      <%= form_with url: tasks_occurrence_completion_path(occurrence) do |form| %>
-        <%= form.submit "Complete", class: "button primary button-success" %>
+      <%= form_with url: tasks_occurrence_completion_path(occurrence), class: "task-checkbox-form" do |form| %>
+        <%= form.button type: "submit",
+              class: "task-checkbox task-checkbox-open",
+              aria: { label: "Mark complete" },
+              title: "Mark complete" do %><% end %>
       <% end %>
     <% end %>
-    <%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %>
   </div>
 </article>

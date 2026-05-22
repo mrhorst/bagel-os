@@ -12,28 +12,44 @@ Rails.application.routes.draw do
   root "dashboard#index"
 
   scope module: :tasks, path: :tasks, as: :tasks do
+    # ── Work surface (read-mostly, used during shift) ───────────────────
     root "dashboard#index"
     patch "completing-as", to: "completing_as#update", as: :completing_as
     get "history", to: "history#index", as: :history
-    resources :staff_members, path: "staff", as: "staff", only: %i[index create update] do
-      member do
-        patch :deactivate
-        patch :reactivate
-      end
-    end
-    resources :task_lists, path: "lists", as: "lists", only: %i[index create update] do
-      member do
-        patch :archive
-        patch :reactivate
-      end
-    end
-    get "manage", to: "manage#index", as: :manage
-    post "manage", to: "manage#create"
-    patch "manage/:id", to: "manage#update", as: :managed_task
-    patch "manage/:id/archive", to: "manage#archive", as: :archive_managed_task
-    patch "manage/:id/reactivate", to: "manage#reactivate", as: :reactivate_managed_task
+
+    # Focused single-list view — the “open my Prep list” entry point.
+    resources :task_lists, path: "lists", as: "lists", only: %i[show]
+
     resources :occurrences, only: %i[show] do
       resource :completion, only: %i[create destroy], controller: "completions"
+    end
+
+    # ── Settings (write-mostly, used between shifts) ────────────────────
+    # /tasks/manage is the hub; the three sub-pages live beneath it.
+    get "manage", to: "settings#index", as: :manage
+
+    scope path: "manage", as: :manage do
+      # Each task and list has its own real URL: /tasks/manage/(tasks|lists)/:id/edit
+      resources :task_lists, path: "lists", as: "lists", only: %i[index new create edit update] do
+        member do
+          patch :archive
+          patch :reactivate
+        end
+      end
+
+      resources :tasks, controller: "manage", only: %i[index new create edit update] do
+        member do
+          patch :archive
+          patch :reactivate
+        end
+      end
+
+      resources :staff_members, path: "staff", as: "staff", only: %i[index create update] do
+        member do
+          patch :deactivate
+          patch :reactivate
+        end
+      end
     end
   end
 
@@ -60,6 +76,7 @@ Rails.application.routes.draw do
       patch :assign_product
       patch :create_product
       patch :resolve
+      patch :skip
     end
   end
   resources :reports, only: %i[index show]

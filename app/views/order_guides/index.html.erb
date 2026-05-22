@@ -1,32 +1,45 @@
 <% content_for :title, "Order Guides" %>
 
+<%
+  guides_count = @order_guides.count
+  memberships_count = OrderGuideMembership.active.count
+  inventory_count = InventoryItem.active.count
+  off_guide_count = @missing_products.size
+%>
+
 <div class="page-heading">
   <div>
     <h1>Order Guides</h1>
     <p>Named operating lists for purchasing, counted inventory, and staff ordering workflows.</p>
   </div>
   <div class="actions">
-    <%= link_to "Download CSV example", csv_example_order_guides_path, class: "button primary" %>
-    <%= link_to "Inventory", inventory_path, class: "button" %>
+    <%= link_to "CSV example", csv_example_order_guides_path, class: "button small" %>
+    <%= link_to "Inventory", inventory_path, class: "button small" %>
   </div>
 </div>
 
-<section class="metric-grid">
+<p class="stat-summary stat-summary-mobile-only">
+  <strong><%= guides_count %></strong> guides
+  · <strong><%= memberships_count %></strong> memberships
+  · <strong><%= off_guide_count %></strong> off-guide
+</p>
+
+<section class="metric-grid metric-grid-desktop-only">
   <div class="metric">
     <span>Named guides</span>
-    <strong><%= @order_guides.count %></strong>
+    <strong><%= guides_count %></strong>
   </div>
   <div class="metric">
     <span>Guide memberships</span>
-    <strong><%= OrderGuideMembership.active.count %></strong>
+    <strong><%= memberships_count %></strong>
   </div>
   <div class="metric">
     <span>Inventory items</span>
-    <strong><%= InventoryItem.active.count %></strong>
+    <strong><%= inventory_count %></strong>
   </div>
   <div class="metric">
     <span>Receipt products not on guide</span>
-    <strong><%= @missing_products.size %></strong>
+    <strong><%= off_guide_count %></strong>
   </div>
 </section>
 
@@ -40,7 +53,7 @@
     </div>
 
     <% if @order_guides.any? %>
-      <table>
+      <table class="responsive-table">
         <thead>
           <tr>
             <th>Name</th>
@@ -54,18 +67,18 @@
         <tbody>
           <% @order_guides.each do |guide| %>
             <tr>
-              <td><strong><%= guide.name %></strong></td>
-              <td class="numeric"><%= guide.active_item_count %></td>
-              <td><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
-              <td><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
-              <td>
+              <td data-label="Name"><strong><%= guide.name %></strong></td>
+              <td class="numeric" data-label="Active items"><%= guide.active_item_count %></td>
+              <td data-label="Status"><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
+              <td data-label="Items"><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
+              <td data-label="Rename">
                 <%= form_with model: guide, class: "inline-guide-form" do |form| %>
                   <%= form.label :name, "Guide name", class: "sr-only" %>
                   <%= form.text_field :name, value: guide.name, class: "compact-input" %>
                   <%= form.submit "Save", class: "button small" %>
                 <% end %>
               </td>
-              <td>
+              <td data-label="Archive">
                 <% if guide.active? %>
                   <%= button_to "Archive", order_guide_path(guide), method: :delete, class: "button small" %>
                 <% else %>
@@ -120,7 +133,7 @@
           </div>
 
           <% if memberships.any? %>
-            <table>
+            <table class="responsive-table">
               <thead>
                 <tr>
                   <th>Item</th>
@@ -132,14 +145,14 @@
                 <% memberships.first(8).each do |membership| %>
                   <% item = membership.inventory_item %>
                   <tr>
-                    <td>
+                    <td data-label="Item">
                       <strong><%= item.name %></strong>
                       <% if membership.primary_guide? %>
                         <span class="badge badge-ok badge-compact">Primary</span>
                       <% end %>
                     </td>
-                    <td><%= membership.order_guide_section&.name || item.inventory_section&.name || "Unsectioned" %></td>
-                    <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
+                    <td data-label="Guide section"><%= membership.order_guide_section&.name || item.inventory_section&.name || "Unsectioned" %></td>
+                    <td data-label="Pack / count"><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
                   </tr>
                 <% end %>
               </tbody>
@@ -167,7 +180,7 @@
   </div>
 
   <% if @missing_products.any? %>
-    <table>
+    <table class="responsive-table">
       <thead>
         <tr>
           <th>Product</th>
@@ -182,18 +195,18 @@
       <tbody>
         <% @missing_products.each do |row| %>
           <tr>
-            <td><%= link_to row.product.canonical_name, product_path(row.product) %></td>
-            <td><%= row.product.category_name %></td>
-            <td>
+            <td data-label="Product"><%= link_to row.product.canonical_name, product_path(row.product) %></td>
+            <td data-label="Category"><%= row.product.category_name %></td>
+            <td data-label="Review signal">
               <span class="badge <%= row.classification == 'review_for_guide' ? 'badge-warning' : '' %>">
                 <%= row.classification.humanize %>
               </span>
               <small><%= row.reason %></small>
             </td>
-            <td class="numeric"><%= row.purchase_count %></td>
-            <td class="numeric"><%= number_to_currency(row.total_spend) %></td>
-            <td><%= row.last_purchased_at&.to_date || "n/a" %></td>
-            <td>
+            <td class="numeric" data-label="Buys"><%= row.purchase_count %></td>
+            <td class="numeric" data-label="Spend"><%= number_to_currency(row.total_spend) %></td>
+            <td data-label="Last bought"><%= row.last_purchased_at&.to_date || "n/a" %></td>
+            <td data-label="Add to guide">
               <% if @order_guides.active.any? %>
                 <%= form_with url: product_order_guide_memberships_path(row.product), scope: :membership, class: "guide-gap-form" do |form| %>
                   <%= form.collection_select :order_guide_id, @order_guides.select(&:active?), :id, :name, { prompt: "Guide" }, { class: "compact-select" } %>

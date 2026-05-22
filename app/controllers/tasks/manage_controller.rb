@@ -1,41 +1,52 @@
 module Tasks
+  # /tasks/manage/tasks — CRUD for the task definitions themselves.
+  # We keep the controller name "Manage" because the controller predates
+  # the resourceful URL; renaming the file would just be churn.
   class ManageController < ApplicationController
-    before_action :load_form_collections, only: %i[index create update]
+    before_action :load_form_collections, only: %i[index new create edit update]
 
     def index
-      @tasks = Task.joins(:task_list).includes(:task_list).order("task_lists.position ASC", "tasks.position ASC", "tasks.title ASC")
+      @tasks = Task.includes(:task_list).joins(:task_list)
+        .order("task_lists.position ASC", "tasks.position ASC", "tasks.title ASC")
+    end
+
+    def new
       @task = Task.new(recurrence_type: "daily", starts_on: Time.zone.today)
     end
 
     def create
-      task = Task.new(task_params)
+      @task = Task.new(task_params)
 
-      if task.save
-        redirect_to tasks_manage_path, notice: "Task created."
+      if @task.save
+        redirect_to tasks_manage_tasks_path, notice: "Task created."
       else
-        redirect_to tasks_manage_path, alert: task.errors.full_messages.to_sentence
+        render :new, status: :unprocessable_entity
       end
     end
 
-    def update
-      task = Task.find(params[:id])
+    def edit
+      @task = Task.find(params[:id])
+    end
 
-      if task.update(task_params)
-        refresh_open_occurrences(task)
-        redirect_to tasks_manage_path, notice: "Task updated."
+    def update
+      @task = Task.find(params[:id])
+
+      if @task.update(task_params)
+        refresh_open_occurrences(@task)
+        redirect_to tasks_manage_tasks_path, notice: "Task updated."
       else
-        redirect_to tasks_manage_path, alert: task.errors.full_messages.to_sentence
+        render :edit, status: :unprocessable_entity
       end
     end
 
     def archive
       Task.find(params[:id]).archive!
-      redirect_to tasks_manage_path, notice: "Task archived."
+      redirect_to tasks_manage_tasks_path, notice: "Task archived."
     end
 
     def reactivate
       Task.find(params[:id]).reactivate!
-      redirect_to tasks_manage_path, notice: "Task reactivated."
+      redirect_to tasks_manage_tasks_path, notice: "Task reactivated."
     end
 
     private

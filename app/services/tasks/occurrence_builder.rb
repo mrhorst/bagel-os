@@ -1,7 +1,7 @@
 module Tasks
   class OccurrenceBuilder
-    def initialize(now: Time.current)
-      @now = now
+    def initialize(operating_day: OperatingDay.new)
+      @operating_day = operating_day
     end
 
     def build!(from:, to:)
@@ -17,7 +17,7 @@ module Tasks
 
     private
 
-    attr_reader :now
+    attr_reader :operating_day
 
     Period = Struct.new(:kind, :starts_on, :ends_on, :due_at, :completion_window_ends_at, keyword_init: true)
 
@@ -57,7 +57,7 @@ module Tasks
           starts_on: date,
           ends_on: date,
           due_at: due_at_for(date, task.due_time),
-          completion_window_ends_at: next_midnight(date)
+          completion_window_ends_at: operating_day.window_end_for(date)
         )
       end
     end
@@ -80,7 +80,7 @@ module Tasks
             starts_on: month_start,
             ends_on: month_end,
             due_at: nil,
-            completion_window_ends_at: next_midnight(month_end)
+            completion_window_ends_at: operating_day.window_end_for(month_end)
           )
         end
         month_start = month_start.next_month
@@ -95,7 +95,7 @@ module Tasks
         period_kind: period.kind,
         period_starts_on: period.starts_on
       )
-      return occurrence unless occurrence.new_record? || occurrence.refreshable?(now: now)
+      return occurrence unless occurrence.new_record? || occurrence.refreshable?(operating_day: operating_day)
 
       occurrence.assign_attributes(
         task_list: task.task_list,
@@ -134,10 +134,6 @@ module Tasks
 
     def due_at_for(date, time)
       Time.zone.local(date.year, date.month, date.day, time.hour, time.min, time.sec)
-    end
-
-    def next_midnight(date)
-      Time.zone.local(date.year, date.month, date.day).next_day
     end
   end
 end
