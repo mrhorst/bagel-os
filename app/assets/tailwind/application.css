@@ -271,6 +271,82 @@
   .sidebar-footer strong, .sidebar-footer span { display: block; }
   .sidebar-footer strong { color: #fff; font-weight: 500; margin-bottom: 2px; }
 
+  a.sidebar-account {
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    font-size: 0.78rem;
+    gap: 10px;
+    line-height: 1.4;
+    margin-top: auto;
+    padding: 12px 8px;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  a.sidebar-account:hover, a.sidebar-account.active {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
+  .sidebar-account-avatar {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    font-weight: 600;
+    height: 28px;
+    justify-content: center;
+    width: 28px;
+  }
+  .sidebar-account-text { min-width: 0; }
+  .sidebar-account-text strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sidebar-account-text span { font-size: 0.72rem; }
+
+  .topbar-account {
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    color: var(--ink);
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 8px;
+    padding: 6px 10px 6px 6px;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .topbar-account:hover { background: var(--surface-2); border-color: var(--ink-muted); }
+  .topbar-account-avatar {
+    align-items: center;
+    background: var(--surface-2);
+    border-radius: 999px;
+    color: var(--ink);
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 600;
+    height: 26px;
+    justify-content: center;
+    width: 26px;
+  }
+  .topbar-account-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    max-width: 14ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 640px) {
+    .topbar-account-name { display: none; }
+  }
+
   .app-content { min-width: 0; overflow-x: hidden; }
 
   /* Calmer topbar — no shouty all-caps kicker */
@@ -2143,6 +2219,13 @@
     .brand-lockup small { display: none; }
     /* Sidebar nav + footer hidden on mobile — bottom tabs take over */
     .app-sidebar .sidebar-nav, .app-sidebar .sidebar-footer { display: none; }
+    .app-sidebar a.sidebar-account {
+      border: 0;
+      border-radius: 999px;
+      margin: 0;
+      padding: 5px;
+    }
+    .app-sidebar a.sidebar-account .sidebar-account-text { display: none; }
     .filters { grid-template-columns: 1fr; }
 
     /* Mobile bottom tab bar */

@@ -3,6 +3,14 @@ module ApplicationHelper
     @app_branding ||= AppBranding.current
   end
 
+  def current_user
+    Current.user
+  end
+
+  def user_display_name(user)
+    user.name.presence || user.email_address
+  end
+
   def app_nav_items
     [
       { label: "Dashboard", path: root_path, match: :root, icon: "chart" },

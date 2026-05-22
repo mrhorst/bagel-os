@@ -49,10 +49,20 @@
           <% end %>
         </nav>
 
-        <div class="sidebar-footer">
-          <strong>Generic workspace</strong>
-          <span>No private restaurant data in tracked files.</span>
-        </div>
+        <% if current_user %>
+          <%= link_to account_path, class: ["sidebar-account", ("active" if controller_name == "accounts")], aria: { label: "Account" } do %>
+            <span class="sidebar-account-avatar" aria-hidden="true"><%= user_display_name(current_user).first.upcase %></span>
+            <span class="sidebar-account-text">
+              <strong><%= user_display_name(current_user) %></strong>
+              <span>Account &amp; sign out</span>
+            </span>
+          <% end %>
+        <% else %>
+          <div class="sidebar-footer">
+            <strong>Generic workspace</strong>
+            <span>No private restaurant data in tracked files.</span>
+          </div>
+        <% end %>
       </aside>
 
       <div class="app-content">
@@ -60,6 +70,12 @@
           <div>
             <p class="topbar-description"><%= app_branding.description %></p>
           </div>
+          <% if current_user %>
+            <%= link_to account_path, class: "topbar-account", aria: { label: "Account" } do %>
+              <span class="topbar-account-avatar" aria-hidden="true"><%= user_display_name(current_user).first.upcase %></span>
+              <span class="topbar-account-name"><%= user_display_name(current_user) %></span>
+            <% end %>
+          <% end %>
         </header>
 
         <main class="app-main">

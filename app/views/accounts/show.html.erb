@@ -1,0 +1,77 @@
+<% content_for :title, "Account" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Account</h1>
+    <p>Signed in as <%= @user.email_address %>.</p>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <h2>Profile</h2>
+  <%= form_with model: @user, url: account_path, method: :patch, class: "stacked-form" do |form| %>
+    <% if @user.errors.any? && (@user.errors[:name].any? || @user.errors[:email_address].any?) %>
+      <div class="flash flash-alert">
+        <ul>
+          <% @user.errors.full_messages_for(:name).each { |m| %><li><%= m %></li><% } %>
+          <% @user.errors.full_messages_for(:email_address).each { |m| %><li><%= m %></li><% } %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="field">
+      <%= form.label :name %>
+      <%= form.text_field :name, autocomplete: "name" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :email_address, "Email" %>
+      <%= form.email_field :email_address, required: true, autocomplete: "email" %>
+    </div>
+
+    <div>
+      <%= form.submit "Save profile", class: "button primary" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="panel narrow">
+  <h2>Change password</h2>
+  <%= form_with model: @user, url: account_password_path, method: :patch, class: "stacked-form" do |form| %>
+    <% if @user.errors.any? && (@user.errors[:current_password].any? || @user.errors[:password].any? || @user.errors[:password_confirmation].any?) %>
+      <div class="flash flash-alert">
+        <ul>
+          <% @user.errors.full_messages_for(:current_password).each { |m| %><li><%= m %></li><% } %>
+          <% @user.errors.full_messages_for(:password).each { |m| %><li><%= m %></li><% } %>
+          <% @user.errors.full_messages_for(:password_confirmation).each { |m| %><li><%= m %></li><% } %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="field">
+      <%= form.label :current_password, "Current password" %>
+      <%= form.password_field :current_password, required: true, autocomplete: "current-password", maxlength: 72 %>
+    </div>
+
+    <div class="field">
+      <%= form.label :password, "New password" %>
+      <%= form.password_field :password, required: true, autocomplete: "new-password", maxlength: 72 %>
+    </div>
+
+    <div class="field">
+      <%= form.label :password_confirmation, "Confirm new password" %>
+      <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72 %>
+    </div>
+
+    <div>
+      <%= form.submit "Update password", class: "button primary" %>
+    </div>
+  <% end %>
+  <p class="muted small">Changing your password signs out all other devices.</p>
+</section>
+
+<section class="panel panel-danger-zone narrow">
+  <h2>Sign out</h2>
+  <p>End this session on this device. You'll need to sign in again to come back.</p>
+  <%= button_to "Sign out", session_path, method: :delete, class: "button" %>
+</section>
