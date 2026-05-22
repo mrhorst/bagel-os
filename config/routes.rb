@@ -54,12 +54,6 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :staff_members, path: "staff", as: "staff", only: %i[index create update] do
-        member do
-          patch :deactivate
-          patch :reactivate
-        end
-      end
     end
   end
 

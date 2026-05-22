@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_22_203902) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_22_205744) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -398,15 +398,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_203902) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
-  create_table "staff_members", force: :cascade do |t|
-    t.boolean "active", default: true, null: false
-    t.datetime "created_at", null: false
-    t.string "display_name", null: false
-    t.text "notes"
-    t.datetime "updated_at", null: false
-    t.index ["active", "display_name"], name: "index_staff_members_on_active_and_display_name"
-  end
-
   create_table "supplier_product_packs", force: :cascade do |t|
     t.boolean "approved", default: false, null: false
     t.decimal "confidence_score", precision: 5, scale: 2, default: "0.0", null: false
@@ -448,19 +439,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_203902) do
     t.text "notes"
     t.string "snapshot_staff_name", null: false
     t.string "snapshot_undone_by_staff_name"
-    t.integer "staff_member_id"
     t.integer "task_occurrence_id", null: false
     t.datetime "undone_at"
-    t.integer "undone_by_staff_member_id"
     t.integer "undone_by_user_id"
     t.text "undone_note"
     t.datetime "updated_at", null: false
     t.integer "user_id"
-    t.index ["staff_member_id"], name: "index_task_completions_on_staff_member_id"
     t.index ["task_occurrence_id"], name: "idx_task_completions_one_active", unique: true, where: "undone_at IS NULL"
     t.index ["task_occurrence_id"], name: "index_task_completions_on_task_occurrence_id"
     t.index ["undone_at"], name: "index_task_completions_on_undone_at"
-    t.index ["undone_by_staff_member_id"], name: "index_task_completions_on_undone_by_staff_member_id"
     t.index ["undone_by_user_id"], name: "index_task_completions_on_undone_by_user_id"
     t.index ["user_id"], name: "index_task_completions_on_user_id"
   end
@@ -590,8 +577,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_203902) do
   add_foreign_key "sessions", "users"
   add_foreign_key "supplier_product_packs", "products"
   add_foreign_key "supplier_product_packs", "suppliers"
-  add_foreign_key "task_completions", "staff_members"
-  add_foreign_key "task_completions", "staff_members", column: "undone_by_staff_member_id"
   add_foreign_key "task_completions", "task_occurrences"
   add_foreign_key "task_completions", "users"
   add_foreign_key "task_completions", "users", column: "undone_by_user_id"

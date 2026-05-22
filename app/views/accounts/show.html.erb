@@ -7,6 +7,14 @@
   </div>
 </section>
 
+<% if current_user.admin? %>
+  <section class="panel narrow">
+    <h2>Admin</h2>
+    <p class="muted small">Manage users and module permissions for the whole workspace.</p>
+    <%= link_to "Manage users", admin_users_path, class: "button" %>
+  </section>
+<% end %>
+
 <section class="panel narrow">
   <h2>Profile</h2>
   <%= form_with model: @user, url: account_path, method: :patch, class: "stacked-form" do |form| %>

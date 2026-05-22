@@ -3,21 +3,8 @@ require "test_helper"
 class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
   include ActiveSupport::Testing::TimeHelpers
 
-  test "creates staff members, task lists, and tasks from setup screens" do
+  test "creates task lists and tasks from setup screens" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
-      get tasks_manage_staff_index_path
-      assert_response :success
-      assert_select "h1", "Staff"
-
-      post tasks_manage_staff_index_path, params: {
-        staff_member: {
-          display_name: "Maria",
-          notes: "Morning lead"
-        }
-      }
-      assert_redirected_to tasks_manage_staff_index_path
-      assert_equal "Maria", StaffMember.sole.display_name
-
       get tasks_manage_lists_path
       assert_response :success
       assert_select "h1", "Task lists"

@@ -1,6 +1,6 @@
 <% content_for :title, "Task settings" %>
 
-<%= render "tasks/subpage_header", title: "Settings", subtitle: "Configure tasks, lists, and staff." %>
+<%= render "tasks/subpage_header", title: "Settings", subtitle: "Configure tasks and lists." %>
 
 <section class="settings-hub">
   <%= link_to tasks_manage_tasks_path, class: "settings-card" do %>
@@ -31,22 +31,6 @@
       <p class="muted small">Group tasks (Prep, Cleaning…) and set when each list appears on the dashboard.</p>
       <p class="settings-card-count tnum">
         <%= pluralize(@list_count, "active list") %><% if @inactive_lists.positive? %> · <%= @inactive_lists %> archived<% end %>
-      </p>
-    </div>
-  <% end %>
-
-  <%= link_to tasks_manage_staff_index_path, class: "settings-card" do %>
-    <div class="settings-card-icon">
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-        <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.4" fill="none"/>
-        <path d="M3.5 16.5c1.3-3 3.7-4.5 6.5-4.5s5.2 1.5 6.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>
-      </svg>
-    </div>
-    <div>
-      <h2>Staff</h2>
-      <p class="muted small">Who can be tagged as the person completing a task. Not a login.</p>
-      <p class="settings-card-count tnum">
-        <%= pluralize(@staff_count, "active member") %><% if @inactive_staff.positive? %> · <%= @inactive_staff %> deactivated<% end %>
       </p>
     </div>
   <% end %>
