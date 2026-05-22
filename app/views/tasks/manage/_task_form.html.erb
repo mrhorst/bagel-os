@@ -29,30 +29,20 @@
       <%= form.time_field :due_time, value: task.due_time&.strftime("%H:%M") %>
     </div>
     <div class="field" data-task-schedule-form-target="oneTime">
-      <%= form.label :one_time_on, "One-time date" %>
+      <%= form.label :one_time_on, "Date" %>
       <%= form.date_field :one_time_on %>
     </div>
-    <div class="field" data-task-schedule-form-target="recurring">
-      <%= form.label :starts_on, "Start date" %>
-      <%= form.date_field :starts_on %>
-    </div>
-    <div class="field" data-task-schedule-form-target="recurring">
-      <%= form.label :ends_on, "End date" %>
-      <%= form.date_field :ends_on %>
-    </div>
-    <div class="field">
-      <%= form.label :position, "Sort order" %>
-      <%= form.number_field :position, step: 1 %>
+    <div class="field-row field-row-recurring" data-task-schedule-form-target="recurring">
+      <div class="field">
+        <%= form.label :starts_on, "Start date" %>
+        <%= form.date_field :starts_on %>
+      </div>
+      <div class="field">
+        <%= form.label :ends_on, "End date" %>
+        <%= form.date_field :ends_on %>
+      </div>
     </div>
   </div>
-
-  <details class="form-disclosure">
-    <summary>Instructions</summary>
-    <div class="field">
-      <%= form.label :instructions, "Instructions" %>
-      <%= form.text_area :instructions, rows: 3, placeholder: "Plain text steps for staff" %>
-    </div>
-  </details>
 
   <div class="field" data-task-schedule-form-target="weekly">
     <label>Weekly days</label>
@@ -68,11 +58,23 @@
   </div>
 
   <details class="form-disclosure">
-    <summary>Completion options</summary>
+    <summary>Instructions for staff</summary>
+    <div class="field">
+      <%= form.label :instructions, class: "sr-only" %>
+      <%= form.text_area :instructions, rows: 3, placeholder: "Plain text steps the team will see on the task card." %>
+    </div>
+  </details>
+
+  <details class="form-disclosure">
+    <summary>More options</summary>
     <label class="check">
       <%= form.check_box :requires_photo_evidence %>
       <span>Require one completion photo</span>
     </label>
+    <div class="field">
+      <%= form.label :position, "Sort order" %>
+      <%= form.number_field :position, step: 1 %>
+    </div>
   </details>
 
   <div class="form-footer">

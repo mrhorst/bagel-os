@@ -1,7 +1,8 @@
 <%# locals: title:, back_path: tasks_root_path, back_label: "Tasks", subtitle: nil, actions: nil
 
-  Standard header for every sub-page under /tasks. Always carries a back
-  arrow so users have one obvious way out — no orphan pages.
+  Standard header for every sub-page under /tasks. The back arrow goes to the
+  actual previous page when possible (same-origin browser history), falling
+  back to the provided back_path when there is none — e.g. on a fresh tab.
 %>
 <%
   back_path  = local_assigns.fetch(:back_path, tasks_root_path)
@@ -9,8 +10,21 @@
   subtitle   = local_assigns[:subtitle]
   actions    = local_assigns[:actions]
 %>
+
+<% content_for :mobile_left_action do %>
+  <%= link_to back_path, class: "mobile-header-action mobile-header-back",
+              data: { controller: "back", action: "click->back#go" },
+              aria: { label: "Back" } do %>
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  <% end %>
+<% end %>
+
 <section class="subpage-header">
-  <%= link_to back_path, class: "subpage-back", aria: { label: "Back to #{back_label}" } do %>
+  <%= link_to back_path, class: "subpage-back",
+              data: { controller: "back", action: "click->back#go" },
+              aria: { label: "Back to #{back_label}" } do %>
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
       <path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>

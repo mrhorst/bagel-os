@@ -11,6 +11,21 @@ module ApplicationHelper
     user.name.presence || user.email_address
   end
 
+  def mobile_screen_title
+    return content_for(:mobile_title) if content_for?(:mobile_title)
+    return content_for(:title) if content_for?(:title)
+    matched = app_nav_items.find { |item| active_nav_item?(item) }
+    matched&.dig(:label) || app_branding.short_name
+  end
+
+  def mobile_fab_button(path, label:, method: nil)
+    options = { class: "mobile-fab", aria: { label: label } }
+    options[:data] = { turbo_method: method } if method
+    link_to path, options do
+      content_tag(:span, "+", class: "mobile-fab-icon", aria: { hidden: true })
+    end
+  end
+
   def app_nav_items
     [
       { label: "Dashboard", path: root_path, match: :root, icon: "chart" },

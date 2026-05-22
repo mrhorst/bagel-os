@@ -89,6 +89,22 @@
           <% end %>
         </header>
 
+        <header class="mobile-screen-header">
+          <div class="mobile-header-left">
+            <%= yield :mobile_left_action if content_for?(:mobile_left_action) %>
+          </div>
+          <h1 class="mobile-header-title"><%= mobile_screen_title %></h1>
+          <div class="mobile-header-right">
+            <% if content_for?(:mobile_right_action) %>
+              <%= yield :mobile_right_action %>
+            <% elsif current_user %>
+              <%= link_to account_path, class: "mobile-header-action", aria: { label: "Account" } do %>
+                <span class="mobile-header-avatar" aria-hidden="true"><%= user_display_name(current_user).first.upcase %></span>
+              <% end %>
+            <% end %>
+          </div>
+        </header>
+
         <main class="app-main">
           <% if notice.present? %>
             <div class="flash flash-notice"><%= notice %></div>
@@ -101,6 +117,9 @@
         </main>
       </div>
     </div>
+    <% if content_for?(:mobile_fab) %>
+      <%= yield :mobile_fab %>
+    <% end %>
     <%= render "layouts/mobile_tabs" %>
   </body>
 </html>

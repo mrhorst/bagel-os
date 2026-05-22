@@ -1,4 +1,7 @@
 <% content_for :title, "Tasks" %>
+<% content_for :mobile_fab do %>
+  <%= mobile_fab_button new_tasks_manage_task_path, label: "New task" %>
+<% end %>
 
 <%
   staff_chip_class = [ "tasks-staff-chip", ("tasks-staff-chip-empty" if @current_staff_member.blank?) ].compact
@@ -8,7 +11,7 @@
 <section class="tasks-page-header-v2">
   <div class="tasks-page-header-titles">
     <h1>Tasks</h1>
-    <p class="muted small"><%= Time.zone.now.strftime("%A, %b %-d") %></p>
+    <p class="tasks-today-date"><%= Time.zone.now.strftime("%A, %b %-d") %></p>
   </div>
 
   <div class="tasks-page-header-tools" data-controller="popover">
