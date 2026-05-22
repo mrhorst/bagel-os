@@ -1,11 +1,13 @@
 {
   "name": "<%= app_branding.app_name %>",
   "short_name": "<%= app_branding.short_name %>",
+  "description": "<%= app_branding.description %>",
   "icons": [
     {
       "src": "/icon.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     },
     {
       "src": "/icon.png",
@@ -15,9 +17,10 @@
     }
   ],
   "start_url": "/",
-  "display": "standalone",
   "scope": "/",
-  "description": "<%= app_branding.description %>",
-  "theme_color": "red",
-  "background_color": "red"
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F6F2",
+  "theme_color": "#F8F6F2",
+  "categories": ["business", "productivity"]
 }

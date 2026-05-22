@@ -111,9 +111,73 @@
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
   }
 
-  body { font-feature-settings: "ss01", "cv11"; overflow-x: hidden; }
+  body {
+    font-feature-settings: "ss01", "cv11";
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
+
+  /* App chrome shouldn't be selectable like body copy. */
+  .app-sidebar, .mobile-tabs, .topbar, .page-heading, .panel-heading,
+  .home-surface-card, .mobile-tab, .nav-link, .sidebar-account,
+  .topbar-account, button, .button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Kill the 300 ms tap delay and the highlight flash on interactive things. */
+  a, button, [role="button"], input[type="submit"], .button, .mobile-tab,
+  .nav-link, .home-surface-card {
+    touch-action: manipulation;
+  }
+
+  /* iOS-style press state — a touch of scale + dim on tap.
+     Respects users who prefer reduced motion. */
+  .button, input[type="submit"], button.button, .home-surface-card,
+  .mobile-tab, .nav-link, .sidebar-account, .topbar-account {
+    transition:
+      transform 120ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity   120ms ease,
+      color     120ms ease,
+      background-color 120ms ease;
+    will-change: transform;
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .button:active, input[type="submit"]:active, button.button:active,
+    .home-surface-card:active, .mobile-tab:active, .nav-link:active,
+    .sidebar-account:active, .topbar-account:active {
+      transform: scale(0.97);
+      opacity: 0.88;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .button, input[type="submit"], button.button, .home-surface-card,
+    .mobile-tab, .nav-link, .sidebar-account, .topbar-account {
+      transition: none;
+    }
+    .button:active, input[type="submit"]:active, button.button:active,
+    .home-surface-card:active, .mobile-tab:active, .nav-link:active,
+    .sidebar-account:active, .topbar-account:active {
+      transform: none;
+    }
+  }
+
+  /* Cross-fade pages via the View Transitions API. Turbo 8 wires this up
+     when <meta name="view-transition"> is present. */
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) { animation: none; }
+  }
 
   /* Tabular numerals on numbers anywhere we expect data scanning. */
   .tnum, .numeric, table, .metric strong, .block-stat-card strong,
@@ -179,6 +243,8 @@
     border-radius: var(--radius-md);
     color: var(--ink);
     font: inherit;
+    /* 16px or larger prevents iOS Safari from auto-zooming on focus. */
+    font-size: 16px;
     min-height: 40px;
     padding: 8px 11px;
     width: 100%;
@@ -1556,7 +1622,12 @@
     gap: 8px;
     min-height: 132px;
     padding: 16px;
-    transition: background 100ms ease, border-color 100ms ease, box-shadow 100ms ease;
+    transition:
+      background 100ms ease,
+      border-color 100ms ease,
+      box-shadow 100ms ease,
+      transform 140ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 120ms ease;
   }
   .home-surface-card:hover {
     background: var(--surface-3);
@@ -1608,7 +1679,7 @@
   .home-surface-card-urgent .home-surface-card-count {
     background: var(--accent-soft);
     border-color: color-mix(in oklch, var(--accent) 35%, transparent);
-    color: var(--accent-fg);
+    color: oklch(0.40 0.15 42);
   }
   .home-surface-card-active .home-surface-card-count {
     background: var(--warn-soft);
@@ -2210,8 +2281,11 @@
       justify-content: space-between;
       max-width: 100%;
       overflow: hidden;
-      padding: 8px 14px;
+      padding: calc(8px + env(safe-area-inset-top, 0px)) 14px 8px;
+      position: sticky;
+      top: 0;
       width: 100%;
+      z-index: 30;
     }
     .sidebar-brand { padding: 0; }
     .brand-mark { height: 30px; width: 30px; }
@@ -2254,19 +2328,38 @@
       justify-content: center;
       min-height: 48px;
       padding: 6px 4px;
+      position: relative;
       text-decoration: none;
-      transition: color 100ms ease;
     }
     .mobile-tab:hover { text-decoration: none; }
-    .mobile-tab .nav-icon { height: 20px; width: 20px; opacity: 0.9; }
+    .mobile-tab .nav-icon {
+      height: 20px;
+      width: 20px;
+      opacity: 0.9;
+      transition: transform 160ms cubic-bezier(0.4, 0, 0.2, 1), opacity 120ms ease;
+    }
     .mobile-tab span {
       font-size: 0.68rem;
       font-weight: 600;
       letter-spacing: 0.02em;
       line-height: 1;
     }
+    .mobile-tab::after {
+      background: var(--accent);
+      border-radius: 999px;
+      content: "";
+      height: 3px;
+      left: 50%;
+      opacity: 0;
+      position: absolute;
+      top: 4px;
+      transform: translateX(-50%) scaleX(0.4);
+      transition: opacity 160ms ease, transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      width: 18px;
+    }
     .mobile-tab.active { color: var(--accent); }
-    .mobile-tab.active .nav-icon { opacity: 1; }
+    .mobile-tab.active .nav-icon { opacity: 1; transform: translateY(-1px); }
+    .mobile-tab.active::after { opacity: 1; transform: translateX(-50%) scaleX(1); }
 
     /* Make room for the fixed bottom nav */
     .app-main { padding-bottom: 88px; }

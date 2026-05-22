@@ -7,6 +7,8 @@
 /storage/*.sqlite3
 /storage/*.sqlite3_*
 /storage/*.sqlite3-*
+# Active Storage blobs in dev — never commit; they're real uploads.
+/storage/[a-z0-9][a-z0-9]/
 /tmp/*
 !/log/.keep
 !/tmp/.keep
@@ -19,6 +21,9 @@
 
 # Private install data stays local or in a separate private repo.
 /.private/
+
+# Claude Code per-machine config (launch profiles, etc.) — not team-shared.
+/.claude/
 
 # Real vendor exports and order guides must not be committed.
 /data/receipts/

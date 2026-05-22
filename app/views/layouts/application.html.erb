@@ -2,11 +2,16 @@
 <html>
   <head>
     <title><%= content_for(:title) || app_branding.app_name %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="<%= app_branding.short_name %>">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="<%= app_branding.short_name %>">
+    <meta name="application-name" content="<%= app_branding.short_name %>">
+    <meta name="theme-color" content="#F8F6F2">
     <meta name="description" content="<%= app_branding.description %>">
+    <meta name="turbo-prefetch" content="true">
+    <meta name="view-transition" content="same-origin">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -16,8 +21,14 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("<%= pwa_service_worker_path(format: :js) %>", { scope: "/" });
+        });
+      }
+    </script>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
