@@ -1,4 +1,6 @@
 class ReportsController < ApplicationController
+  require_module_access :reports
+
   def index
     @reports = Purchasing::ReportExporter::REPORTS
   end

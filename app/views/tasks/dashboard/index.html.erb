@@ -3,47 +3,11 @@
   <%= mobile_fab_button new_tasks_manage_task_path, label: "New task" %>
 <% end %>
 
-<%
-  staff_chip_class = [ "tasks-staff-chip", ("tasks-staff-chip-empty" if @current_staff_member.blank?) ].compact
-%>
-
-<%# ── Page header: title + context, overflow menu, staff chip ─────────── %>
+<%# ── Page header: title + context, overflow menu ─────────────────────── %>
 <section class="tasks-page-header-v2">
   <div class="tasks-page-header-titles">
     <h1>Tasks</h1>
     <p class="tasks-today-date"><%= Time.zone.now.strftime("%A, %b %-d") %></p>
-  </div>
-
-  <div class="tasks-page-header-tools" data-controller="popover">
-    <button type="button"
-            class="<%= staff_chip_class.join(' ') %>"
-            data-action="popover#toggle"
-            data-popover-target="trigger"
-            aria-haspopup="true"
-            aria-expanded="false">
-      <span class="tasks-staff-chip-dot" aria-hidden="true"></span>
-      <span class="tasks-staff-chip-label">
-        <%= @current_staff_member&.display_name || "Pick staff" %>
-      </span>
-      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-        <path d="m3 4.5 3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </svg>
-    </button>
-
-    <%= form_with url: tasks_completing_as_path, method: :patch,
-          class: "popover-panel popover-panel-staff",
-          html: { hidden: true, "data-popover-target": "panel" } do |form| %>
-      <h3 class="popover-heading">Completing as</h3>
-      <p class="muted small">Staff attribution for this device — not a login.</p>
-      <%= form.label :staff_member_id, "Staff member", class: "sr-only" %>
-      <%= form.select :staff_member_id,
-            options_from_collection_for_select(@staff_members, :id, :display_name, @current_staff_member&.id),
-            { include_blank: "Select staff member" }, class: "compact-select" %>
-      <div class="popover-actions">
-        <%= link_to "Manage staff", tasks_manage_staff_index_path, class: "button small" %>
-        <%= form.submit "Use staff", class: "button small primary" %>
-      </div>
-    <% end %>
   </div>
 
   <div class="tasks-page-header-overflow" data-controller="popover">

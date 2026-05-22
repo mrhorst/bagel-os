@@ -27,16 +27,25 @@ module ApplicationHelper
   end
 
   def app_nav_items
+    all_nav_items.select { |item| nav_item_visible?(item) }
+  end
+
+  def all_nav_items
     [
       { label: "Dashboard", path: root_path, match: :root, icon: "chart" },
-      { label: "Inventory", path: inventory_path, controller: "inventory", icon: "boxes" },
+      { label: "Inventory", path: inventory_path, controller: "inventory", module: "inventory", icon: "boxes" },
       { label: "Tasks", path: tasks_root_path, controller: "dashboard", module: "tasks", icon: "check" },
-      { label: "Order Guides", path: order_guides_path, controller: "order_guides", icon: "clipboard" },
-      { label: "Imports", path: import_batches_path, controller: "import_batches", icon: "upload" },
-      { label: "Products", path: products_path, controller: "products", icon: "package" },
-      { label: "Review", path: normalization_reviews_path, controller: "normalization_reviews", icon: "alert" },
-      { label: "Reports", path: reports_path, controller: "reports", icon: "report" }
+      { label: "Order Guides", path: order_guides_path, controller: "order_guides", module: "order_guides", icon: "clipboard" },
+      { label: "Imports", path: import_batches_path, controller: "import_batches", module: "import_batches", icon: "upload" },
+      { label: "Products", path: products_path, controller: "products", module: "products", icon: "package" },
+      { label: "Review", path: normalization_reviews_path, controller: "normalization_reviews", module: "normalization_reviews", icon: "alert" },
+      { label: "Reports", path: reports_path, controller: "reports", module: "reports", icon: "report" }
     ]
+  end
+
+  def nav_item_visible?(item)
+    return true if item[:module].blank?
+    Current.user&.can_access?(item[:module])
   end
 
   def active_nav_item?(item)

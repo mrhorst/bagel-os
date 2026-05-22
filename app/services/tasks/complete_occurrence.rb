@@ -4,15 +4,15 @@ module Tasks
       @operating_day = operating_day
     end
 
-    def call(occurrence:, staff_member:, notes: nil, photo: nil)
-      raise ArgumentError, "Staff member must be active." unless staff_member&.active?
+    def call(occurrence:, user:, notes: nil, photo: nil)
+      raise ArgumentError, "Signed-in user required." if user.blank?
       raise ArgumentError, "Task occurrence is already completed." if occurrence.active_completion.present?
       raise ArgumentError, "Missed tasks cannot be completed." unless occurrence.completable?(operating_day: @operating_day)
 
       TaskCompletion.transaction do
         completion = occurrence.task_completions.build(
-          staff_member: staff_member,
-          snapshot_staff_name: staff_member.display_name,
+          user: user,
+          snapshot_staff_name: completer_name(user),
           completed_at: @operating_day.now,
           notes: notes
         )
@@ -20,6 +20,12 @@ module Tasks
         completion.save!
         completion
       end
+    end
+
+    private
+
+    def completer_name(user)
+      user.name.presence || user.email_address
     end
   end
 end

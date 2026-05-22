@@ -1,4 +1,6 @@
 class NormalizationReviewsController < ApplicationController
+  require_module_access :normalization_reviews
+
   def index
     pending = NormalizationReview.includes(:product, receipt_line_item: [ :receipt, :import_batch ]).pending.recent
     @pending_count = pending.count

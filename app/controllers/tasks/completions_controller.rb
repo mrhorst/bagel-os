@@ -4,7 +4,7 @@ module Tasks
       occurrence = TaskOccurrence.find(params[:occurrence_id])
       CompleteOccurrence.new.call(
         occurrence: occurrence,
-        staff_member: require_current_task_staff_member!,
+        user: Current.user,
         notes: params[:notes],
         photo: params[:photo]
       )
@@ -21,7 +21,7 @@ module Tasks
 
       UndoCompletion.new.call(
         completion: completion,
-        staff_member: require_current_task_staff_member!,
+        user: Current.user,
         note: params[:undone_note]
       )
 

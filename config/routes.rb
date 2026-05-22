@@ -17,7 +17,6 @@ Rails.application.routes.draw do
   scope module: :tasks, path: :tasks, as: :tasks do
     # ── Work surface (read-mostly, used during shift) ───────────────────
     root "dashboard#index"
-    patch "completing-as", to: "completing_as#update", as: :completing_as
     get "history", to: "history#index", as: :history
 
     # Focused single-list view — the “open my Prep list” entry point.

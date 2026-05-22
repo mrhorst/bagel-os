@@ -94,7 +94,7 @@ class TasksOccurrenceBuilderTest < ActiveSupport::TestCase
 
   test "builder refreshes open snapshots but not completed history" do
     list = TaskList.create!(name: "Opening")
-    staff = StaffMember.create!(display_name: "Demo Staff")
+    user = User.create!(email_address: "demo-#{SecureRandom.hex(2)}@example.com", password: "password", name: "Demo Staff")
     task = list.tasks.create!(
       title: "Check case",
       recurrence_type: "daily",
@@ -105,7 +105,7 @@ class TasksOccurrenceBuilderTest < ActiveSupport::TestCase
     builder.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
 
     occurrence = task.task_occurrences.sole
-    Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 7, 30))).call(occurrence: occurrence, staff_member: staff)
+    Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 7, 30))).call(occurrence: occurrence, user: user)
     task.update!(title: "Check front case")
     builder.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
 

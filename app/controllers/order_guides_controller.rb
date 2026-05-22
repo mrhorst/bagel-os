@@ -1,6 +1,8 @@
 require "csv"
 
 class OrderGuidesController < ApplicationController
+  require_module_access :order_guides
+
   CSV_EXAMPLE_HEADERS = %w[
     guide_name
     item_name

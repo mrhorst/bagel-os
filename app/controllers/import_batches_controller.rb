@@ -1,4 +1,6 @@
 class ImportBatchesController < ApplicationController
+  require_module_access :import_batches
+
   def index
     @import_batches = ImportBatch.includes(:supplier).recent
   end

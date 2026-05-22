@@ -65,7 +65,7 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
 
   test "archives and reactivates lists and tasks without deleting completed history" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
-      staff = StaffMember.create!(display_name: "Maria")
+      staff = User.create!(email_address: "maria-#{SecureRandom.hex(2)}@example.com", password: "password", name: "Maria")
       task_list = TaskList.create!(name: "Opening", position: 1)
       task = task_list.tasks.create!(
         title: "Check display case",
@@ -75,7 +75,7 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
       )
       Tasks::OccurrenceBuilder.new.build!(from: Date.new(2026, 5, 18), to: Date.new(2026, 5, 18))
       occurrence = task.task_occurrences.sole
-      Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 9))).call(occurrence: occurrence, staff_member: staff)
+      Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 9))).call(occurrence: occurrence, user: staff)
 
       patch archive_tasks_manage_list_path(task_list)
 
@@ -97,7 +97,7 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
 
   test "shows filtered history, occurrence details, and undo history" do
     travel_to Time.zone.local(2026, 5, 18, 13) do
-      staff = StaffMember.create!(display_name: "Maria")
+      staff = User.create!(email_address: "maria-#{SecureRandom.hex(2)}@example.com", password: "password", name: "Maria")
       task_list = TaskList.create!(name: "Closing", position: 1)
       task = task_list.tasks.create!(
         title: "Clean slicer",
@@ -110,17 +110,17 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
 
       first_completion = Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 20))).call(
         occurrence: occurrence,
-        staff_member: staff,
+        user: staff,
         notes: "Done after lunch."
       )
       Tasks::UndoCompletion.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 30))).call(
         completion: first_completion,
-        staff_member: staff,
+        user: staff,
         note: "Wrong task."
       )
       Tasks::CompleteOccurrence.new(operating_day: Tasks::OperatingDay.new(now: Time.zone.local(2026, 5, 18, 12, 40))).call(
         occurrence: occurrence,
-        staff_member: staff
+        user: staff
       )
 
       get tasks_history_path, params: {

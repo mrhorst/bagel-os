@@ -22,7 +22,6 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select "h1", "Tasks"
-      assert_select ".tasks-staff-chip-empty", text: /Pick staff/
       assert_select ".tasks-kpi strong", text: "1", minimum: 1
       assert_select ".tasks-list-picker-card h2", text: "Opening"
       assert_select ".tasks-list-picker-card .badge", text: /1 late/
@@ -89,25 +88,10 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "requires completing as before completion" do
-    travel_to Time.zone.local(2026, 5, 18, 9) do
-      occurrence = build_today_occurrence
-
-      post tasks_occurrence_completion_path(occurrence), params: { notes: "Done" }
-
-      assert_redirected_to tasks_root_path
-      follow_redirect!
-      assert_match "Select who is completing tasks first.", response.body
-      assert_nil occurrence.reload.active_completion
-    end
-  end
-
   test "completes and undoes normal task from board workflow" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
-      staff = StaffMember.create!(display_name: "Demo Staff")
       occurrence = build_today_occurrence
 
-      patch tasks_completing_as_path, params: { staff_member_id: staff.id }
       post tasks_occurrence_completion_path(occurrence), params: { notes: "Done before lunch." }
 
       # No referer in the test → fallback to /tasks.
@@ -118,7 +102,7 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
 
       # Per-task completion details live on the focused list view now.
       get tasks_list_path(occurrence.task_list)
-      assert_match "Completed by Demo Staff", response.body
+      assert_match "Completed by one@example.com", response.body
 
       delete tasks_occurrence_completion_path(occurrence), params: { undone_note: "Wrong tap." }
       follow_redirect!
@@ -135,10 +119,8 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
 
   test "photo-required task rejects completion without photo" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
-      staff = StaffMember.create!(display_name: "Demo Staff")
       occurrence = build_today_occurrence(requires_photo_evidence: true)
 
-      patch tasks_completing_as_path, params: { staff_member_id: staff.id }
       post tasks_occurrence_completion_path(occurrence)
 
       assert_redirected_to tasks_root_path
