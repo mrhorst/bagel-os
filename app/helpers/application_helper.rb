@@ -27,16 +27,27 @@ module ApplicationHelper
   end
 
   def app_nav_items
+    all_nav_items.select { |item| nav_item_visible?(item) }
+  end
+
+  def all_nav_items
     [
       { label: "Dashboard", path: root_path, match: :root, icon: "chart" },
-      { label: "Inventory", path: inventory_path, controller: "inventory", icon: "boxes" },
+      { label: "Inventory", path: inventory_path, controller: "inventory", module: "inventory", icon: "boxes" },
       { label: "Tasks", path: tasks_root_path, controller: "dashboard", module: "tasks", icon: "check" },
-      { label: "Order Guides", path: order_guides_path, controller: "order_guides", icon: "clipboard" },
-      { label: "Imports", path: import_batches_path, controller: "import_batches", icon: "upload" },
-      { label: "Products", path: products_path, controller: "products", icon: "package" },
-      { label: "Review", path: normalization_reviews_path, controller: "normalization_reviews", icon: "alert" },
-      { label: "Reports", path: reports_path, controller: "reports", icon: "report" }
+      { label: "Order Guides", path: order_guides_path, controller: "order_guides", module: "order_guides", icon: "clipboard" },
+      { label: "Imports", path: import_batches_path, controller: "import_batches", module: "import_batches", icon: "upload" },
+      { label: "Products", path: products_path, controller: "products", module: "products", icon: "package" },
+      { label: "Review", path: normalization_reviews_path, controller: "normalization_reviews", module: "normalization_reviews", icon: "alert" },
+      { label: "Reports", path: reports_path, controller: "reports", module: "reports", icon: "report" },
+      { label: "Users", path: admin_users_path, controller: "users", module: nil, admin_only: true, icon: "users" }
     ]
+  end
+
+  def nav_item_visible?(item)
+    return false if item[:admin_only] && !Current.user&.admin?
+    return true if item[:module].blank?
+    Current.user&.can_access?(item[:module])
   end
 
   def active_nav_item?(item)
@@ -58,7 +69,8 @@ module ApplicationHelper
       "upload" => tag.path(d: "M12 16V4m0 0 4 4m-4-4-4 4M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "package" => tag.path(d: "M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Zm8 4.5 8-4.5M12 12 4 7.5m8 4.5v9", "stroke-linejoin": "round"),
       "alert" => tag.path(d: "M12 8v5m0 4h.01M10.3 4.6 3.5 17.2A2 2 0 0 0 5.2 20h13.6a2 2 0 0 0 1.7-2.8L13.7 4.6a2 2 0 0 0-3.4 0Z", "stroke-linecap": "round", "stroke-linejoin": "round"),
-      "report" => tag.path(d: "M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 0v5h5M8 17h8M8 13h8", "stroke-linecap": "round", "stroke-linejoin": "round")
+      "report" => tag.path(d: "M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 0v5h5M8 17h8M8 13h8", "stroke-linecap": "round", "stroke-linejoin": "round"),
+      "users" => tag.path(d: "M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0Zm-12 9a8 8 0 0 1 16 0", "stroke-linecap": "round", "stroke-linejoin": "round")
     }
 
     tag.svg(

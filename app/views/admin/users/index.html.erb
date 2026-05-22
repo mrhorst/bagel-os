@@ -1,0 +1,50 @@
+<% content_for :title, "Users" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Users</h1>
+    <p>Manage who can sign in and which modules each person can see.</p>
+  </div>
+  <div class="actions">
+    <%= link_to "New user", new_admin_user_path, class: "button primary" %>
+  </div>
+</section>
+
+<section class="panel">
+  <table class="responsive-table">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Modules</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td data-label="Email">
+            <%= user.email_address %>
+            <% if user.owner? %><span class="badge badge-ok">Owner</span><% end %>
+          </td>
+          <td data-label="Name"><%= user.name.presence || "—" %></td>
+          <td data-label="Role">
+            <span class="badge <%= user.admin? ? 'badge-ok' : '' %>"><%= user.role.titleize %></span>
+          </td>
+          <td data-label="Modules">
+            <% if user.admin? %>
+              <span class="muted small">All (admin)</span>
+            <% else %>
+              <% mods = user.accessible_modules %>
+              <%= mods.any? ? mods.map { |m| m.titleize }.join(", ") : content_tag(:span, "No access", class: "muted small") %>
+            <% end %>
+          </td>
+          <td data-label="">
+            <%= link_to "Edit", edit_admin_user_path(user), class: "button small" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>

@@ -1,4 +1,6 @@
 class InventoryController < ApplicationController
+  require_module_access :inventory
+
   def index
     @inventory_item_count = InventoryItem.active.count
     @linked_inventory_item_count = InventoryItem.active.where.not(product_id: nil).count

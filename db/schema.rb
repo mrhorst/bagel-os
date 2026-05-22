@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_22_142408) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_22_203902) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -448,17 +448,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_142408) do
     t.text "notes"
     t.string "snapshot_staff_name", null: false
     t.string "snapshot_undone_by_staff_name"
-    t.integer "staff_member_id", null: false
+    t.integer "staff_member_id"
     t.integer "task_occurrence_id", null: false
     t.datetime "undone_at"
     t.integer "undone_by_staff_member_id"
+    t.integer "undone_by_user_id"
     t.text "undone_note"
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["staff_member_id"], name: "index_task_completions_on_staff_member_id"
     t.index ["task_occurrence_id"], name: "idx_task_completions_one_active", unique: true, where: "undone_at IS NULL"
     t.index ["task_occurrence_id"], name: "index_task_completions_on_task_occurrence_id"
     t.index ["undone_at"], name: "index_task_completions_on_undone_at"
     t.index ["undone_by_staff_member_id"], name: "index_task_completions_on_undone_by_staff_member_id"
+    t.index ["undone_by_user_id"], name: "index_task_completions_on_undone_by_user_id"
+    t.index ["user_id"], name: "index_task_completions_on_user_id"
   end
 
   create_table "task_lists", force: :cascade do |t|
@@ -518,13 +522,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_142408) do
     t.index ["task_list_id"], name: "index_tasks_on_task_list_id"
   end
 
+  create_table "user_module_permissions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "module_name", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id", "module_name"], name: "index_user_module_permissions_on_user_id_and_module_name", unique: true
+    t.index ["user_id"], name: "index_user_module_permissions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
     t.string "name"
+    t.boolean "owner", default: false, null: false
     t.string "password_digest", null: false
+    t.integer "role", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["owner"], name: "index_users_on_owner", unique: true, where: "owner = TRUE"
+  end
+
+  create_table "versions", force: :cascade do |t|
+    t.datetime "created_at"
+    t.string "event", null: false
+    t.bigint "item_id", null: false
+    t.string "item_type", null: false
+    t.text "object", limit: 1073741823
+    t.string "whodunnit"
+    t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -567,7 +593,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_142408) do
   add_foreign_key "task_completions", "staff_members"
   add_foreign_key "task_completions", "staff_members", column: "undone_by_staff_member_id"
   add_foreign_key "task_completions", "task_occurrences"
+  add_foreign_key "task_completions", "users"
+  add_foreign_key "task_completions", "users", column: "undone_by_user_id"
   add_foreign_key "task_occurrences", "task_lists"
   add_foreign_key "task_occurrences", "tasks"
   add_foreign_key "tasks", "task_lists"
+  add_foreign_key "user_module_permissions", "users"
 end

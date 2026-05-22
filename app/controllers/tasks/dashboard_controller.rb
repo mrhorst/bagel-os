@@ -9,9 +9,6 @@ module Tasks
       OccurrenceBuilder.new(operating_day: operating_day).build!(from: operating_day.today, to: operating_day.today)
       OccurrenceBuilder.new(operating_day: operating_day).build!(from: operating_day.today.beginning_of_month, to: operating_day.today.end_of_month)
 
-      @staff_members        = StaffMember.active.ordered
-      @current_staff_member = current_task_staff_member
-
       daily   = actionable_day_occurrences(operating_day)
       monthly = current_month_occurrences(operating_day)
 

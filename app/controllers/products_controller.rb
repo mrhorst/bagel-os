@@ -1,6 +1,8 @@
 class ProductsController < ApplicationController
   include PriceChartHelper
 
+  require_module_access :products
+
   PRODUCTS_PER_PAGE_OPTIONS = [ 25, 50, 100 ].freeze
   DEFAULT_PRODUCTS_PER_PAGE = 50
 

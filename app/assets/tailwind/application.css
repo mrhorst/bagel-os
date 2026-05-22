@@ -1018,6 +1018,26 @@
     width: 18px;
   }
 
+  .module-permissions-fieldset {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+    padding: 12px 14px;
+  }
+  .module-permissions-fieldset legend {
+    color: var(--ink-2);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0 6px;
+  }
+  .module-permissions-fieldset[disabled] { opacity: 0.6; }
+  .module-permissions-grid {
+    display: grid;
+    gap: 4px 16px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin-top: 8px;
+  }
+
   .sr-only {
     height: 1px;
     margin: -1px;
