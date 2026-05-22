@@ -1,6 +1,8 @@
 class Task < ApplicationRecord
   RECURRENCE_TYPES = %w[one_time daily weekly monthly].freeze
 
+  has_paper_trail ignore: %i[updated_at]
+
   belongs_to :task_list
   has_many :task_occurrences, dependent: :restrict_with_error
 

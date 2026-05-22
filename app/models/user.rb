@@ -9,6 +9,8 @@ class User < ApplicationRecord
     reports
   ].freeze
 
+  has_paper_trail ignore: %i[updated_at]
+
   has_secure_password
   has_many :sessions, dependent: :destroy
   has_many :user_module_permissions, dependent: :destroy

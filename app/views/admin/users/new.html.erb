@@ -1,0 +1,12 @@
+<% content_for :title, "New user" %>
+
+<section class="page-heading">
+  <div>
+    <h1>New user</h1>
+    <p>Create an account and pick the modules they should see.</p>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <%= render "form", user: @user, submit_label: "Create user" %>
+</section>

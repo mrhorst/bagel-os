@@ -1,4 +1,6 @@
 class UserModulePermission < ApplicationRecord
+  has_paper_trail
+
   belongs_to :user
 
   validates :module_name, presence: true,

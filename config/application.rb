@@ -14,6 +14,10 @@ require "action_view/railtie"
 require "action_cable/engine"
 require "rails/test_unit/railtie"
 
+# PaperTrail 16 hasn't published Rails 8.1 support yet, but it works. Silence
+# the boot-time compatibility warning until they bump their supported range.
+ENV["PT_AR_OUT_OF_VERSION_RANGE_NOWARN"] = "true"
+
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)

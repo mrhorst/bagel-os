@@ -3,6 +3,14 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
   resource :account, only: %i[show update]
   patch "account/password", to: "accounts#update_password", as: :account_password
+
+  namespace :admin do
+    resources :users, except: %i[show] do
+      member do
+        post :transfer_ownership
+      end
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

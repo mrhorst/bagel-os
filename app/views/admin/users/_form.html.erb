@@ -1,0 +1,69 @@
+<%= form_with model: user, url: (user.persisted? ? admin_user_path(user) : admin_users_path), class: "stacked-form" do |form| %>
+  <% if user.errors.any? %>
+    <div class="flash flash-alert">
+      <strong><%= pluralize(user.errors.count, "error") %> kept this from saving:</strong>
+      <ul><% user.errors.full_messages.each { |m| %><li><%= m %></li><% } %></ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :email_address, "Email" %>
+    <%= form.email_field :email_address, required: true, autocomplete: "off" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name, autocomplete: "off" %>
+  </div>
+
+  <% if user.persisted? && user.owner? %>
+    <div class="field">
+      <%= form.label :role %>
+      <p class="muted small">The owner is always an admin and can't be demoted here. Transfer ownership first.</p>
+      <%= form.hidden_field :role, value: "admin" %>
+    </div>
+  <% else %>
+    <div class="field">
+      <%= form.label :role %>
+      <%= form.select :role, User.roles.keys.map { |r| [ r.titleize, r ] }, {}, required: true %>
+    </div>
+  <% end %>
+
+  <% unless user.persisted? %>
+    <div class="field-row">
+      <div class="field">
+        <%= form.label :password, "Initial password" %>
+        <%= form.password_field :password, required: true, maxlength: 72, autocomplete: "new-password" %>
+      </div>
+      <div class="field">
+        <%= form.label :password_confirmation, "Confirm" %>
+        <%= form.password_field :password_confirmation, required: true, maxlength: 72, autocomplete: "new-password" %>
+      </div>
+    </div>
+    <p class="muted small">Share this password with the user out-of-band. They can change it after signing in.</p>
+  <% end %>
+
+  <fieldset class="module-permissions-fieldset" <%= "disabled" if user.persisted? && user.admin? %>>
+    <legend>Module access</legend>
+    <% if user.persisted? && user.admin? %>
+      <p class="muted small">Admins have access to every module. Change the role to "Employee" to restrict.</p>
+    <% else %>
+      <p class="muted small">Check the modules this user should see. Modules they can't access are completely hidden from their navigation.</p>
+    <% end %>
+
+    <% accessible = user.persisted? ? user.accessible_modules : [] %>
+    <div class="module-permissions-grid">
+      <% User::MODULES.each do |mod| %>
+        <label class="check">
+          <%= check_box_tag "module_names[]", mod, accessible.include?(mod) %>
+          <span><%= mod.titleize %></span>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+
+  <div class="form-footer">
+    <%= link_to "Cancel", admin_users_path, class: "button" %>
+    <%= form.submit submit_label, class: "button primary" %>
+  </div>
+<% end %>

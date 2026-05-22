@@ -55,3 +55,6 @@ gem "importmap-rails", "~> 2.2"
 gem "foreman", "~> 0.90.0", group: :development
 
 gem "chartkick", "~> 5.2"
+
+# Audit trail — versions every change with the acting user as whodunnit.
+gem "paper_trail", "~> 16.0"

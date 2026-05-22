@@ -1,4 +1,6 @@
 class TaskCompletion < ApplicationRecord
+  has_paper_trail ignore: %i[updated_at]
+
   belongs_to :task_occurrence
   # New completions reference user; legacy rows still reference staff_member.
   belongs_to :user, optional: true
