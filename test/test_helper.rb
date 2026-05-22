@@ -6,6 +6,7 @@ end
 
 require_relative "../config/environment"
 require "rails/test_help"
+require_relative "test_helpers/session_test_helper"
 require "json"
 
 if ENV["CRAP_COVERAGE_OUTPUT"].to_s != ""
@@ -28,5 +29,15 @@ module ActiveSupport
     fixtures :all
 
     # Add more helper methods to be used by all tests here...
+  end
+end
+
+class ActionDispatch::IntegrationTest
+  setup do
+    sign_in_as(users(:one)) unless self.class.skip_default_sign_in
+  end
+
+  class << self
+    attr_accessor :skip_default_sign_in
   end
 end
