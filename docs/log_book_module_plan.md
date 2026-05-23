@@ -120,7 +120,9 @@ The daily log screen should feel like a fast manager handoff form:
    - a "Flag for follow-up" toggle
    - optional urgency selector when flagged
 4. Save action updates the whole daily entry.
-5. Submitted sections should be readable immediately below or in a review mode.
+5. Save is available only for the current operating day.
+6. Past operating days are read-only history.
+7. Submitted sections should be readable immediately below or in a review mode.
 
 On mobile, each section should be large, uncluttered, and easy to tap while standing in the store.
 
@@ -181,6 +183,8 @@ Later:
 
 One entry per operating date for the current single-context restaurant.
 
+Only the current operating day's entry can be edited. Older entries remain visible for review, but cannot be changed through the normal Log Book UI.
+
 ### log_book_responses
 
 - `id`
@@ -206,7 +210,9 @@ Use the existing `log_book` module permission for access.
 First version:
 
 - Admins can configure sections.
-- Anyone with Log Book access can fill out the daily entry.
+- Anyone with Log Book access can fill out the current operating day's daily entry.
+- Anyone with Log Book access can read past entries.
+- No one can update past entries through the normal Log Book workflow, including admins.
 - Admins can resolve follow-ups.
 
 Later:
@@ -224,7 +230,7 @@ Build this first:
 4. No note today.
 5. Flag for follow-up with urgency.
 6. Dashboard card for unresolved follow-ups.
-7. Tests for template setup, daily entry saving, archived-section history, and permission gating.
+7. Tests for template setup, daily entry saving, archived-section history, permission gating, and read-only past entries.
 
 Do not build notifications in the MVP. Store the urgency and follow-up state first, then add notification channels after the workflow is proven.
 
