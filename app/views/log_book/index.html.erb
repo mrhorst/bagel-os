@@ -1,34 +1,40 @@
 <% content_for :title, "Log Book" %>
 
-<section class="block-page-header">
-  <div>
+<%# ── Date navigator: < operating day > ──────────────────────────────────── %>
+<header class="log-book-header">
+  <div class="log-book-header-title">
+    <p class="block-eyebrow">Log Book</p>
     <h1>Log Book</h1>
     <p>Daily operating notes, handoffs, and manager follow-ups.</p>
   </div>
-  <div class="block-header-actions">
-    <% if current_user.admin? %>
-      <%= link_to "Manage sections", log_book_sections_path, class: "button" %>
-    <% end %>
-    <% unless @operating_date == @today %>
-      <%= link_to "Today", log_book_path, class: "button primary" %>
-    <% end %>
-  </div>
-</section>
 
-<%# ── Date navigator: < operating day > ──────────────────────────────────── %>
-<nav class="log-book-date-nav" aria-label="Log Book date">
-  <%= link_to log_book_path(date: @prev_date), class: "button small", aria: { label: "Previous day" } do %>
-    &lsaquo;
-  <% end %>
-  <span class="log-book-date-nav-label"><%= @operating_date.strftime("%a %b %-d, %Y") %></span>
-  <% if @next_date %>
-    <%= link_to log_book_path(date: @next_date), class: "button small", aria: { label: "Next day" } do %>
-      &rsaquo;
-    <% end %>
-  <% else %>
-    <span class="button small disabled" aria-disabled="true" aria-label="No next day">&rsaquo;</span>
-  <% end %>
-</nav>
+  <div class="log-book-header-controls">
+    <nav class="log-book-date-nav" aria-label="Log Book date">
+      <%= link_to log_book_path(date: @prev_date), class: "button small", aria: { label: "Previous day" } do %>
+        &lsaquo;
+      <% end %>
+      <span class="log-book-date-nav-label"><%= @operating_date.strftime("%a %b %-d, %Y") %></span>
+      <% if @next_date %>
+        <%= link_to log_book_path(date: @next_date), class: "button small", aria: { label: "Next day" } do %>
+          &rsaquo;
+        <% end %>
+      <% else %>
+        <span class="button small disabled" aria-disabled="true" aria-label="No next day">&rsaquo;</span>
+      <% end %>
+    </nav>
+
+    <div class="log-book-header-actions">
+      <% unless @operating_date == @today %>
+        <%= link_to "Today", log_book_path, class: "button primary" %>
+      <% end %>
+      <% if current_user.admin? %>
+        <%= link_to log_book_sections_path, class: "icon-button log-book-settings-button", aria: { label: "Manage sections" }, title: "Manage sections" do %>
+          <%= nav_icon("gear") %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</header>
 
 <%# Header tiles: last-saved signal (replaces the noisy "Sections" count) %>
 <section class="metric-grid compact" aria-label="Log book summary">

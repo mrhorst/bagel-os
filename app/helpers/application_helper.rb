@@ -34,7 +34,7 @@ module ApplicationHelper
     [
       { label: "Dashboard", path: root_path, match: :root, icon: "chart" },
       { label: "Inventory", path: inventory_path, controller: "inventory", module: "inventory", icon: "boxes" },
-      { label: "Tasks", path: tasks_root_path, controller: "dashboard", module: "tasks", icon: "check" },
+      { label: "Tasks", path: tasks_root_path, controller: "tasks/dashboard", module: "tasks", icon: "check" },
       { label: "Log Book", path: log_book_path, controller: "log_book", module: "log_book", icon: "book" },
       { label: "Order Guides", path: order_guides_path, controller: "order_guides", module: "order_guides", icon: "clipboard" },
       { label: "Imports", path: import_batches_path, controller: "import_batches", module: "import_batches", icon: "upload" },
@@ -66,6 +66,7 @@ module ApplicationHelper
       "chart" => tag.path(d: "M4 19V5m8 14V9m8 10V3", "stroke-linecap": "round"),
       "boxes" => tag.path(d: "M4 7l8-4 8 4-8 4-8-4Zm0 6l8 4 8-4M4 17l8 4 8-4", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "check" => tag.path(d: "m5 12 4 4L19 6M5 20h14", "stroke-linecap": "round", "stroke-linejoin": "round"),
+      "gear" => tag.path(d: "M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Zm0-5v2m0 13v2m8.5-8.5h-2m-13 0h-2m14.5-6.5-1.4 1.4M6.9 17.1l-1.4 1.4m0-13 1.4 1.4m10.2 10.2 1.4 1.4", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "book" => tag.path(d: "M5 4.5A2.5 2.5 0 0 1 7.5 2H19v17H7.5A2.5 2.5 0 0 0 5 21.5v-17Zm0 0v17M8 6h7M8 10h7", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "clipboard" => tag.path(d: "M9 4h6m-7 3h8m-8 5h8m-8 4h5M7 4h10a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z", "stroke-linecap": "round"),
       "upload" => tag.path(d: "M12 16V4m0 0 4 4m-4-4-4 4M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3", "stroke-linecap": "round", "stroke-linejoin": "round"),

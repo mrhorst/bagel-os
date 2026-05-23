@@ -745,6 +745,42 @@
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
+  /* Log Book top header: day selector first, management tucked into a corner icon. */
+  .log-book-header {
+    align-items: start;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 16px;
+  }
+  .log-book-header-title {
+    min-width: 0;
+  }
+  .log-book-header-title h1,
+  .log-book-header-title p {
+    margin: 0;
+  }
+  .log-book-header-title h1 {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    line-height: 1.05;
+  }
+  .log-book-header-title > p:last-child {
+    color: var(--ink-muted);
+    margin-top: 6px;
+  }
+  .log-book-header-controls {
+    align-items: end;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .log-book-header-actions {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
   /* Log Book date navigator: < operating day > */
   .log-book-date-nav {
     align-items: center;
@@ -754,8 +790,9 @@
     display: flex;
     gap: 12px;
     justify-content: space-between;
-    margin: 12px 0 16px;
+    margin: 0;
     padding: 6px 10px;
+    width: min(100%, 360px);
   }
   .log-book-date-nav-label {
     font-feature-settings: "tnum";
@@ -766,6 +803,10 @@
   .log-book-date-nav .button {
     font-size: 1.05rem;
     min-width: 36px;
+  }
+  .log-book-settings-button .nav-icon {
+    height: 18px;
+    width: 18px;
   }
 
   /* Per-section error highlight on the log book entry form */
@@ -3870,6 +3911,20 @@
     .inline-guide-form input[type='submit'] {
       min-width: 0;
       width: 100%;
+    }
+
+    .log-book-header {
+      grid-template-columns: 1fr;
+    }
+    .log-book-header-controls {
+      align-items: stretch;
+      width: 100%;
+    }
+    .log-book-date-nav {
+      width: 100%;
+    }
+    .log-book-header-actions {
+      justify-content: space-between;
     }
 
     .page-heading .button,
