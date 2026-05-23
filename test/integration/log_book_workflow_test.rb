@@ -184,7 +184,57 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_match "Value number is required", response.body
-    assert_match "decision-card-error", response.body
+    assert_select "div.log-book-section-error p.log-book-card-error",
+      text: /Value number is required/
+  end
+
+  test "autosave returns a turbo stream with save status and meta updates" do
+    section = LogBookSection.create!(title: "General Log", section_type: "long_text")
+
+    patch log_book_path,
+      params: {
+        operating_date: Date.current.iso8601,
+        responses: { section.id => { value_text: "Morning rush handled.", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" } }
+      },
+      headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html; charset=utf-8", response.media_type + "; charset=utf-8"
+    assert_match %Q(turbo-stream action="replace" target="log_book_save_status"), response.body
+    assert_match %Q(turbo-stream action="replace" target="log_book_response_meta_#{section.id}"), response.body
+    assert_match "Saved", response.body
+  end
+
+  test "recent entries row shows open follow-up signals per day" do
+    section = LogBookSection.create!(title: "General Log", section_type: "long_text")
+    yesterday = LogBookEntry.create!(operating_date: Date.yesterday)
+    yesterday.log_book_responses.create!(
+      log_book_section: section,
+      section_title_snapshot: section.title,
+      section_type_snapshot: section.section_type,
+      value_text: "Quiet day.",
+      flagged_for_follow_up: true,
+      urgency: "urgent"
+    )
+
+    get log_book_path
+    assert_response :success
+    assert_select "li.log-book-recent-row .badge", text: /1 follow-up/
+    assert_select "li.log-book-recent-row .badge", text: /1 urgent/
+  end
+
+  test "archive button carries a confirmation that includes usage count" do
+    section = LogBookSection.create!(title: "Bagels Left", section_type: "number")
+    LogBookEntry.create!(operating_date: Date.current).log_book_responses.create!(
+      log_book_section: section,
+      section_title_snapshot: section.title,
+      section_type_snapshot: section.section_type,
+      value_number: 12
+    )
+
+    get log_book_sections_path
+    assert_response :success
+    assert_select "form[action='#{archive_log_book_section_path(section)}'] button[data-turbo-confirm*='used in 1 entry']"
   end
 
   test "admin resolves flagged follow-ups" do

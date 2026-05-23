@@ -21,24 +21,36 @@ class LogBookController < ApplicationController
     end
 
     entry = entry_for(operating_date, create: true)
+    saved_at = Time.current
 
     ActiveRecord::Base.transaction do
-      entry.update!(submitted_by: Current.user, submitted_at: Time.current)
+      entry.update!(submitted_by: Current.user, submitted_at: saved_at)
       sync_responses!(entry, response_params)
     end
 
-    redirect_to log_book_path(date: operating_date), notice: "Log Book saved."
+    setup_view_state
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: save_streams(saved_at: saved_at) }
+      format.html         { redirect_to log_book_path(date: operating_date), notice: "Saved." }
+    end
   rescue ActiveRecord::RecordInvalid => error
     setup_view_state(error_record: error.record, raw_params: response_params)
-    flash.now[:alert] = error.record.errors.full_messages.to_sentence
-    render :index, status: :unprocessable_entity
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: save_streams(error: error.record), status: :unprocessable_entity
+      end
+      format.html do
+        flash.now[:alert] = error.record.errors.full_messages.to_sentence
+        render :index, status: :unprocessable_entity
+      end
+    end
   end
 
   private
 
-  # Builds the @ivars index.html.erb needs. Reused on the happy path (GET)
-  # and on validation errors (re-render) so the screen looks consistent
-  # whichever way the user arrived.
+  # Builds the @ivars index.html.erb needs. Reused on the happy path (GET),
+  # on validation errors (re-render), and after a successful turbo_stream
+  # save (so we can replace the per-section meta lines).
   def setup_view_state(error_record: nil, raw_params: {})
     operating_day = Tasks::OperatingDay.new
     @today = operating_day.today
@@ -58,9 +70,9 @@ class LogBookController < ApplicationController
     @prev_date = @operating_date - 1
     @next_date = @operating_date < @today ? @operating_date + 1 : nil
 
-    @recent_entries = LogBookEntry.recent_first.limit(7)
+    @recent_entries = LogBookEntry.recent_first.limit(7).includes(:log_book_responses)
     @unresolved_follow_ups = LogBookResponse.unresolved
-      .includes(:log_book_section, :log_book_entry)
+      .includes(:log_book_section, :log_book_entry, :last_submitted_by)
       .recent_first
       .limit(10)
 
@@ -143,5 +155,31 @@ class LogBookController < ApplicationController
     Date.iso8601(value.to_s)
   rescue ArgumentError, TypeError
     today
+  end
+
+  # Turbo Stream payload returned by save (both autosave and explicit click).
+  # Refreshes the global "Saved at" indicator, every section's meta line, and
+  # every section's per-card error region (clearing stale errors too).
+  def save_streams(saved_at: nil, error: nil)
+    streams = [
+      turbo_stream.replace(
+        "log_book_save_status",
+        partial: "log_book/save_status",
+        locals: { saved_at: saved_at, error: error }
+      )
+    ]
+    @sections.each do |section|
+      streams << turbo_stream.replace(
+        "log_book_response_meta_#{section.id}",
+        partial: "log_book/response_meta",
+        locals: { section: section, response: @responses_by_section_id[section.id] }
+      )
+      streams << turbo_stream.replace(
+        "log_book_section_error_#{section.id}",
+        partial: "log_book/section_error",
+        locals: { section: section, errors: @response_errors[section.id] }
+      )
+    end
+    streams
   end
 end

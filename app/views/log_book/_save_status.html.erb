@@ -1,0 +1,12 @@
+<%# locals: saved_at:, error: nil %>
+<div id="log_book_save_status" class="log-book-save-status" data-log-book-autosave-target="status">
+  <% if error %>
+    <span class="log-book-save-status-error">
+      Couldn't save — <%= error.errors.full_messages.first %>
+    </span>
+  <% elsif saved_at %>
+    <span class="log-book-save-status-saved">
+      Saved <%= saved_at.strftime("%-l:%M %p") %>
+    </span>
+  <% end %>
+</div>

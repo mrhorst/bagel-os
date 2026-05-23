@@ -773,6 +773,85 @@
     border-color: var(--danger);
     box-shadow: inset 2px 0 0 var(--danger), var(--shadow-e1);
   }
+  .log-book-card-error { color: var(--danger-fg); }
+
+  /* Autosave indicator that sits in the panel header */
+  .log-book-save-status {
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .log-book-save-status-saved { color: var(--ok-fg); }
+  .log-book-save-status-error { color: var(--danger-fg); }
+
+  /* Visually distinct from .check (which is a checkbox). A radio inside a
+     label gets a slightly tighter feel and a subtle border treatment so the
+     user can tell at a glance that only one in the group is selectable. */
+  .radio {
+    align-items: center;
+    color: var(--ink-2);
+    display: inline-flex;
+    gap: 6px;
+    margin: 0;
+    min-height: 38px;
+  }
+  .radio input { accent-color: var(--accent); }
+
+  /* Segmented radio group — used for urgency (Normal / Important / Urgent) */
+  .urgency-radios {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 4px;
+  }
+  .urgency-radios[hidden] { display: none; }
+  .radio.radio-segmented {
+    border-radius: 8px;
+    cursor: pointer;
+    min-height: 32px;
+    padding: 4px 12px;
+    transition: background-color 80ms ease, color 80ms ease;
+  }
+  .radio.radio-segmented input { position: absolute; opacity: 0; pointer-events: none; }
+  .radio.radio-segmented:has(input:checked) {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  /* When "No note today" is checked we dim the value field so it reads as
+     intentionally inert, even though the input is also disabled. */
+  .field-disabled { opacity: 0.45; }
+
+  /* Recent-entries signal row */
+  .log-book-recent {
+    display: grid;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .log-book-recent-link {
+    align-items: center;
+    border-radius: var(--radius-md);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding: 10px 12px;
+    text-decoration: none;
+  }
+  .log-book-recent-link:hover { background: var(--surface-3); text-decoration: none; }
+  .log-book-recent-row-current .log-book-recent-link {
+    background: color-mix(in oklch, var(--accent-soft) 50%, var(--surface-2));
+  }
+  .log-book-recent-date {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .log-book-recent-signals { align-items: center; display: inline-flex; gap: 6px; flex-wrap: wrap; }
 
   .metric {
     padding: 14px;

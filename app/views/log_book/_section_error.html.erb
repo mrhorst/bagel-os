@@ -1,0 +1,8 @@
+<%# locals: section:, errors: nil %>
+<div id="log_book_section_error_<%= section.id %>" class="log-book-section-error">
+  <% if errors %>
+    <p class="log-book-card-error">
+      <%= errors.full_messages.to_sentence %>
+    </p>
+  <% end %>
+</div>

@@ -15,7 +15,7 @@
   </div>
 </section>
 
-<%# ── Date navigator: < May 22, 2026 > ──────────────────────────────────── %>
+<%# ── Date navigator: < operating day > ──────────────────────────────────── %>
 <nav class="log-book-date-nav" aria-label="Log Book date">
   <%= link_to log_book_path(date: @prev_date), class: "button small", aria: { label: "Previous day" } do %>
     &lsaquo;
@@ -30,10 +30,17 @@
   <% end %>
 </nav>
 
+<%# Header tiles: last-saved signal (replaces the noisy "Sections" count) %>
 <section class="metric-grid compact" aria-label="Log book summary">
   <article class="metric">
-    <span>Sections</span>
-    <strong><%= @sections.size %></strong>
+    <span>Last saved</span>
+    <strong>
+      <% if @entry.persisted? && @entry.submitted_at %>
+        <%= time_ago_in_words(@entry.submitted_at) %> ago
+      <% else %>
+        Not saved yet
+      <% end %>
+    </strong>
   </article>
   <article class="metric">
     <span>Follow-ups</span>
@@ -45,210 +52,156 @@
   </article>
 </section>
 
-<section class="block-panel">
-  <header class="block-panel-header">
-    <div>
-      <h2><%= @editable ? "Today's entry" : "Daily entry" %></h2>
-      <p>
-        <% if @editable %>
-          Save notes before the operating day closes. Older entries are locked as history.
-        <% else %>
-          Past operating days are read-only.
-        <% end %>
-      </p>
-    </div>
-  </header>
+<%# Panel ordering depends on day-state. On read-only days the manager opens
+    the log book to triage follow-ups first; on today they're filling it in. %>
+<% follow_ups_panel = capture do %>
+  <section class="block-panel">
+    <header class="block-panel-header">
+      <div>
+        <h2>Open follow-ups</h2>
+        <p>Flagged notes that still need manager attention.</p>
+      </div>
+    </header>
 
-  <% if @sections.any? %>
-    <% if @editable %>
-      <%= form_with url: log_book_path, method: :patch, class: "stacked-form" do %>
-        <%= hidden_field_tag :operating_date, @operating_date.iso8601 %>
-
-        <% @sections.each do |section| %>
-          <% response = @responses_by_section_id[section.id] %>
-          <% errors_for_section = @response_errors[section.id] %>
-          <% overrides = (@form_overrides && @form_overrides[section.id]) || {} %>
-          <article class="decision-card <%= 'decision-card-error' if errors_for_section %>">
+    <% if @unresolved_follow_ups.any? %>
+      <div class="stack">
+        <% @unresolved_follow_ups.each do |response| %>
+          <article class="decision-card">
             <div class="decision-card-body">
-              <h2><%= section.title %></h2>
-              <% if section.description.present? %>
-                <p><%= section.description %></p>
-              <% end %>
-              <% if errors_for_section %>
-                <p class="muted small" style="color: var(--danger-fg)">
-                  <%= errors_for_section.full_messages.to_sentence %>
-                </p>
-              <% end %>
-            </div>
-
-            <div class="stack small">
-              <% field_name = "responses[#{section.id}]" %>
-              <% current_text   = overrides[:value_text]   || response&.value_text %>
-              <% current_number = overrides[:value_number] || response&.value_number %>
-              <% current_no_note = if overrides.key?(:no_note)
-                                     ActiveModel::Type::Boolean.new.cast(overrides[:no_note])
-                                   else
-                                     response&.no_note?
-                                   end %>
-              <% current_flagged = if overrides.key?(:flagged_for_follow_up)
-                                     ActiveModel::Type::Boolean.new.cast(overrides[:flagged_for_follow_up])
-                                   else
-                                     response&.flagged_for_follow_up?
-                                   end %>
-              <% current_urgency = overrides[:urgency].presence || response&.urgency || "normal" %>
-
-              <% case section.section_type %>
-              <% when "number" %>
-                <div class="field">
-                  <%= label_tag "#{field_name}[value_number]", section.unit_label.presence || "Value" %>
-                  <%= number_field_tag "#{field_name}[value_number]", current_number,
-                        step: (section.value_decimals.to_i.zero? ? 1 : 10.0**(-section.value_decimals)) %>
-                </div>
-              <% when "yes_no" %>
-                <div class="field">
-                  <label>Answer</label>
-                  <div class="button-row">
-                    <label class="check">
-                      <%= radio_button_tag "#{field_name}[value_text]", "yes", current_text == "yes" %>
-                      <span>Yes</span>
-                    </label>
-                    <label class="check">
-                      <%= radio_button_tag "#{field_name}[value_text]", "no", current_text == "no" %>
-                      <span>No</span>
-                    </label>
-                  </div>
-                </div>
-              <% when "short_text" %>
-                <div class="field">
-                  <%= label_tag "#{field_name}[value_text]", "Note" %>
-                  <%= text_field_tag "#{field_name}[value_text]", current_text %>
-                </div>
-              <% else %>
-                <div class="field">
-                  <%= label_tag "#{field_name}[value_text]", "Note" %>
-                  <%= text_area_tag "#{field_name}[value_text]", current_text, rows: 4 %>
-                </div>
-              <% end %>
-
-              <% if section.allow_no_note? %>
-                <%= hidden_field_tag "#{field_name}[no_note]", "0" %>
-                <label class="check">
-                  <%= check_box_tag "#{field_name}[no_note]", "1", current_no_note %>
-                  <span>No note today</span>
-                </label>
-              <% end %>
-
-              <% if section.allow_follow_up? %>
-                <%= hidden_field_tag "#{field_name}[flagged_for_follow_up]", "0" %>
-                <label class="check">
-                  <%= check_box_tag "#{field_name}[flagged_for_follow_up]", "1", current_flagged %>
-                  <span>Flag for follow-up</span>
-                </label>
-
-                <% if current_flagged %>
-                  <div class="field">
-                    <%= label_tag "#{field_name}[urgency]", "Urgency" %>
-                    <%= select_tag "#{field_name}[urgency]",
-                          options_for_select(LogBookResponse::URGENCIES.map { |v| [ v.humanize, v ] }, current_urgency) %>
-                  </div>
+              <h2><%= response.section_title_snapshot %></h2>
+              <p><%= response.display_value %></p>
+              <p class="small muted">
+                <%= response.log_book_entry.operating_date.strftime("%B %-d, %Y") %>
+                <% if response.last_submitted_by %>
+                  · flagged by <%= user_display_name(response.last_submitted_by) %>
                 <% end %>
-              <% end %>
-
-              <% if response&.last_submitted_by && response.last_submitted_at %>
-                <p class="muted small">
-                  Last updated by <%= user_display_name(response.last_submitted_by) %>
-                  · <%= time_ago_in_words(response.last_submitted_at) %> ago
-                </p>
-              <% end %>
+              </p>
+              <span class="badge badge-warning"><%= response.urgency.humanize %></span>
             </div>
+            <% if current_user.admin? %>
+              <div class="decision-card-actions">
+                <%= button_to "Resolve", resolve_log_book_response_path(response), method: :patch, class: "button small" %>
+              </div>
+            <% end %>
           </article>
         <% end %>
+      </div>
+    <% else %>
+      <p class="empty-state">No open follow-ups.</p>
+    <% end %>
+  </section>
+<% end %>
 
-        <div class="form-footer">
-          <%= submit_tag "Save Log Book", class: "button primary" %>
+<% entry_panel = capture do %>
+  <section class="block-panel">
+    <header class="block-panel-header">
+      <div>
+        <h2><%= @editable ? "Today's entry" : "Daily entry" %></h2>
+        <p>
+          <% if @editable %>
+            Changes save automatically as you tab between fields.
+          <% else %>
+            Past operating days are read-only.
+          <% end %>
+        </p>
+      </div>
+      <%= render "log_book/save_status", saved_at: (@entry.persisted? ? @entry.submitted_at : nil), error: nil %>
+    </header>
+
+    <% if @sections.any? %>
+      <% if @editable %>
+        <%= form_with url: log_book_path, method: :patch, class: "stacked-form",
+              data: { controller: "log-book-autosave",
+                      log_book_autosave_debounce_value: 700,
+                      action: "change->log-book-autosave#queue input->log-book-autosave#queue" } do %>
+          <%= hidden_field_tag :operating_date, @operating_date.iso8601 %>
+
+          <% @sections.each do |section| %>
+            <%= render "log_book/section_card",
+                  section: section,
+                  response: @responses_by_section_id[section.id],
+                  response_errors: @response_errors[section.id],
+                  overrides: (@form_overrides && @form_overrides[section.id]) || {} %>
+          <% end %>
+
+          <div class="form-footer">
+            <%= submit_tag "Save", class: "button primary" %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="stack">
+          <% @sections.each do |section| %>
+            <% response = @responses_by_section_id[section.id] %>
+            <article class="decision-card">
+              <div class="decision-card-body">
+                <h2><%= response&.section_title_snapshot || section.title %></h2>
+                <p><%= response&.display_value || "No response recorded." %></p>
+                <% if response&.flagged_for_follow_up? %>
+                  <span class="badge badge-warning"><%= response.urgency.humanize %> follow-up</span>
+                <% end %>
+                <% if response&.last_submitted_by && response.last_submitted_at %>
+                  <p class="muted small">
+                    Last updated by <%= user_display_name(response.last_submitted_by) %>
+                    · <%= response.last_submitted_at.strftime("%b %-d, %-l:%M %p") %>
+                  </p>
+                <% end %>
+              </div>
+            </article>
+          <% end %>
         </div>
       <% end %>
     <% else %>
-      <div class="stack">
-        <% @sections.each do |section| %>
-          <% response = @responses_by_section_id[section.id] %>
-          <article class="decision-card">
-            <div class="decision-card-body">
-              <h2><%= response&.section_title_snapshot || section.title %></h2>
-              <p><%= response&.display_value || "No response recorded." %></p>
-              <% if response&.flagged_for_follow_up? %>
-                <span class="badge badge-warning"><%= response.urgency.humanize %> follow-up</span>
-              <% end %>
-              <% if response&.last_submitted_by && response.last_submitted_at %>
-                <p class="muted small">
-                  Last updated by <%= user_display_name(response.last_submitted_by) %>
-                  · <%= response.last_submitted_at.strftime("%b %-d, %-l:%M %p") %>
-                </p>
-              <% end %>
-            </div>
-          </article>
-        <% end %>
-      </div>
-    <% end %>
-  <% else %>
-    <p class="empty-state">
-      <strong>No Log Sections yet.</strong>
-      <span>An admin can create sections like General Log, Maintenance, and Bagels Left.</span>
-    </p>
-    <% if current_user.admin? %>
-      <div class="form-footer">
-        <%= link_to "Create first section", new_log_book_section_path, class: "button primary" %>
-      </div>
-    <% end %>
-  <% end %>
-</section>
-
-<section class="block-panel">
-  <header class="block-panel-header">
-    <div>
-      <h2>Open follow-ups</h2>
-      <p>Flagged notes that still need manager attention.</p>
-    </div>
-  </header>
-
-  <% if @unresolved_follow_ups.any? %>
-    <div class="stack">
-      <% @unresolved_follow_ups.each do |response| %>
-        <article class="decision-card">
-          <div class="decision-card-body">
-            <h2><%= response.section_title_snapshot %></h2>
-            <p><%= response.display_value %></p>
-            <p class="small muted"><%= response.log_book_entry.operating_date.strftime("%B %-d, %Y") %></p>
-            <span class="badge badge-warning"><%= response.urgency.humanize %></span>
-          </div>
-          <% if current_user.admin? %>
-            <div class="decision-card-actions">
-              <%= button_to "Resolve", resolve_log_book_response_path(response), method: :patch, class: "button small" %>
-            </div>
-          <% end %>
-        </article>
+      <p class="empty-state">
+        <strong>No Log Sections yet.</strong>
+        <span>An admin can create sections like General Log, Maintenance, and Bagels Left.</span>
+      </p>
+      <% if current_user.admin? %>
+        <div class="form-footer">
+          <%= link_to "Create first section", new_log_book_section_path, class: "button primary" %>
+        </div>
       <% end %>
-    </div>
-  <% else %>
-    <p class="empty-state">No open follow-ups.</p>
-  <% end %>
-</section>
+    <% end %>
+  </section>
+<% end %>
 
-<section class="block-panel">
-  <header class="block-panel-header">
-    <div>
-      <h2>Recent entries</h2>
-      <p>Review past operating days without changing them.</p>
-    </div>
-  </header>
+<% if @editable %>
+  <%= entry_panel %>
+  <%= follow_ups_panel %>
+<% else %>
+  <%= follow_ups_panel %>
+  <%= entry_panel %>
+<% end %>
 
-  <% if @recent_entries.any? %>
-    <div class="button-row">
+<%# ── Recent entries as a signal row, not a date hopper ──────────────── %>
+<% if @recent_entries.any? %>
+  <section class="block-panel">
+    <header class="block-panel-header">
+      <div>
+        <h2>Recent entries</h2>
+        <p>Past days at a glance. Open one to review.</p>
+      </div>
+    </header>
+
+    <ul class="log-book-recent">
       <% @recent_entries.each do |entry| %>
-        <%= link_to entry.operating_date.strftime("%b %-d"), log_book_path(date: entry.operating_date), class: "button small" %>
+        <% open_flags  = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? } %>
+        <% urgent_open = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? && r.urgency == "urgent" } %>
+        <li class="log-book-recent-row <%= 'log-book-recent-row-current' if entry.operating_date == @operating_date %>">
+          <%= link_to log_book_path(date: entry.operating_date), class: "log-book-recent-link" do %>
+            <span class="log-book-recent-date"><%= entry.operating_date.strftime("%a %b %-d") %></span>
+            <span class="log-book-recent-signals">
+              <% if open_flags.zero? %>
+                <span class="muted small">No open flags</span>
+              <% else %>
+                <span class="badge badge-warning"><%= pluralize(open_flags, "follow-up") %></span>
+                <% if urgent_open.positive? %>
+                  <span class="badge badge-warning"><%= urgent_open %> urgent</span>
+                <% end %>
+              <% end %>
+            </span>
+          <% end %>
+        </li>
       <% end %>
-    </div>
-  <% else %>
-    <p class="empty-state">No saved log book history yet.</p>
-  <% end %>
-</section>
+    </ul>
+  </section>
+<% end %>

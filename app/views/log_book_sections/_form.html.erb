@@ -1,4 +1,6 @@
-<%= form_with model: section, url: url, method: method, class: "stacked-form" do |form| %>
+<%= form_with model: section, url: url, method: method,
+      class: "stacked-form",
+      data: { controller: "log-book-section-form" } do |form| %>
   <% if section.errors.any? %>
     <div class="form-errors" role="alert">
       <strong><%= pluralize(section.errors.count, "error") %> kept this section from saving:</strong>
@@ -23,20 +25,23 @@
   <div class="form-grid">
     <div class="field">
       <%= form.label :section_type, "Input type" %>
-      <%= form.select :section_type, LogBookSection::SECTION_TYPES.map { |type| [ type.humanize, type ] }, {}, required: true %>
+      <%= form.select :section_type, LogBookSection::SECTION_TYPES.map { |type| [ type.humanize, type ] }, {},
+            required: true,
+            data: { log_book_section_form_target: "sectionType",
+                    action: "change->log-book-section-form#sync" } %>
     </div>
     <div class="field">
       <%= form.label :position, "Sort order" %>
       <%= form.number_field :position, step: 1 %>
     </div>
-    <div class="field">
+    <div class="field" data-log-book-section-form-target="numberOnly">
       <%= form.label :unit_label, "Unit label" %>
       <%= form.text_field :unit_label, placeholder: "bagels, dollars, degrees F" %>
     </div>
-    <div class="field">
+    <div class="field" data-log-book-section-form-target="numberOnly">
       <%= form.label :value_decimals, "Decimal places" %>
       <%= form.number_field :value_decimals, in: 0..6, step: 1 %>
-      <p class="field-hint muted small">Only used for number inputs. 0 displays whole numbers.</p>
+      <p class="field-hint muted small">0 = whole numbers.</p>
     </div>
   </div>
 

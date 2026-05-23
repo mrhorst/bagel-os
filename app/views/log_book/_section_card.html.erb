@@ -1,0 +1,105 @@
+<%# locals: section:, response:, response_errors: nil, overrides: {} %>
+<%
+  errors_for_section = response_errors
+  field_name = "responses[#{section.id}]"
+
+  current_text   = overrides[:value_text]   || response&.value_text
+  current_number = overrides[:value_number] || response&.value_number
+  current_no_note = if overrides.key?(:no_note)
+                     ActiveModel::Type::Boolean.new.cast(overrides[:no_note])
+                   else
+                     response&.no_note?
+                   end
+  current_flagged = if overrides.key?(:flagged_for_follow_up)
+                     ActiveModel::Type::Boolean.new.cast(overrides[:flagged_for_follow_up])
+                   else
+                     response&.flagged_for_follow_up?
+                   end
+  current_urgency = overrides[:urgency].presence || response&.urgency || "normal"
+%>
+<article id="log_book_section_card_<%= section.id %>"
+         class="decision-card"
+         data-controller="log-book-no-note"
+         data-log-book-no-note-target="card">
+  <div class="decision-card-body">
+    <h2><%= section.title %></h2>
+    <% if section.description.present? %>
+      <p><%= section.description %></p>
+    <% end %>
+    <%= render "log_book/section_error", section: section, errors: errors_for_section %>
+  </div>
+
+  <div class="stack small">
+    <% case section.section_type %>
+    <% when "number" %>
+      <div class="field" data-log-book-no-note-target="valueField">
+        <%= label_tag "#{field_name}[value_number]", section.unit_label.presence || "Value" %>
+        <%= number_field_tag "#{field_name}[value_number]", current_number,
+              step: (section.value_decimals.to_i.zero? ? 1 : 10.0**(-section.value_decimals)),
+              data: { log_book_no_note_target: "input" } %>
+      </div>
+    <% when "yes_no" %>
+      <div class="field" data-log-book-no-note-target="valueField">
+        <label>Answer</label>
+        <div class="button-row">
+          <label class="radio">
+            <%= radio_button_tag "#{field_name}[value_text]", "yes", current_text == "yes",
+                  data: { log_book_no_note_target: "input" } %>
+            <span>Yes</span>
+          </label>
+          <label class="radio">
+            <%= radio_button_tag "#{field_name}[value_text]", "no", current_text == "no",
+                  data: { log_book_no_note_target: "input" } %>
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+    <% when "short_text" %>
+      <div class="field" data-log-book-no-note-target="valueField">
+        <%= label_tag "#{field_name}[value_text]", "Note" %>
+        <%= text_field_tag "#{field_name}[value_text]", current_text,
+              data: { log_book_no_note_target: "input" } %>
+      </div>
+    <% else %>
+      <div class="field" data-log-book-no-note-target="valueField">
+        <%= label_tag "#{field_name}[value_text]", "Note" %>
+        <%= text_area_tag "#{field_name}[value_text]", current_text, rows: 4,
+              data: { log_book_no_note_target: "input" } %>
+      </div>
+    <% end %>
+
+    <% if section.allow_no_note? %>
+      <%= hidden_field_tag "#{field_name}[no_note]", "0" %>
+      <label class="check">
+        <%= check_box_tag "#{field_name}[no_note]", "1", current_no_note,
+              data: { action: "change->log-book-no-note#toggle" } %>
+        <span>No note today</span>
+      </label>
+    <% end %>
+
+    <% if section.allow_follow_up? %>
+      <%= hidden_field_tag "#{field_name}[flagged_for_follow_up]", "0" %>
+      <label class="check">
+        <%= check_box_tag "#{field_name}[flagged_for_follow_up]", "1", current_flagged,
+              data: { action: "change->log-book-no-note#toggleFlag",
+                      log_book_no_note_target: "flagCheckbox" } %>
+        <span>Flag for follow-up</span>
+      </label>
+
+      <div class="urgency-radios"
+           data-log-book-no-note-target="urgency"
+           role="radiogroup"
+           aria-label="Urgency"
+           <%= "hidden" unless current_flagged %>>
+        <% LogBookResponse::URGENCIES.each do |urgency| %>
+          <label class="radio radio-segmented">
+            <%= radio_button_tag "#{field_name}[urgency]", urgency, current_urgency == urgency %>
+            <span><%= urgency.humanize %></span>
+          </label>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= render "log_book/response_meta", section: section, response: response %>
+  </div>
+</article>
