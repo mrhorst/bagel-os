@@ -13,7 +13,7 @@ class LogBookNavigationTest < ActionDispatch::IntegrationTest
     get log_book_path
 
     assert_response :success
-    assert_select "h1", "Log Book"
+    assert_select ".log-book-header .block-eyebrow", "Log Book"
     assert_select ".mobile-tab", text: "Log Book"
     assert_select ".mobile-tab", text: "Review", count: 0
     assert_select ".log-book-date-nav"
