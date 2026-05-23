@@ -56,7 +56,9 @@ class LogBookSectionsController < ApplicationController
       :position,
       :required,
       :allow_no_note,
-      :unit_label
+      :allow_follow_up,
+      :unit_label,
+      :value_decimals
     )
   end
 end

@@ -8,7 +8,10 @@ class LogBookEntry < ApplicationRecord
 
   scope :recent_first, -> { order(operating_date: :desc) }
 
-  def editable?(today: Time.zone.today)
+  # An entry is editable only on its own operating day. We accept either a
+  # Tasks::OperatingDay or a Date so model tests don't need the service.
+  def editable?(operating_day: Tasks::OperatingDay.new)
+    today = operating_day.respond_to?(:today) ? operating_day.today : operating_day
     operating_date == today
   end
 end

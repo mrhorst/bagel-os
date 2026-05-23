@@ -33,6 +33,11 @@
       <%= form.label :unit_label, "Unit label" %>
       <%= form.text_field :unit_label, placeholder: "bagels, dollars, degrees F" %>
     </div>
+    <div class="field">
+      <%= form.label :value_decimals, "Decimal places" %>
+      <%= form.number_field :value_decimals, in: 0..6, step: 1 %>
+      <p class="field-hint muted small">Only used for number inputs. 0 displays whole numbers.</p>
+    </div>
   </div>
 
   <label class="check">
@@ -43,6 +48,11 @@
   <label class="check">
     <%= form.check_box :allow_no_note %>
     <span>Allow No note today</span>
+  </label>
+
+  <label class="check">
+    <%= form.check_box :allow_follow_up %>
+    <span>Allow Flag for follow-up (and urgency)</span>
   </label>
 
   <div class="form-footer">

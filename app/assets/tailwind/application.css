@@ -745,6 +745,35 @@
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
+  /* Log Book date navigator: < operating day > */
+  .log-book-date-nav {
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin: 12px 0 16px;
+    padding: 6px 10px;
+  }
+  .log-book-date-nav-label {
+    font-feature-settings: "tnum";
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .log-book-date-nav .button {
+    font-size: 1.05rem;
+    min-width: 36px;
+  }
+
+  /* Per-section error highlight on the log book entry form */
+  .decision-card.decision-card-error {
+    border-color: var(--danger);
+    box-shadow: inset 2px 0 0 var(--danger), var(--shadow-e1);
+  }
+
   .metric {
     padding: 14px;
   }

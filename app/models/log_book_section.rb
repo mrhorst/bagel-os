@@ -9,6 +9,7 @@ class LogBookSection < ApplicationRecord
   validates :title, :section_type, presence: true
   validates :section_type, inclusion: { in: SECTION_TYPES }
   validates :position, numericality: { only_integer: true }
+  validates :value_decimals, numericality: { only_integer: true, in: 0..6 }
 
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:position, :title) }

@@ -91,11 +91,100 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
     get log_book_path(date: Date.yesterday)
     assert_response :success
     assert_match "Bagels Left", response.body
-    assert_match "18.0", response.body
+    assert_match "18 bagels", response.body
 
     get log_book_path
     assert_response :success
     assert_select "article.decision-card h2", text: "Bagels Left", count: 0
+  end
+
+  test "future dates redirect back to today" do
+    get log_book_path(date: (Date.current + 7).iso8601)
+    assert_redirected_to log_book_path
+    follow_redirect!
+    assert_match(/open a future log book/, response.body)
+  end
+
+  test "next arrow disappears when viewing today" do
+    LogBookSection.create!(title: "General Log", section_type: "long_text")
+    get log_book_path
+    assert_response :success
+    assert_select "a[aria-label='Previous day']", count: 1
+    assert_select "a[aria-label='Next day']", count: 0
+    assert_select "span[aria-label='No next day']", count: 1
+  end
+
+  test "per-section authorship is tracked across two writers" do
+    section_a = LogBookSection.create!(title: "General Log", section_type: "long_text", position: 1)
+    section_b = LogBookSection.create!(title: "Maintenance", section_type: "long_text", position: 2)
+
+    first_user = users(:one)
+    second_user = users(:two)
+    second_user.grant_module("log_book")
+
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        section_a.id => { value_text: "Morning was steady.", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" },
+        section_b.id => { value_text: "Walk-in is humming.",  no_note: "0", flagged_for_follow_up: "0", urgency: "normal" }
+      }
+    }
+    assert_redirected_to log_book_path(date: Date.current)
+
+    sign_in_as(second_user)
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        section_b.id => { value_text: "Walk-in is at 41 F now.", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" }
+      }
+    }
+
+    entry = LogBookEntry.sole
+    morning = entry.log_book_responses.find_by!(log_book_section: section_a)
+    walkin  = entry.log_book_responses.find_by!(log_book_section: section_b)
+
+    assert_equal first_user, morning.last_submitted_by, "untouched section keeps original author"
+    assert_equal second_user, walkin.last_submitted_by, "edited section moves to the new writer"
+    assert_equal "Walk-in is at 41 F now.", walkin.value_text
+  end
+
+  test "section with allow_follow_up disabled ignores submitted urgency flag" do
+    section = LogBookSection.create!(
+      title: "Vendor reference",
+      section_type: "short_text",
+      allow_follow_up: false
+    )
+
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        section.id => { value_text: "Acme Bakery", no_note: "0", flagged_for_follow_up: "1", urgency: "urgent" }
+      }
+    }
+
+    response = LogBookResponse.sole
+    refute response.flagged_for_follow_up?
+    assert_equal "normal", response.urgency
+  end
+
+  test "validation errors re-render the form with the user's input" do
+    LogBookSection.create!(
+      title: "Safe Count",
+      section_type: "number",
+      allow_no_note: false,
+      required: true
+    )
+
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        LogBookSection.sole.id => { value_number: "", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" }
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_match "Value number is required", response.body
+    assert_match "decision-card-error", response.body
   end
 
   test "admin resolves flagged follow-ups" do

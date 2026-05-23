@@ -3,10 +3,7 @@
 <section class="block-page-header">
   <div>
     <h1>Log Book</h1>
-    <p>
-      Daily operating notes, handoffs, and manager follow-ups for
-      <%= @operating_date.strftime("%B %-d, %Y") %>.
-    </p>
+    <p>Daily operating notes, handoffs, and manager follow-ups.</p>
   </div>
   <div class="block-header-actions">
     <% if current_user.admin? %>
@@ -17,6 +14,21 @@
     <% end %>
   </div>
 </section>
+
+<%# ── Date navigator: < May 22, 2026 > ──────────────────────────────────── %>
+<nav class="log-book-date-nav" aria-label="Log Book date">
+  <%= link_to log_book_path(date: @prev_date), class: "button small", aria: { label: "Previous day" } do %>
+    &lsaquo;
+  <% end %>
+  <span class="log-book-date-nav-label"><%= @operating_date.strftime("%a %b %-d, %Y") %></span>
+  <% if @next_date %>
+    <%= link_to log_book_path(date: @next_date), class: "button small", aria: { label: "Next day" } do %>
+      &rsaquo;
+    <% end %>
+  <% else %>
+    <span class="button small disabled" aria-disabled="true" aria-label="No next day">&rsaquo;</span>
+  <% end %>
+</nav>
 
 <section class="metric-grid compact" aria-label="Log book summary">
   <article class="metric">
@@ -54,32 +66,54 @@
 
         <% @sections.each do |section| %>
           <% response = @responses_by_section_id[section.id] %>
-          <article class="decision-card">
+          <% errors_for_section = @response_errors[section.id] %>
+          <% overrides = (@form_overrides && @form_overrides[section.id]) || {} %>
+          <article class="decision-card <%= 'decision-card-error' if errors_for_section %>">
             <div class="decision-card-body">
               <h2><%= section.title %></h2>
               <% if section.description.present? %>
                 <p><%= section.description %></p>
               <% end %>
+              <% if errors_for_section %>
+                <p class="muted small" style="color: var(--danger-fg)">
+                  <%= errors_for_section.full_messages.to_sentence %>
+                </p>
+              <% end %>
             </div>
 
             <div class="stack small">
               <% field_name = "responses[#{section.id}]" %>
+              <% current_text   = overrides[:value_text]   || response&.value_text %>
+              <% current_number = overrides[:value_number] || response&.value_number %>
+              <% current_no_note = if overrides.key?(:no_note)
+                                     ActiveModel::Type::Boolean.new.cast(overrides[:no_note])
+                                   else
+                                     response&.no_note?
+                                   end %>
+              <% current_flagged = if overrides.key?(:flagged_for_follow_up)
+                                     ActiveModel::Type::Boolean.new.cast(overrides[:flagged_for_follow_up])
+                                   else
+                                     response&.flagged_for_follow_up?
+                                   end %>
+              <% current_urgency = overrides[:urgency].presence || response&.urgency || "normal" %>
+
               <% case section.section_type %>
               <% when "number" %>
                 <div class="field">
                   <%= label_tag "#{field_name}[value_number]", section.unit_label.presence || "Value" %>
-                  <%= number_field_tag "#{field_name}[value_number]", response&.value_number, step: "any" %>
+                  <%= number_field_tag "#{field_name}[value_number]", current_number,
+                        step: (section.value_decimals.to_i.zero? ? 1 : 10.0**(-section.value_decimals)) %>
                 </div>
               <% when "yes_no" %>
                 <div class="field">
                   <label>Answer</label>
                   <div class="button-row">
                     <label class="check">
-                      <%= radio_button_tag "#{field_name}[value_text]", "yes", response&.value_text == "yes" %>
+                      <%= radio_button_tag "#{field_name}[value_text]", "yes", current_text == "yes" %>
                       <span>Yes</span>
                     </label>
                     <label class="check">
-                      <%= radio_button_tag "#{field_name}[value_text]", "no", response&.value_text == "no" %>
+                      <%= radio_button_tag "#{field_name}[value_text]", "no", current_text == "no" %>
                       <span>No</span>
                     </label>
                   </div>
@@ -87,34 +121,45 @@
               <% when "short_text" %>
                 <div class="field">
                   <%= label_tag "#{field_name}[value_text]", "Note" %>
-                  <%= text_field_tag "#{field_name}[value_text]", response&.value_text %>
+                  <%= text_field_tag "#{field_name}[value_text]", current_text %>
                 </div>
               <% else %>
                 <div class="field">
                   <%= label_tag "#{field_name}[value_text]", "Note" %>
-                  <%= text_area_tag "#{field_name}[value_text]", response&.value_text, rows: 4 %>
+                  <%= text_area_tag "#{field_name}[value_text]", current_text, rows: 4 %>
                 </div>
               <% end %>
 
               <% if section.allow_no_note? %>
                 <%= hidden_field_tag "#{field_name}[no_note]", "0" %>
                 <label class="check">
-                  <%= check_box_tag "#{field_name}[no_note]", "1", response&.no_note? %>
+                  <%= check_box_tag "#{field_name}[no_note]", "1", current_no_note %>
                   <span>No note today</span>
                 </label>
               <% end %>
 
-              <%= hidden_field_tag "#{field_name}[flagged_for_follow_up]", "0" %>
-              <label class="check">
-                <%= check_box_tag "#{field_name}[flagged_for_follow_up]", "1", response&.flagged_for_follow_up? %>
-                <span>Flag for follow-up</span>
-              </label>
+              <% if section.allow_follow_up? %>
+                <%= hidden_field_tag "#{field_name}[flagged_for_follow_up]", "0" %>
+                <label class="check">
+                  <%= check_box_tag "#{field_name}[flagged_for_follow_up]", "1", current_flagged %>
+                  <span>Flag for follow-up</span>
+                </label>
 
-              <div class="field">
-                <%= label_tag "#{field_name}[urgency]", "Urgency" %>
-                <%= select_tag "#{field_name}[urgency]",
-                  options_for_select(LogBookResponse::URGENCIES.map { |value| [ value.humanize, value ] }, response&.urgency || "normal") %>
-              </div>
+                <% if current_flagged %>
+                  <div class="field">
+                    <%= label_tag "#{field_name}[urgency]", "Urgency" %>
+                    <%= select_tag "#{field_name}[urgency]",
+                          options_for_select(LogBookResponse::URGENCIES.map { |v| [ v.humanize, v ] }, current_urgency) %>
+                  </div>
+                <% end %>
+              <% end %>
+
+              <% if response&.last_submitted_by && response.last_submitted_at %>
+                <p class="muted small">
+                  Last updated by <%= user_display_name(response.last_submitted_by) %>
+                  · <%= time_ago_in_words(response.last_submitted_at) %> ago
+                </p>
+              <% end %>
             </div>
           </article>
         <% end %>
@@ -133,6 +178,12 @@
               <p><%= response&.display_value || "No response recorded." %></p>
               <% if response&.flagged_for_follow_up? %>
                 <span class="badge badge-warning"><%= response.urgency.humanize %> follow-up</span>
+              <% end %>
+              <% if response&.last_submitted_by && response.last_submitted_at %>
+                <p class="muted small">
+                  Last updated by <%= user_display_name(response.last_submitted_by) %>
+                  · <%= response.last_submitted_at.strftime("%b %-d, %-l:%M %p") %>
+                </p>
               <% end %>
             </div>
           </article>
