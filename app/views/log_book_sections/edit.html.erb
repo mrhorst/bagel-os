@@ -1,0 +1,12 @@
+<% content_for :title, "Edit Log Section" %>
+
+<section class="block-page-header">
+  <div>
+    <h1>Edit Log Section</h1>
+    <p>Changes affect future daily entries. Old responses keep their original label snapshot.</p>
+  </div>
+</section>
+
+<section class="panel panel-compact">
+  <%= render "form", section: @section, url: log_book_section_path(@section), method: :patch, submit_label: "Save section" %>
+</section>

@@ -1,6 +1,18 @@
 Supplier.primary
 
 [
+  { title: "General Log", description: "Anything important from today's shift.", section_type: "long_text", position: 1 },
+  { title: "Maintenance", description: "Equipment, plumbing, repairs, or facility issues.", section_type: "long_text", position: 2 },
+  { title: "Follow-ups", description: "Anything tomorrow's manager or owner needs to see.", section_type: "long_text", position: 3 }
+].each do |attrs|
+  section = LogBookSection.find_or_initialize_by(title: attrs.fetch(:title))
+  section.assign_attributes(attrs)
+  section.active = true
+  section.allow_no_note = true
+  section.save!
+end
+
+[
   "Bakery ingredients",
   "Dairy",
   "Cream cheese / spreads",

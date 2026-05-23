@@ -3,53 +3,201 @@
 <section class="block-page-header">
   <div>
     <h1>Log Book</h1>
-    <p>Daily operating notes, handoffs, and manager follow-ups for <%= @today.strftime("%B %-d, %Y") %>.</p>
+    <p>
+      Daily operating notes, handoffs, and manager follow-ups for
+      <%= @operating_date.strftime("%B %-d, %Y") %>.
+    </p>
+  </div>
+  <div class="block-header-actions">
+    <% if current_user.admin? %>
+      <%= link_to "Manage sections", log_book_sections_path, class: "button" %>
+    <% end %>
+    <% unless @operating_date == @today %>
+      <%= link_to "Today", log_book_path, class: "button primary" %>
+    <% end %>
   </div>
 </section>
 
-<section class="metric-grid compact" aria-label="Log book sections">
+<section class="metric-grid compact" aria-label="Log book summary">
   <article class="metric">
-    <span>Open notes</span>
-    <strong>0</strong>
+    <span>Sections</span>
+    <strong><%= @sections.size %></strong>
   </article>
   <article class="metric">
     <span>Follow-ups</span>
-    <strong>0</strong>
+    <strong><%= @unresolved_follow_ups.size %></strong>
   </article>
   <article class="metric">
-    <span>Shift handoffs</span>
-    <strong>0</strong>
+    <span>Status</span>
+    <strong><%= @editable ? "Open" : "Read-only" %></strong>
   </article>
 </section>
 
 <section class="block-panel">
   <header class="block-panel-header">
     <div>
-      <h2>Today</h2>
-      <p>One place for the things that should not disappear in a group chat.</p>
+      <h2><%= @editable ? "Today's entry" : "Daily entry" %></h2>
+      <p>
+        <% if @editable %>
+          Save notes before the operating day closes. Older entries are locked as history.
+        <% else %>
+          Past operating days are read-only.
+        <% end %>
+      </p>
     </div>
   </header>
 
-  <div class="stack">
-    <article class="decision-card">
-      <div class="decision-card-body">
-        <h2>Shift notes</h2>
-        <p>Service issues, rush notes, staffing gaps, customer incidents, and anything the next manager needs to know.</p>
-      </div>
-    </article>
+  <% if @sections.any? %>
+    <% if @editable %>
+      <%= form_with url: log_book_path, method: :patch, class: "stacked-form" do %>
+        <%= hidden_field_tag :operating_date, @operating_date.iso8601 %>
 
-    <article class="decision-card">
-      <div class="decision-card-body">
-        <h2>Food safety checks</h2>
-        <p>Temperature checks, date-code exceptions, equipment concerns, and corrective actions that need a durable record.</p>
-      </div>
-    </article>
+        <% @sections.each do |section| %>
+          <% response = @responses_by_section_id[section.id] %>
+          <article class="decision-card">
+            <div class="decision-card-body">
+              <h2><%= section.title %></h2>
+              <% if section.description.present? %>
+                <p><%= section.description %></p>
+              <% end %>
+            </div>
 
-    <article class="decision-card">
-      <div class="decision-card-body">
-        <h2>Follow-ups</h2>
-        <p>Vendor calls, repairs, training reminders, ordering notes, and owner/manager tasks that need to carry forward.</p>
+            <div class="stack small">
+              <% field_name = "responses[#{section.id}]" %>
+              <% case section.section_type %>
+              <% when "number" %>
+                <div class="field">
+                  <%= label_tag "#{field_name}[value_number]", section.unit_label.presence || "Value" %>
+                  <%= number_field_tag "#{field_name}[value_number]", response&.value_number, step: "any" %>
+                </div>
+              <% when "yes_no" %>
+                <div class="field">
+                  <label>Answer</label>
+                  <div class="button-row">
+                    <label class="check">
+                      <%= radio_button_tag "#{field_name}[value_text]", "yes", response&.value_text == "yes" %>
+                      <span>Yes</span>
+                    </label>
+                    <label class="check">
+                      <%= radio_button_tag "#{field_name}[value_text]", "no", response&.value_text == "no" %>
+                      <span>No</span>
+                    </label>
+                  </div>
+                </div>
+              <% when "short_text" %>
+                <div class="field">
+                  <%= label_tag "#{field_name}[value_text]", "Note" %>
+                  <%= text_field_tag "#{field_name}[value_text]", response&.value_text %>
+                </div>
+              <% else %>
+                <div class="field">
+                  <%= label_tag "#{field_name}[value_text]", "Note" %>
+                  <%= text_area_tag "#{field_name}[value_text]", response&.value_text, rows: 4 %>
+                </div>
+              <% end %>
+
+              <% if section.allow_no_note? %>
+                <%= hidden_field_tag "#{field_name}[no_note]", "0" %>
+                <label class="check">
+                  <%= check_box_tag "#{field_name}[no_note]", "1", response&.no_note? %>
+                  <span>No note today</span>
+                </label>
+              <% end %>
+
+              <%= hidden_field_tag "#{field_name}[flagged_for_follow_up]", "0" %>
+              <label class="check">
+                <%= check_box_tag "#{field_name}[flagged_for_follow_up]", "1", response&.flagged_for_follow_up? %>
+                <span>Flag for follow-up</span>
+              </label>
+
+              <div class="field">
+                <%= label_tag "#{field_name}[urgency]", "Urgency" %>
+                <%= select_tag "#{field_name}[urgency]",
+                  options_for_select(LogBookResponse::URGENCIES.map { |value| [ value.humanize, value ] }, response&.urgency || "normal") %>
+              </div>
+            </div>
+          </article>
+        <% end %>
+
+        <div class="form-footer">
+          <%= submit_tag "Save Log Book", class: "button primary" %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="stack">
+        <% @sections.each do |section| %>
+          <% response = @responses_by_section_id[section.id] %>
+          <article class="decision-card">
+            <div class="decision-card-body">
+              <h2><%= response&.section_title_snapshot || section.title %></h2>
+              <p><%= response&.display_value || "No response recorded." %></p>
+              <% if response&.flagged_for_follow_up? %>
+                <span class="badge badge-warning"><%= response.urgency.humanize %> follow-up</span>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
       </div>
-    </article>
-  </div>
+    <% end %>
+  <% else %>
+    <p class="empty-state">
+      <strong>No Log Sections yet.</strong>
+      <span>An admin can create sections like General Log, Maintenance, and Bagels Left.</span>
+    </p>
+    <% if current_user.admin? %>
+      <div class="form-footer">
+        <%= link_to "Create first section", new_log_book_section_path, class: "button primary" %>
+      </div>
+    <% end %>
+  <% end %>
+</section>
+
+<section class="block-panel">
+  <header class="block-panel-header">
+    <div>
+      <h2>Open follow-ups</h2>
+      <p>Flagged notes that still need manager attention.</p>
+    </div>
+  </header>
+
+  <% if @unresolved_follow_ups.any? %>
+    <div class="stack">
+      <% @unresolved_follow_ups.each do |response| %>
+        <article class="decision-card">
+          <div class="decision-card-body">
+            <h2><%= response.section_title_snapshot %></h2>
+            <p><%= response.display_value %></p>
+            <p class="small muted"><%= response.log_book_entry.operating_date.strftime("%B %-d, %Y") %></p>
+            <span class="badge badge-warning"><%= response.urgency.humanize %></span>
+          </div>
+          <% if current_user.admin? %>
+            <div class="decision-card-actions">
+              <%= button_to "Resolve", resolve_log_book_response_path(response), method: :patch, class: "button small" %>
+            </div>
+          <% end %>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">No open follow-ups.</p>
+  <% end %>
+</section>
+
+<section class="block-panel">
+  <header class="block-panel-header">
+    <div>
+      <h2>Recent entries</h2>
+      <p>Review past operating days without changing them.</p>
+    </div>
+  </header>
+
+  <% if @recent_entries.any? %>
+    <div class="button-row">
+      <% @recent_entries.each do |entry| %>
+        <%= link_to entry.operating_date.strftime("%b %-d"), log_book_path(date: entry.operating_date), class: "button small" %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">No saved log book history yet.</p>
+  <% end %>
 </section>

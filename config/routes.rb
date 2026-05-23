@@ -22,6 +22,18 @@ Rails.application.routes.draw do
 
   root "dashboard#index"
   get "log-book", to: "log_book#index", as: :log_book
+  patch "log-book", to: "log_book#update"
+  resources :log_book_sections, path: "log-book/sections", except: %i[show destroy] do
+    member do
+      patch :archive
+      patch :reactivate
+    end
+  end
+  resources :log_book_responses, path: "log-book/responses", only: [] do
+    member do
+      patch :resolve
+    end
+  end
 
   scope module: :tasks, path: :tasks, as: :tasks do
     # ── Work surface (read-mostly, used during shift) ───────────────────
