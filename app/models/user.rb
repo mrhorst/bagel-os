@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   MODULES = %w[
     tasks
+    log_book
     inventory
     order_guides
     products

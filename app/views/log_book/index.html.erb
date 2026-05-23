@@ -1,0 +1,55 @@
+<% content_for :title, "Log Book" %>
+
+<section class="block-page-header">
+  <div>
+    <h1>Log Book</h1>
+    <p>Daily operating notes, handoffs, and manager follow-ups for <%= @today.strftime("%B %-d, %Y") %>.</p>
+  </div>
+</section>
+
+<section class="metric-grid compact" aria-label="Log book sections">
+  <article class="metric">
+    <span>Open notes</span>
+    <strong>0</strong>
+  </article>
+  <article class="metric">
+    <span>Follow-ups</span>
+    <strong>0</strong>
+  </article>
+  <article class="metric">
+    <span>Shift handoffs</span>
+    <strong>0</strong>
+  </article>
+</section>
+
+<section class="block-panel">
+  <header class="block-panel-header">
+    <div>
+      <h2>Today</h2>
+      <p>One place for the things that should not disappear in a group chat.</p>
+    </div>
+  </header>
+
+  <div class="stack">
+    <article class="decision-card">
+      <div class="decision-card-body">
+        <h2>Shift notes</h2>
+        <p>Service issues, rush notes, staffing gaps, customer incidents, and anything the next manager needs to know.</p>
+      </div>
+    </article>
+
+    <article class="decision-card">
+      <div class="decision-card-body">
+        <h2>Food safety checks</h2>
+        <p>Temperature checks, date-code exceptions, equipment concerns, and corrective actions that need a durable record.</p>
+      </div>
+    </article>
+
+    <article class="decision-card">
+      <div class="decision-card-body">
+        <h2>Follow-ups</h2>
+        <p>Vendor calls, repairs, training reminders, ordering notes, and owner/manager tasks that need to carry forward.</p>
+      </div>
+    </article>
+  </div>
+</section>

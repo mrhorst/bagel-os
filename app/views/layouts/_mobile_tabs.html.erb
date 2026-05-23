@@ -1,11 +1,12 @@
 <%# Bottom tab bar — visible only at <640px (kitchen / on-the-floor use). %>
 <%
+  nav_by_label = all_nav_items.index_by { |item| item[:label] }
   candidate_tabs = [
-    { label: "Home",   path: root_path,                  icon: "chart",     match_with: all_nav_items[0], module: nil },
-    { label: "Tasks",  path: tasks_root_path,            icon: "check",     match_with: all_nav_items[2], module: "tasks" },
-    { label: "Guides", path: order_guides_path,          icon: "clipboard", match_with: all_nav_items[3], module: "order_guides" },
-    { label: "Review", path: normalization_reviews_path, icon: "alert",     match_with: all_nav_items[6], module: "normalization_reviews" },
-    { label: "More",   path: products_path,              icon: "package",   match_with: all_nav_items[5], module: "products" }
+    { label: "Home",     path: root_path,         icon: "chart",     match_with: nav_by_label["Dashboard"],    module: nil },
+    { label: "Tasks",    path: tasks_root_path,   icon: "check",     match_with: nav_by_label["Tasks"],        module: "tasks" },
+    { label: "Log Book", path: log_book_path,     icon: "book",      match_with: nav_by_label["Log Book"],     module: "log_book" },
+    { label: "Guides",   path: order_guides_path, icon: "clipboard", match_with: nav_by_label["Order Guides"], module: "order_guides" },
+    { label: "More",     path: products_path,     icon: "package",   match_with: nav_by_label["Products"],     module: "products" }
   ]
   mobile_tabs = candidate_tabs.select { |tab| tab[:module].nil? || Current.user&.can_access?(tab[:module]) }
 %>
