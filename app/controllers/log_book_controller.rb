@@ -70,7 +70,6 @@ class LogBookController < ApplicationController
     @prev_date = @operating_date - 1
     @next_date = @operating_date < @today ? @operating_date + 1 : nil
 
-    @recent_entries = LogBookEntry.recent_first.limit(7).includes(:log_book_responses)
     @unresolved_follow_ups = LogBookResponse.unresolved
       .includes(:log_book_section, :log_book_entry, :last_submitted_by)
       .recent_first

@@ -52,7 +52,7 @@
         </div>
 
         <nav class="sidebar-nav" aria-label="Primary navigation">
-          <% app_nav_items.each do |item| %>
+          <% sidebar_nav_items.each do |item| %>
             <%= link_to item[:path], class: ["nav-link", ("active" if active_nav_item?(item))] do %>
               <%= nav_icon(item[:icon]) %>
               <span><%= item[:label] %></span>
@@ -91,17 +91,24 @@
 
         <header class="mobile-screen-header">
           <div class="mobile-header-left">
-            <%= yield :mobile_left_action if content_for?(:mobile_left_action) %>
+            <% if content_for?(:mobile_left_action) %>
+              <%= yield :mobile_left_action %>
+            <% elsif on_module_page? && current_hub_def %>
+              <%# Auto back-chevron to the module's parent hub. %>
+              <%= link_to send(current_hub_def[:path_helper]), class: "mobile-header-back", aria: { label: "Back to #{current_hub_def[:label]}" } do %>
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                  <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                <span><%= current_hub_def[:label] %></span>
+              <% end %>
+            <% end %>
           </div>
           <h1 class="mobile-header-title"><%= mobile_screen_title %></h1>
           <div class="mobile-header-right">
-            <% if content_for?(:mobile_right_action) %>
-              <%= yield :mobile_right_action %>
-            <% elsif current_user %>
-              <%= link_to account_path, class: "mobile-header-action", aria: { label: "Account" } do %>
-                <span class="mobile-header-avatar" aria-hidden="true"><%= user_display_name(current_user).first.upcase %></span>
-              <% end %>
-            <% end %>
+            <%# Pages opt in to a right-side action via :mobile_right_action.
+                The Account avatar lives only on the Dashboard — no need to
+                expose profile/settings on every screen. %>
+            <%= yield :mobile_right_action if content_for?(:mobile_right_action) %>
           </div>
         </header>
 

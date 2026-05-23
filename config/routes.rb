@@ -21,8 +21,17 @@ Rails.application.routes.draw do
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   root "dashboard#index"
+
+  # Mobile bottom-nav group hubs. Each hub shows the modules in its group.
+  get "shift",  to: "hubs#shift",  as: :shift_hub
+  get "stock",  to: "hubs#stock",  as: :stock_hub
+  get "buying", to: "hubs#buying", as: :buying_hub
+  get "more",   to: "hubs#more",   as: :more_hub
+
   get "log-book", to: "log_book#index", as: :log_book
   patch "log-book", to: "log_book#update"
+  get "log-book/settings", to: "log_book_settings#index", as: :log_book_settings
+  get "log-book/history", to: "log_book_history#index", as: :log_book_history
   resources :log_book_sections, path: "log-book/sections", except: %i[show destroy] do
     member do
       patch :archive

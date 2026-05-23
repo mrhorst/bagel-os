@@ -3,16 +3,10 @@
   <%= mobile_fab_button new_tasks_manage_task_path, label: "New task" %>
 <% end %>
 
-<%# ── Page header: title + context, overflow menu ─────────────────────── %>
-<section class="tasks-page-header-v2">
-  <div class="tasks-page-header-titles">
-    <h1>Tasks</h1>
-    <p class="tasks-today-date"><%= Time.zone.now.strftime("%A, %b %-d") %></p>
-  </div>
-
-  <div class="tasks-page-header-overflow" data-controller="popover">
+<% content_for :mobile_right_action do %>
+  <div class="module-overflow" data-controller="popover">
     <button type="button"
-            class="icon-button"
+            class="mobile-header-action"
             data-action="popover#toggle"
             data-popover-target="trigger"
             aria-label="Tasks menu"
@@ -28,6 +22,14 @@
       <%= link_to "History",  tasks_history_path, role: "menuitem", class: "popover-item" %>
       <%= link_to "Settings", tasks_manage_path,  role: "menuitem", class: "popover-item" %>
     </div>
+  </div>
+<% end %>
+
+<%# ── Page header: title + context ─────────────────────────────────────── %>
+<section class="tasks-page-header-v2">
+  <div class="tasks-page-header-titles">
+    <h1>Tasks</h1>
+    <p class="tasks-today-date"><%= Time.zone.now.strftime("%A, %b %-d") %></p>
   </div>
 </section>
 

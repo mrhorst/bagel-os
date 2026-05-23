@@ -14,11 +14,12 @@ class LogBookNavigationTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".log-book-header .block-eyebrow", count: 0
-    assert_select ".mobile-tab", text: "Log Book"
-    assert_select ".mobile-tab", text: "Review", count: 0
+    assert_select ".mobile-tab", text: "Shift"
+    assert_select ".mobile-tab", text: "Log Book", count: 0
     assert_select ".log-book-date-nav"
-    assert_select "a[aria-label='Manage sections']"
-    assert_select "a.button", text: "Manage sections", count: 0
+    assert_select ".module-overflow [data-popover-target='trigger']"
+    assert_select ".popover-panel-menu a", text: "Settings"
+    assert_select ".popover-panel-menu a", text: "History"
   end
 
   test "employee needs log book permission" do

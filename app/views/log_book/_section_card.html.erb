@@ -18,7 +18,7 @@
   current_urgency = overrides[:urgency].presence || response&.urgency || "normal"
 %>
 <article id="log_book_section_card_<%= section.id %>"
-         class="decision-card"
+         class="decision-card log-book-section-card"
          data-controller="log-book-no-note"
          data-log-book-no-note-target="card">
   <div class="decision-card-body">
@@ -29,7 +29,7 @@
     <%= render "log_book/section_error", section: section, errors: errors_for_section %>
   </div>
 
-  <div class="stack small">
+  <div class="stack small log-book-section-card-form">
     <% case section.section_type %>
     <% when "number" %>
       <div class="field" data-log-book-no-note-target="valueField">
@@ -63,7 +63,8 @@
     <% else %>
       <div class="field" data-log-book-no-note-target="valueField">
         <%= label_tag "#{field_name}[value_text]", "Note" %>
-        <%= text_area_tag "#{field_name}[value_text]", current_text, rows: 4,
+        <%= text_area_tag "#{field_name}[value_text]", current_text, rows: 2,
+              class: "log-book-section-textarea",
               data: { log_book_no_note_target: "input" } %>
       </div>
     <% end %>

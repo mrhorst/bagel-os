@@ -1,0 +1,23 @@
+<%# locals: hub_key: %>
+<% hub = hub_def(hub_key) %>
+
+<div class="page-heading">
+  <div>
+    <h1><%= hub[:label] %></h1>
+    <p class="muted"><%= hub[:subtitle] %></p>
+  </div>
+</div>
+
+<section class="settings-hub">
+  <% hub_modules(hub_key).each do |mod| %>
+    <%= link_to send(mod[:path_helper]), class: "settings-card" do %>
+      <div class="settings-card-icon">
+        <%= nav_icon(mod[:icon]) %>
+      </div>
+      <div>
+        <h2><%= mod[:label] %></h2>
+        <p class="muted small"><%= mod[:description] %></p>
+      </div>
+    <% end %>
+  <% end %>
+</section>

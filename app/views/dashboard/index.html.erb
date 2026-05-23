@@ -1,5 +1,11 @@
 <% content_for :title, "Dashboard" %>
 
+<% content_for :mobile_right_action do %>
+  <%= link_to account_path, class: "mobile-header-action", aria: { label: "Account" } do %>
+    <span class="mobile-header-avatar" aria-hidden="true"><%= user_display_name(current_user).first.upcase %></span>
+  <% end %>
+<% end %>
+
 <%
   surfaces = [
     {

@@ -1,56 +1,75 @@
 <% content_for :title, "Log Book" %>
 
-<%# ── Date navigator: < operating day > ──────────────────────────────────── %>
-<header class="log-book-header">
-  <div class="log-book-header-controls">
-    <nav class="log-book-date-nav" aria-label="Log Book date">
-      <%= link_to log_book_path(date: @prev_date), class: "button small", aria: { label: "Previous day" } do %>
-        &lsaquo;
-      <% end %>
-      <span class="log-book-date-nav-label"><%= @operating_date.strftime("%a %b %-d, %Y") %></span>
-      <% if @next_date %>
-        <%= link_to log_book_path(date: @next_date), class: "button small", aria: { label: "Next day" } do %>
-          &rsaquo;
-        <% end %>
-      <% else %>
-        <span class="button small disabled" aria-disabled="true" aria-label="No next day">&rsaquo;</span>
-      <% end %>
-    </nav>
-
-    <div class="log-book-header-actions">
-      <% unless @operating_date == @today %>
-        <%= link_to "Today", log_book_path, class: "button primary" %>
-      <% end %>
+<% content_for :mobile_right_action do %>
+  <div class="module-overflow" data-controller="popover">
+    <button type="button"
+            class="mobile-header-action"
+            data-action="popover#toggle"
+            data-popover-target="trigger"
+            aria-label="Log Book menu"
+            aria-haspopup="true"
+            aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="4" cy="10" r="1.6" fill="currentColor"/>
+        <circle cx="10" cy="10" r="1.6" fill="currentColor"/>
+        <circle cx="16" cy="10" r="1.6" fill="currentColor"/>
+      </svg>
+    </button>
+    <div class="popover-panel popover-panel-menu" hidden data-popover-target="panel" role="menu">
+      <%= link_to "History", log_book_history_path, role: "menuitem", class: "popover-item" %>
       <% if current_user.admin? %>
-        <%= link_to log_book_sections_path, class: "icon-button log-book-settings-button", aria: { label: "Manage sections" }, title: "Manage sections" do %>
-          <%= nav_icon("gear") %>
-        <% end %>
+        <%= link_to "Settings", log_book_settings_path, role: "menuitem", class: "popover-item" %>
       <% end %>
     </div>
   </div>
-</header>
+<% end %>
 
-<%# Header tiles: last-saved signal (replaces the noisy "Sections" count) %>
-<section class="metric-grid compact" aria-label="Log book summary">
-  <article class="metric">
-    <span>Last saved</span>
-    <strong>
-      <% if @entry.persisted? && @entry.submitted_at %>
-        <%= time_ago_in_words(@entry.submitted_at) %> ago
-      <% else %>
-        Not saved yet
+<%# ── Page header: date pager + saved status ─────────────────────────── %>
+<header class="log-book-header">
+  <nav class="log-book-date-nav" aria-label="Log Book date">
+    <%= link_to log_book_path(date: @prev_date), class: "log-book-date-arrow", aria: { label: "Previous day" } do %>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    <% end %>
+    <span class="log-book-date-nav-label"><%= @operating_date.strftime("%a %b %-d, %Y") %></span>
+    <% if @next_date %>
+      <%= link_to log_book_path(date: @next_date), class: "log-book-date-arrow", aria: { label: "Next day" } do %>
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
       <% end %>
-    </strong>
-  </article>
-  <article class="metric">
-    <span>Follow-ups</span>
-    <strong><%= @unresolved_follow_ups.size %></strong>
-  </article>
-  <article class="metric">
-    <span>Status</span>
-    <strong><%= @editable ? "Open" : "Read-only" %></strong>
-  </article>
-</section>
+    <% else %>
+      <span class="log-book-date-arrow log-book-date-arrow-disabled" aria-disabled="true" aria-label="No next day">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </span>
+    <% end %>
+  </nav>
+
+  <% unless @operating_date == @today %>
+    <div class="log-book-header-today">
+      <%= link_to "Back to today", log_book_path, class: "button primary small" %>
+    </div>
+  <% end %>
+
+  <%# Status strip — replaces the 3 KPI tiles. Lightweight, single row.
+      The ⋯ overflow lives at the right end of this strip, next to "Saved …". %>
+  <div class="log-book-status-strip" aria-label="Log book summary">
+    <span class="log-book-status-followups">
+      <% if @unresolved_follow_ups.size.positive? %>
+        <strong class="tnum"><%= @unresolved_follow_ups.size %></strong>
+        <%= "open follow-up".pluralize(@unresolved_follow_ups.size) %>
+      <% else %>
+        <span class="muted">No open follow-ups</span>
+      <% end %>
+    </span>
+    <span class="log-book-status-saved">
+      <%= render "log_book/save_status", saved_at: (@entry.persisted? ? @entry.submitted_at : nil), error: nil %>
+    </span>
+  </div>
+</header>
 
 <%# Panel ordering depends on day-state. On read-only days the manager opens
     the log book to triage follow-ups first; on today they're filling it in. %>
@@ -99,13 +118,12 @@
         <h2><%= @editable ? "Today's entry" : "Daily entry" %></h2>
         <p>
           <% if @editable %>
-            Changes save automatically as you tab between fields.
+            Saves automatically as you type.
           <% else %>
             Past operating days are read-only.
           <% end %>
         </p>
       </div>
-      <%= render "log_book/save_status", saved_at: (@entry.persisted? ? @entry.submitted_at : nil), error: nil %>
     </header>
 
     <% if @sections.any? %>
@@ -113,6 +131,7 @@
         <%= form_with url: log_book_path, method: :patch, class: "stacked-form",
               data: { controller: "log-book-autosave",
                       log_book_autosave_debounce_value: 700,
+                      log_book_autosave_storage_key_value: "log_book_draft_#{@operating_date.iso8601}",
                       action: "change->log-book-autosave#queue input->log-book-autosave#queue" } do %>
           <%= hidden_field_tag :operating_date, @operating_date.iso8601 %>
 
@@ -123,10 +142,6 @@
                   response_errors: @response_errors[section.id],
                   overrides: (@form_overrides && @form_overrides[section.id]) || {} %>
           <% end %>
-
-          <div class="form-footer">
-            <%= submit_tag "Save", class: "button primary" %>
-          </div>
         <% end %>
       <% else %>
         <div class="stack">
@@ -170,38 +185,4 @@
 <% else %>
   <%= follow_ups_panel %>
   <%= entry_panel %>
-<% end %>
-
-<%# ── Recent entries as a signal row, not a date hopper ──────────────── %>
-<% if @recent_entries.any? %>
-  <section class="block-panel">
-    <header class="block-panel-header">
-      <div>
-        <h2>Recent entries</h2>
-        <p>Past days at a glance. Open one to review.</p>
-      </div>
-    </header>
-
-    <ul class="log-book-recent">
-      <% @recent_entries.each do |entry| %>
-        <% open_flags  = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? } %>
-        <% urgent_open = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? && r.urgency == "urgent" } %>
-        <li class="log-book-recent-row <%= 'log-book-recent-row-current' if entry.operating_date == @operating_date %>">
-          <%= link_to log_book_path(date: entry.operating_date), class: "log-book-recent-link" do %>
-            <span class="log-book-recent-date"><%= entry.operating_date.strftime("%a %b %-d") %></span>
-            <span class="log-book-recent-signals">
-              <% if open_flags.zero? %>
-                <span class="muted small">No open flags</span>
-              <% else %>
-                <span class="badge badge-warning"><%= pluralize(open_flags, "follow-up") %></span>
-                <% if urgent_open.positive? %>
-                  <span class="badge badge-warning"><%= urgent_open %> urgent</span>
-                <% end %>
-              <% end %>
-            </span>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-  </section>
 <% end %>

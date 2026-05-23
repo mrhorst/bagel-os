@@ -616,6 +616,21 @@
     width: 32px;
   }
 
+  /* iOS-style back link in the leading slot — chevron + hub name. */
+  .mobile-header-back {
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 500;
+    gap: 2px !important;
+    padding: 0 8px 0 4px !important;
+  }
+  .mobile-header-back:hover { background: var(--surface-3); }
+
+  /* Shared per-module ⋯ overflow trigger (Log Book, Tasks, …). The popover
+     panel is anchored relative to this container. */
+  .module-overflow { position: relative; }
+  .module-overflow .popover-panel { right: 0; top: calc(100% + 6px); }
+
   /* Floating action button — bottom-right above the mobile tab bar. */
   .mobile-fab {
     align-items: center;
@@ -774,6 +789,22 @@
     flex-direction: column;
     gap: 8px;
   }
+  .log-book-header-row {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  .log-book-header-row .log-book-date-nav {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+  .log-book-header-today {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
   .log-book-header-actions {
     align-items: center;
     display: flex;
@@ -807,6 +838,68 @@
   .log-book-settings-button .nav-icon {
     height: 18px;
     width: 18px;
+  }
+
+  /* Clean icon-button arrows for the date pager. Visibly disabled when at today. */
+  .log-book-date-arrow {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink-2);
+    display: inline-flex;
+    height: 36px;
+    justify-content: center;
+    width: 36px;
+  }
+  .log-book-date-arrow:hover { background: var(--surface-3); }
+  .log-book-date-arrow-disabled {
+    border-color: transparent;
+    color: var(--ink-muted);
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+  .log-book-date-arrow-disabled:hover { background: transparent; }
+
+  /* Lightweight status strip — replaces the 3 KPI tiles on the daily view. */
+  .log-book-status-strip {
+    align-items: center;
+    color: var(--ink-2);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    gap: 6px 14px;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 0 2px;
+  }
+  .log-book-status-strip:empty { display: none; }
+
+  /* When the Log Book ⋯ overflow lives in the mobile header, the popover
+     panel is anchored to its container; let it open below the header bar. */
+  .log-book-overflow-header { position: relative; }
+  .log-book-overflow-header .popover-panel { right: 0; top: calc(100% + 6px); }
+  .log-book-status-strip .log-book-save-status { font-size: 0.85rem; }
+  .log-book-status-followups strong { font-weight: 600; margin-right: 4px; }
+
+  /* Section card on the daily form: pad the form body so labels align with
+     the title above. Drop the inherited 2 px accent stripe — these cards
+     aren't a status row, just a section container. The error variant brings
+     back the stripe in red when validation fails. */
+  .decision-card.log-book-section-card {
+    box-shadow: var(--shadow-e1);
+  }
+  .decision-card.log-book-section-card.decision-card-error {
+    box-shadow: inset 2px 0 0 var(--danger), var(--shadow-e1);
+  }
+  .log-book-section-card-form {
+    padding: 0 16px 14px;
+  }
+  .log-book-section-textarea {
+    field-sizing: content;
+    font-size: 1rem; /* ≥16px keeps iOS from zooming on focus */
+    max-height: 240px;
+    min-height: 64px;
   }
 
   /* Per-section error highlight on the log book entry form */
@@ -3218,7 +3311,8 @@
     margin: 2px 0 0;
   }
   .tasks-page-header-tools,
-  .tasks-page-header-overflow {
+  .tasks-page-header-overflow,
+  .log-book-overflow {
     position: relative;
   }
 
@@ -3924,7 +4018,7 @@
       width: 100%;
     }
     .log-book-header-actions {
-      justify-content: space-between;
+      justify-content: flex-end;
     }
 
     .page-heading .button,

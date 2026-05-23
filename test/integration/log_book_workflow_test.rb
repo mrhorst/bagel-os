@@ -226,7 +226,7 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
     assert_match "Saved", response.body
   end
 
-  test "recent entries row shows open follow-up signals per day" do
+  test "history page lists past days with open follow-up signals" do
     section = LogBookSection.create!(title: "General Log", section_type: "long_text")
     yesterday = LogBookEntry.create!(operating_date: Date.yesterday)
     yesterday.log_book_responses.create!(
@@ -238,7 +238,7 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
       urgency: "urgent"
     )
 
-    get log_book_path
+    get log_book_history_path
     assert_response :success
     assert_select "li.log-book-recent-row .badge", text: /1 follow-up/
     assert_select "li.log-book-recent-row .badge", text: /1 urgent/
