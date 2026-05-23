@@ -2,10 +2,6 @@
 
 <%# ── Date navigator: < operating day > ──────────────────────────────────── %>
 <header class="log-book-header">
-  <div class="log-book-header-title">
-    <p class="block-eyebrow">Log Book</p>
-  </div>
-
   <div class="log-book-header-controls">
     <nav class="log-book-date-nav" aria-label="Log Book date">
       <%= link_to log_book_path(date: @prev_date), class: "button small", aria: { label: "Previous day" } do %>
