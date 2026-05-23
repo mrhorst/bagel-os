@@ -188,6 +188,27 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
       text: /Value number is required/
   end
 
+  test "required section without no-note option saves when no_note param is absent" do
+    section = LogBookSection.create!(
+      title: "Manager Notes",
+      section_type: "long_text",
+      allow_no_note: false,
+      required: true
+    )
+
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        section.id => { value_text: "Hello", flagged_for_follow_up: "0", urgency: "normal" }
+      }
+    }
+
+    assert_redirected_to log_book_path(date: Date.current)
+    saved_response = LogBookResponse.find_by!(log_book_section: section)
+    assert_equal "Hello", saved_response.value_text
+    refute saved_response.no_note?
+  end
+
   test "autosave returns a turbo stream with save status and meta updates" do
     section = LogBookSection.create!(title: "General Log", section_type: "long_text")
 

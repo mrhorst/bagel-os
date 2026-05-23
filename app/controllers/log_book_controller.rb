@@ -99,7 +99,7 @@ class LogBookController < ApplicationController
     response_params.each do |section_id, attrs|
       section = LogBookSection.active.find(section_id)
       response = entry.log_book_responses.find_or_initialize_by(log_book_section: section)
-      no_note = ActiveModel::Type::Boolean.new.cast(attrs[:no_note])
+      no_note = ActiveModel::Type::Boolean.new.cast(attrs.fetch(:no_note, false))
 
       response.assign_attributes(
         section_title_snapshot: section.title,
