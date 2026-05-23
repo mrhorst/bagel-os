@@ -1,0 +1,207 @@
+<% content_for :title, "Log Book" %>
+
+<section class="block-page-header">
+  <div>
+    <h1>Log Book</h1>
+    <p>Daily operating notes, handoffs, and manager follow-ups.</p>
+  </div>
+  <div class="block-header-actions">
+    <% if current_user.admin? %>
+      <%= link_to "Manage sections", log_book_sections_path, class: "button" %>
+    <% end %>
+    <% unless @operating_date == @today %>
+      <%= link_to "Today", log_book_path, class: "button primary" %>
+    <% end %>
+  </div>
+</section>
+
+<%# ── Date navigator: < operating day > ──────────────────────────────────── %>
+<nav class="log-book-date-nav" aria-label="Log Book date">
+  <%= link_to log_book_path(date: @prev_date), class: "button small", aria: { label: "Previous day" } do %>
+    &lsaquo;
+  <% end %>
+  <span class="log-book-date-nav-label"><%= @operating_date.strftime("%a %b %-d, %Y") %></span>
+  <% if @next_date %>
+    <%= link_to log_book_path(date: @next_date), class: "button small", aria: { label: "Next day" } do %>
+      &rsaquo;
+    <% end %>
+  <% else %>
+    <span class="button small disabled" aria-disabled="true" aria-label="No next day">&rsaquo;</span>
+  <% end %>
+</nav>
+
+<%# Header tiles: last-saved signal (replaces the noisy "Sections" count) %>
+<section class="metric-grid compact" aria-label="Log book summary">
+  <article class="metric">
+    <span>Last saved</span>
+    <strong>
+      <% if @entry.persisted? && @entry.submitted_at %>
+        <%= time_ago_in_words(@entry.submitted_at) %> ago
+      <% else %>
+        Not saved yet
+      <% end %>
+    </strong>
+  </article>
+  <article class="metric">
+    <span>Follow-ups</span>
+    <strong><%= @unresolved_follow_ups.size %></strong>
+  </article>
+  <article class="metric">
+    <span>Status</span>
+    <strong><%= @editable ? "Open" : "Read-only" %></strong>
+  </article>
+</section>
+
+<%# Panel ordering depends on day-state. On read-only days the manager opens
+    the log book to triage follow-ups first; on today they're filling it in. %>
+<% follow_ups_panel = capture do %>
+  <section class="block-panel">
+    <header class="block-panel-header">
+      <div>
+        <h2>Open follow-ups</h2>
+        <p>Flagged notes that still need manager attention.</p>
+      </div>
+    </header>
+
+    <% if @unresolved_follow_ups.any? %>
+      <div class="stack">
+        <% @unresolved_follow_ups.each do |response| %>
+          <article class="decision-card">
+            <div class="decision-card-body">
+              <h2><%= response.section_title_snapshot %></h2>
+              <p><%= response.display_value %></p>
+              <p class="small muted">
+                <%= response.log_book_entry.operating_date.strftime("%B %-d, %Y") %>
+                <% if response.last_submitted_by %>
+                  · flagged by <%= user_display_name(response.last_submitted_by) %>
+                <% end %>
+              </p>
+              <span class="badge badge-warning"><%= response.urgency.humanize %></span>
+            </div>
+            <% if current_user.admin? %>
+              <div class="decision-card-actions">
+                <%= button_to "Resolve", resolve_log_book_response_path(response), method: :patch, class: "button small" %>
+              </div>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="empty-state">No open follow-ups.</p>
+    <% end %>
+  </section>
+<% end %>
+
+<% entry_panel = capture do %>
+  <section class="block-panel">
+    <header class="block-panel-header">
+      <div>
+        <h2><%= @editable ? "Today's entry" : "Daily entry" %></h2>
+        <p>
+          <% if @editable %>
+            Changes save automatically as you tab between fields.
+          <% else %>
+            Past operating days are read-only.
+          <% end %>
+        </p>
+      </div>
+      <%= render "log_book/save_status", saved_at: (@entry.persisted? ? @entry.submitted_at : nil), error: nil %>
+    </header>
+
+    <% if @sections.any? %>
+      <% if @editable %>
+        <%= form_with url: log_book_path, method: :patch, class: "stacked-form",
+              data: { controller: "log-book-autosave",
+                      log_book_autosave_debounce_value: 700,
+                      action: "change->log-book-autosave#queue input->log-book-autosave#queue" } do %>
+          <%= hidden_field_tag :operating_date, @operating_date.iso8601 %>
+
+          <% @sections.each do |section| %>
+            <%= render "log_book/section_card",
+                  section: section,
+                  response: @responses_by_section_id[section.id],
+                  response_errors: @response_errors[section.id],
+                  overrides: (@form_overrides && @form_overrides[section.id]) || {} %>
+          <% end %>
+
+          <div class="form-footer">
+            <%= submit_tag "Save", class: "button primary" %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="stack">
+          <% @sections.each do |section| %>
+            <% response = @responses_by_section_id[section.id] %>
+            <article class="decision-card">
+              <div class="decision-card-body">
+                <h2><%= response&.section_title_snapshot || section.title %></h2>
+                <p><%= response&.display_value || "No response recorded." %></p>
+                <% if response&.flagged_for_follow_up? %>
+                  <span class="badge badge-warning"><%= response.urgency.humanize %> follow-up</span>
+                <% end %>
+                <% if response&.last_submitted_by && response.last_submitted_at %>
+                  <p class="muted small">
+                    Last updated by <%= user_display_name(response.last_submitted_by) %>
+                    · <%= response.last_submitted_at.strftime("%b %-d, %-l:%M %p") %>
+                  </p>
+                <% end %>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="empty-state">
+        <strong>No Log Sections yet.</strong>
+        <span>An admin can create sections like General Log, Maintenance, and Bagels Left.</span>
+      </p>
+      <% if current_user.admin? %>
+        <div class="form-footer">
+          <%= link_to "Create first section", new_log_book_section_path, class: "button primary" %>
+        </div>
+      <% end %>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @editable %>
+  <%= entry_panel %>
+  <%= follow_ups_panel %>
+<% else %>
+  <%= follow_ups_panel %>
+  <%= entry_panel %>
+<% end %>
+
+<%# ── Recent entries as a signal row, not a date hopper ──────────────── %>
+<% if @recent_entries.any? %>
+  <section class="block-panel">
+    <header class="block-panel-header">
+      <div>
+        <h2>Recent entries</h2>
+        <p>Past days at a glance. Open one to review.</p>
+      </div>
+    </header>
+
+    <ul class="log-book-recent">
+      <% @recent_entries.each do |entry| %>
+        <% open_flags  = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? } %>
+        <% urgent_open = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? && r.urgency == "urgent" } %>
+        <li class="log-book-recent-row <%= 'log-book-recent-row-current' if entry.operating_date == @operating_date %>">
+          <%= link_to log_book_path(date: entry.operating_date), class: "log-book-recent-link" do %>
+            <span class="log-book-recent-date"><%= entry.operating_date.strftime("%a %b %-d") %></span>
+            <span class="log-book-recent-signals">
+              <% if open_flags.zero? %>
+                <span class="muted small">No open flags</span>
+              <% else %>
+                <span class="badge badge-warning"><%= pluralize(open_flags, "follow-up") %></span>
+                <% if urgent_open.positive? %>
+                  <span class="badge badge-warning"><%= urgent_open %> urgent</span>
+                <% end %>
+              <% end %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

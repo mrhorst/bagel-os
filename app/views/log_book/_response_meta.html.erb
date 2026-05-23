@@ -1,0 +1,9 @@
+<%# locals: section:, response: %>
+<div id="log_book_response_meta_<%= section.id %>" class="log-book-response-meta">
+  <% if response&.last_submitted_by && response.last_submitted_at %>
+    <p class="muted small">
+      Last updated by <%= user_display_name(response.last_submitted_by) %>
+      · <%= time_ago_in_words(response.last_submitted_at) %> ago
+    </p>
+  <% end %>
+</div>

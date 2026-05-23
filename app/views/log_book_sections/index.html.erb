@@ -1,0 +1,65 @@
+<% content_for :title, "Log Sections" %>
+
+<section class="block-page-header">
+  <div>
+    <h1>Log Sections</h1>
+    <p>Choose what appears in the daily Log Book. Archiving hides a section from new days; old entries keep their values.</p>
+  </div>
+  <div class="block-header-actions">
+    <%= link_to "Back to Log Book", log_book_path, class: "button" %>
+    <%= link_to "New section", new_log_book_section_path, class: "button primary" %>
+  </div>
+</section>
+
+<section class="block-panel">
+  <% if @sections.any? %>
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>Type</th>
+          <th>Sort</th>
+          <th>Status</th>
+          <th class="numeric">Used in</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @sections.each do |section| %>
+          <% usage_count = section.log_book_responses.count %>
+          <tr>
+            <td data-label="Section">
+              <strong><%= section.title %></strong>
+              <% if section.description.present? %>
+                <small><%= section.description %></small>
+              <% end %>
+            </td>
+            <td data-label="Type"><%= section.section_type.humanize %></td>
+            <td data-label="Sort"><%= section.position %></td>
+            <td data-label="Status"><%= section.active? ? "Active" : "Archived" %></td>
+            <td class="numeric" data-label="Used in">
+              <%= pluralize(usage_count, "entry") %>
+            </td>
+            <td class="numeric" data-label="Actions">
+              <%= link_to "Edit", edit_log_book_section_path(section), class: "button small" %>
+              <% if section.active? %>
+                <%= button_to "Archive",
+                      archive_log_book_section_path(section),
+                      method: :patch,
+                      class: "button small",
+                      data: { turbo_confirm: archive_confirm_message(section, usage_count) } %>
+              <% else %>
+                <%= button_to "Reactivate", reactivate_log_book_section_path(section), method: :patch, class: "button small" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">
+      <strong>No Log Sections yet.</strong>
+      <span>Create sections like General Log, Maintenance, or Bagels Left.</span>
+    </p>
+  <% end %>
+</section>

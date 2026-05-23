@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_22_205744) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_23_141818) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -129,6 +129,60 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_205744) do
     t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_inventory_sections_on_name", unique: true
+  end
+
+  create_table "log_book_entries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "operating_date", null: false
+    t.datetime "submitted_at"
+    t.integer "submitted_by_id"
+    t.datetime "updated_at", null: false
+    t.index ["operating_date"], name: "index_log_book_entries_on_operating_date", unique: true
+    t.index ["submitted_by_id"], name: "index_log_book_entries_on_submitted_by_id"
+  end
+
+  create_table "log_book_responses", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "flagged_for_follow_up", default: false, null: false
+    t.datetime "follow_up_resolved_at"
+    t.integer "follow_up_resolved_by_id"
+    t.datetime "last_submitted_at"
+    t.integer "last_submitted_by_id"
+    t.integer "log_book_entry_id", null: false
+    t.integer "log_book_section_id", null: false
+    t.boolean "no_note", default: false, null: false
+    t.string "section_title_snapshot", null: false
+    t.string "section_type_snapshot", null: false
+    t.datetime "updated_at", null: false
+    t.string "urgency", default: "normal", null: false
+    t.integer "value_decimals_snapshot"
+    t.decimal "value_number", precision: 12, scale: 3
+    t.text "value_text"
+    t.index ["flagged_for_follow_up", "follow_up_resolved_at"], name: "index_log_book_responses_on_follow_up_status"
+    t.index ["follow_up_resolved_by_id"], name: "index_log_book_responses_on_follow_up_resolved_by_id"
+    t.index ["last_submitted_by_id"], name: "index_log_book_responses_on_last_submitted_by_id"
+    t.index ["log_book_entry_id", "log_book_section_id"], name: "index_log_book_responses_on_entry_and_section", unique: true
+    t.index ["log_book_entry_id"], name: "index_log_book_responses_on_log_book_entry_id"
+    t.index ["log_book_section_id"], name: "index_log_book_responses_on_log_book_section_id"
+  end
+
+  create_table "log_book_sections", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.boolean "allow_follow_up", default: true, null: false
+    t.boolean "allow_no_note", default: true, null: false
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.text "description"
+    t.integer "position", default: 0, null: false
+    t.boolean "required", default: false, null: false
+    t.string "section_type", null: false
+    t.string "title", null: false
+    t.string "unit_label"
+    t.datetime "updated_at", null: false
+    t.integer "value_decimals", default: 0, null: false
+    t.index ["active"], name: "index_log_book_sections_on_active"
+    t.index ["created_by_id"], name: "index_log_book_sections_on_created_by_id"
+    t.index ["position", "title"], name: "index_log_book_sections_on_position_and_title"
   end
 
   create_table "normalization_reviews", force: :cascade do |t|
@@ -551,6 +605,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_205744) do
   add_foreign_key "inventory_items", "inventory_sections"
   add_foreign_key "inventory_items", "products"
   add_foreign_key "inventory_items", "suppliers", column: "preferred_supplier_id"
+  add_foreign_key "log_book_entries", "users", column: "submitted_by_id"
+  add_foreign_key "log_book_responses", "log_book_entries"
+  add_foreign_key "log_book_responses", "log_book_sections"
+  add_foreign_key "log_book_responses", "users", column: "follow_up_resolved_by_id"
+  add_foreign_key "log_book_responses", "users", column: "last_submitted_by_id"
+  add_foreign_key "log_book_sections", "users", column: "created_by_id"
   add_foreign_key "normalization_reviews", "products"
   add_foreign_key "normalization_reviews", "receipt_line_items"
   add_foreign_key "order_guide_items", "inventory_items"

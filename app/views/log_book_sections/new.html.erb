@@ -1,0 +1,12 @@
+<% content_for :title, "New Log Section" %>
+
+<section class="block-page-header">
+  <div>
+    <h1>New Log Section</h1>
+    <p>Add a reusable prompt to the daily Log Book.</p>
+  </div>
+</section>
+
+<section class="panel panel-compact">
+  <%= render "form", section: @section, url: log_book_sections_path, method: :post, submit_label: "Create section" %>
+</section>

@@ -18,6 +18,14 @@
       description: "Daily and monthly checklists for the team."
     },
     {
+      label: "Log Book",
+      path: log_book_path,
+      count: @log_book_follow_up_count,
+      tone: @log_book_follow_up_count.positive? ? "urgent" : "ok",
+      summary: @log_book_follow_up_count.positive? ? "#{@log_book_follow_up_count} follow-ups open" : "No open follow-ups",
+      description: "Daily manager notes and handoffs."
+    },
+    {
       label: "Review queue",
       path: normalization_reviews_path,
       count: @pending_review_count,
