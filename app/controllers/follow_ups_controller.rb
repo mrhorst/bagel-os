@@ -1,7 +1,7 @@
 class FollowUpsController < ApplicationController
   require_module_access :follow_ups
 
-  before_action :load_follow_up, only: %i[show resolve reopen]
+  before_action :load_follow_up, only: %i[show resolve reopen assign spawn_task]
 
   def index
     @scope = scope_from_params
@@ -25,6 +25,27 @@ class FollowUpsController < ApplicationController
   def reopen
     @follow_up.reopen!(user: Current.user)
     redirect_to follow_up_path(@follow_up), notice: "Follow-up reopened."
+  end
+
+  def assign
+    assignee_id = params[:assigned_to_id].presence
+    @follow_up.update!(assigned_to_id: assignee_id)
+    redirect_to follow_up_path(@follow_up),
+      notice: assignee_id ? "Assigned." : "Unassigned."
+  end
+
+  def spawn_task
+    result = FollowUps::SpawnTask.new(
+      @follow_up,
+      params: params.require(:spawn).permit(:title, :description, :link_kind, :recurrence_type, :task_list_id, :one_time_on, :due_time, :auto_resolve, weekdays: []),
+      user: Current.user
+    ).call
+
+    if result.ok?
+      redirect_to follow_up_path(@follow_up), notice: "Task created: #{result.task.title}"
+    else
+      redirect_to follow_up_path(@follow_up), alert: result.errors.full_messages.to_sentence
+    end
   end
 
   private

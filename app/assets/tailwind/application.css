@@ -764,6 +764,59 @@
     width: auto;
   }
 
+  .follow-up-assignee,
+  .follow-up-card-assignee {
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+    margin: 6px 0 0;
+  }
+  .follow-up-assignee-avatar {
+    align-items: center;
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    display: inline-flex;
+    font-size: 0.8rem;
+    font-weight: 600;
+    height: 26px;
+    justify-content: center;
+    width: 26px;
+  }
+  .follow-up-assign-form {
+    margin-top: 8px;
+  }
+  .follow-up-assign-form select {
+    width: 100%;
+  }
+
+  .follow-up-task-links {
+    display: grid;
+    gap: 6px;
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+  }
+  .follow-up-task-link {
+    background: var(--surface-3);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+  }
+
+  .follow-up-spawn {
+    margin-top: 6px;
+  }
+  .follow-up-spawn > summary {
+    cursor: pointer;
+    list-style: none;
+    width: fit-content;
+  }
+  .follow-up-spawn > summary::-webkit-details-marker { display: none; }
+  .follow-up-spawn[open] > summary {
+    margin-bottom: 8px;
+  }
+
 
   /* Floating action button — bottom-right above the mobile tab bar. */
   .mobile-fab {

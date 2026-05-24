@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_24_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -49,7 +49,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_100000) do
     t.index ["follow_up_id"], name: "index_follow_up_notes_on_follow_up_id"
   end
 
+  create_table "follow_up_task_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.integer "follow_up_id", null: false
+    t.string "link_kind", default: "one_shot", null: false
+    t.integer "task_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_follow_up_task_links_on_created_by_id"
+    t.index ["follow_up_id", "task_id"], name: "index_follow_up_task_links_on_follow_up_id_and_task_id", unique: true
+    t.index ["follow_up_id"], name: "index_follow_up_task_links_on_follow_up_id"
+    t.index ["task_id"], name: "index_follow_up_task_links_on_task_id"
+  end
+
   create_table "follow_ups", force: :cascade do |t|
+    t.integer "assigned_to_id"
     t.datetime "created_at", null: false
     t.text "description"
     t.datetime "opened_at", null: false
@@ -64,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_100000) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.string "urgency", default: "normal", null: false
+    t.index ["assigned_to_id"], name: "index_follow_ups_on_assigned_to_id"
     t.index ["opened_by_id"], name: "index_follow_ups_on_opened_by_id"
     t.index ["origin_type", "origin_id"], name: "index_follow_ups_on_origin"
     t.index ["resolved_by_id"], name: "index_follow_ups_on_resolved_by_id"
@@ -630,6 +645,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_100000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "follow_up_notes", "follow_ups"
   add_foreign_key "follow_up_notes", "users", column: "author_id"
+  add_foreign_key "follow_up_task_links", "follow_ups"
+  add_foreign_key "follow_up_task_links", "tasks"
+  add_foreign_key "follow_up_task_links", "users", column: "created_by_id"
+  add_foreign_key "follow_ups", "users", column: "assigned_to_id"
   add_foreign_key "follow_ups", "users", column: "opened_by_id"
   add_foreign_key "follow_ups", "users", column: "resolved_by_id"
   add_foreign_key "import_batches", "suppliers"

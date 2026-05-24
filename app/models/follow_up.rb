@@ -8,8 +8,11 @@ class FollowUp < ApplicationRecord
   belongs_to :origin, polymorphic: true, optional: true
   belongs_to :opened_by,   class_name: "User", optional: true
   belongs_to :resolved_by, class_name: "User", optional: true
+  belongs_to :assigned_to, class_name: "User", optional: true
 
   has_many :notes, -> { order(:created_at) }, class_name: "FollowUpNote", dependent: :destroy
+  has_many :task_links, class_name: "FollowUpTaskLink", dependent: :destroy
+  has_many :spawned_tasks, through: :task_links, source: :task
 
   validates :title, :urgency, :status, :opened_at, presence: true
   validates :urgency, inclusion: { in: URGENCIES }

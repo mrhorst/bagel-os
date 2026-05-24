@@ -48,6 +48,8 @@ Rails.application.routes.draw do
     member do
       patch :resolve
       patch :reopen
+      patch :assign
+      post  :spawn_task
     end
     resources :notes, only: :create, controller: "follow_up_notes"
   end

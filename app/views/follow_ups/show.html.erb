@@ -19,6 +19,31 @@
     </section>
   <% end %>
 
+  <section class="follow-up-detail-section">
+    <h2 class="follow-up-detail-section-title">Assignee</h2>
+    <% if @follow_up.assigned_to %>
+      <p class="follow-up-assignee">
+        <span class="follow-up-assignee-avatar" aria-hidden="true"><%= user_display_name(@follow_up.assigned_to).first.upcase %></span>
+        <strong><%= user_display_name(@follow_up.assigned_to) %></strong>
+      </p>
+    <% else %>
+      <p class="muted small">Unassigned.</p>
+    <% end %>
+
+    <% unless @follow_up.resolved? %>
+      <%= form_with url: assign_follow_up_path(@follow_up), method: :patch,
+            class: "follow-up-assign-form",
+            data: { controller: "auto-submit" } do %>
+        <%= select_tag :assigned_to_id,
+              options_from_collection_for_select(User.order(:email_address), :id, ->(u) { user_display_name(u) }, @follow_up.assigned_to_id),
+              include_blank: "Unassigned",
+              data: { action: "change->auto-submit#submit" },
+              "aria-label": "Assign to" %>
+        <noscript><%= submit_tag "Assign", class: "button small" %></noscript>
+      <% end %>
+    <% end %>
+  </section>
+
   <% if @follow_up.origin.is_a?(LogBookResponse) %>
     <section class="follow-up-detail-section">
       <h2 class="follow-up-detail-section-title">Origin</h2>
@@ -59,6 +84,69 @@
           <%= submit_tag "Post note", class: "button small" %>
         </div>
       <% end %>
+    <% end %>
+  </section>
+
+  <section class="follow-up-detail-section">
+    <h2 class="follow-up-detail-section-title">Tasks spawned</h2>
+    <% if @follow_up.task_links.any? %>
+      <ul class="follow-up-task-links">
+        <% @follow_up.task_links.includes(:task).each do |link| %>
+          <li class="follow-up-task-link">
+            <strong><%= link.task.title %></strong>
+            <span class="muted small">· <%= link.link_kind.humanize %> · in <%= link.task.task_list.name %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="muted small">No tasks spawned from this follow-up yet.</p>
+    <% end %>
+
+    <% unless @follow_up.resolved? %>
+      <details class="follow-up-spawn">
+        <summary class="button small">Create task from this follow-up</summary>
+        <%= form_with url: spawn_task_follow_up_path(@follow_up), method: :post, class: "stacked-form",
+              data: { controller: "follow-up-spawn" } do %>
+          <div class="field">
+            <%= label_tag "spawn[title]", "Task title" %>
+            <%= text_field_tag "spawn[title]", @follow_up.title, required: true %>
+          </div>
+          <div class="field">
+            <%= label_tag "spawn[link_kind]", "Kind" %>
+            <%= select_tag "spawn[link_kind]",
+                  options_for_select([
+                    ["One-shot (today, in 'Follow-up tasks')", "one_shot"],
+                    ["Recurring (in a list of your choice)",   "recurring"]
+                  ]),
+                  data: { follow_up_spawn_target: "kind", action: "change->follow-up-spawn#sync" } %>
+          </div>
+          <div class="field" hidden data-follow-up-spawn-target="recurringField">
+            <%= label_tag "spawn[task_list_id]", "Task list" %>
+            <%= select_tag "spawn[task_list_id]",
+                  options_from_collection_for_select(TaskList.active.ordered, :id, :name) %>
+          </div>
+          <div class="field" hidden data-follow-up-spawn-target="recurringField">
+            <%= label_tag "spawn[recurrence_type]", "How often?" %>
+            <%= select_tag "spawn[recurrence_type]",
+                  options_for_select([
+                    ["Daily",   "daily"],
+                    ["Weekly",  "weekly"],
+                    ["Monthly", "monthly"]
+                  ]) %>
+          </div>
+          <div class="field">
+            <%= label_tag "spawn[due_time]", "Due time" %>
+            <%= time_field_tag "spawn[due_time]", "17:00" %>
+          </div>
+          <label class="check">
+            <%= check_box_tag "spawn[auto_resolve]", "1", true %>
+            <span>Resolve this follow-up after creating the task</span>
+          </label>
+          <div class="form-footer">
+            <%= submit_tag "Create task", class: "button primary" %>
+          </div>
+        <% end %>
+      </details>
     <% end %>
   </section>
 

@@ -56,6 +56,50 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "assign sets the assignee" do
+    follow_up = FollowUp.create!(title: "Walk-in warm", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one))
+    patch assign_follow_up_path(follow_up), params: { assigned_to_id: users(:two).id }
+    assert_redirected_to follow_up_path(follow_up)
+    assert_equal users(:two), follow_up.reload.assigned_to
+  end
+
+  test "unassign clears the assignee" do
+    follow_up = FollowUp.create!(title: "Walk-in warm", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one), assigned_to: users(:two))
+    patch assign_follow_up_path(follow_up), params: { assigned_to_id: "" }
+    assert_nil follow_up.reload.assigned_to
+  end
+
+  test "spawn one-shot task creates a Task in the system list and links it" do
+    follow_up = FollowUp.create!(title: "Toilet clogged", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one))
+
+    assert_difference -> { Task.count }, 1 do
+      assert_difference -> { FollowUpTaskLink.count }, 1 do
+        post spawn_task_follow_up_path(follow_up),
+          params: { spawn: { title: "Snake the toilet", link_kind: "one_shot", due_time: "17:00", auto_resolve: "1" } }
+      end
+    end
+
+    task = Task.last
+    assert_equal "Snake the toilet", task.title
+    assert_equal "one_time", task.recurrence_type
+    assert_equal "Follow-up tasks", task.task_list.name
+    assert follow_up.reload.resolved?
+    assert_equal "converted_to_task", follow_up.resolved_via
+  end
+
+  test "spawn recurring task lives in the chosen list" do
+    follow_up = FollowUp.create!(title: "Clean sink", urgency: "normal", opened_at: 1.hour.ago, opened_by: users(:one))
+    list = TaskList.create!(name: "Cleaning", position: 1)
+
+    post spawn_task_follow_up_path(follow_up),
+      params: { spawn: { title: "Clean bathroom sink", link_kind: "recurring", recurrence_type: "daily", task_list_id: list.id, due_time: "17:00" } }
+
+    task = Task.last
+    assert_equal "daily", task.recurrence_type
+    assert_equal list, task.task_list
+    refute follow_up.reload.resolved?
+  end
+
   test "employee without permission is redirected" do
     employee = users(:two)
     sign_in_as(employee)

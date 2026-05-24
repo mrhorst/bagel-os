@@ -38,6 +38,12 @@
             · resolved <%= follow_up.resolved_at.strftime("%b %-d") %>
           <% end %>
         </p>
+        <% if follow_up.assigned_to %>
+          <p class="follow-up-card-assignee">
+            <span class="follow-up-assignee-avatar" aria-hidden="true"><%= user_display_name(follow_up.assigned_to).first.upcase %></span>
+            <span><%= user_display_name(follow_up.assigned_to) %></span>
+          </p>
+        <% end %>
       <% end %>
     <% end %>
   </ul>
