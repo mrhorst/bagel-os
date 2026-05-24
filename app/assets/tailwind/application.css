@@ -1026,6 +1026,7 @@
     box-shadow: inset 2px 0 0 var(--danger);
   }
   .log-book-section-card-form {
+    min-width: 0;
     padding: 0 0 14px;
   }
   .decision-card.log-book-section-card .decision-card-body {
@@ -1035,7 +1036,10 @@
     field-sizing: content;
     font-size: 1rem; /* ≥16px keeps iOS from zooming on focus */
     max-height: 240px;
+    max-width: 100%;
     min-height: 64px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* Per-section error highlight on the log book entry form */
