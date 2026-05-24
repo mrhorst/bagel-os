@@ -6,7 +6,10 @@
     subtitle: "#{@occurrence.snapshot_list_name} · #{task_period_label(@occurrence)}",
     back_path: @back_path,
     back_label: @back_label,
-    actions: link_to("History", tasks_history_path, class: "button small")
+    actions: safe_join([
+      (link_to("Edit task", edit_tasks_manage_task_path(@occurrence.task), class: "button small") if Current.user&.can_access?("tasks") && @occurrence.task.present?),
+      link_to("History", tasks_history_path, class: "button small")
+    ].compact, " ")
 %>
 
 <section class="grid two">
