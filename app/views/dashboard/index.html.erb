@@ -28,7 +28,7 @@
       path: log_book_path,
       count: @log_book_follow_up_count,
       tone: @log_book_follow_up_count.positive? ? "urgent" : "ok",
-      summary: @log_book_follow_up_count.positive? ? "#{@log_book_follow_up_count} follow-ups open" : "No open follow-ups",
+      summary: @log_book_follow_up_count.positive? ? pluralize(@log_book_follow_up_count, "follow-up") + " open" : "No open follow-ups",
       description: "Daily manager notes and handoffs."
     },
     {

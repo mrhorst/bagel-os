@@ -112,13 +112,21 @@
             <%= text_field_tag "spawn[title]", @follow_up.title, required: true %>
           </div>
           <div class="field">
+            <%= label_tag "spawn[description]", "Instructions (optional)" %>
+            <%= text_area_tag "spawn[description]", @follow_up.description, rows: 2 %>
+          </div>
+          <div class="field">
             <%= label_tag "spawn[link_kind]", "Kind" %>
             <%= select_tag "spawn[link_kind]",
                   options_for_select([
-                    ["One-shot (today, in 'Follow-up tasks')", "one_shot"],
-                    ["Recurring (in a list of your choice)",   "recurring"]
+                    ["One-shot (in 'Follow-up tasks')",      "one_shot"],
+                    ["Recurring (in a list of your choice)", "recurring"]
                   ]),
                   data: { follow_up_spawn_target: "kind", action: "change->follow-up-spawn#sync" } %>
+          </div>
+          <div class="field" data-follow-up-spawn-target="oneShotField">
+            <%= label_tag "spawn[one_time_on]", "Due date" %>
+            <%= date_field_tag "spawn[one_time_on]", Date.current %>
           </div>
           <div class="field" hidden data-follow-up-spawn-target="recurringField">
             <%= label_tag "spawn[task_list_id]", "Task list" %>
@@ -132,7 +140,19 @@
                     ["Daily",   "daily"],
                     ["Weekly",  "weekly"],
                     ["Monthly", "monthly"]
-                  ]) %>
+                  ]),
+                  data: { follow_up_spawn_target: "recurrence", action: "change->follow-up-spawn#sync" } %>
+          </div>
+          <div class="field" hidden data-follow-up-spawn-target="weeklyField">
+            <span class="field-label">Repeat on</span>
+            <div class="weekday-checks">
+              <% %w[Sun Mon Tue Wed Thu Fri Sat].each_with_index do |day, idx| %>
+                <label class="check">
+                  <%= check_box_tag "spawn[weekdays][]", idx, idx == Date.current.wday %>
+                  <span><%= day %></span>
+                </label>
+              <% end %>
+            </div>
           </div>
           <div class="field">
             <%= label_tag "spawn[due_time]", "Due time" %>

@@ -72,7 +72,11 @@ module FollowUps
         end
       else
         list_id = @params[:task_list_id].presence
-        raise ActiveRecord::RecordInvalid.new(@follow_up) unless list_id
+        unless list_id
+          stub = Task.new
+          stub.errors.add(:task_list, "must be selected for a recurring task")
+          raise ActiveRecord::RecordInvalid.new(stub)
+        end
         TaskList.find(list_id)
       end
     end

@@ -816,6 +816,22 @@
   .follow-up-spawn[open] > summary {
     margin-bottom: 8px;
   }
+  .weekday-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-top: 4px;
+  }
+  .weekday-checks .check {
+    min-height: 0;
+  }
+  .field-label {
+    color: var(--ink-2);
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
 
 
   /* Floating action button — bottom-right above the mobile tab bar. */
