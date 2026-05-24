@@ -882,18 +882,29 @@
   .log-book-status-strip .log-book-save-status { font-size: 0.85rem; }
   .log-book-status-followups strong { font-weight: 600; margin-right: 4px; }
 
-  /* Section card on the daily form: pad the form body so labels align with
-     the title above. Drop the inherited 2 px accent stripe — these cards
-     aren't a status row, just a section container. The error variant brings
-     back the stripe in red when validation fails. */
+  /* Section card on the daily form: it's a section *inside* the parent
+     `.block-panel`, not its own card. Drop card chrome (border, shadow)
+     so it reads as an inline section. Sibling sections are separated by
+     the horizontal rule between them. The error variant brings back a
+     red left rule when validation fails. */
   .decision-card.log-book-section-card {
-    box-shadow: var(--shadow-e1);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding-bottom: 8px;
+  }
+  .decision-card.log-book-section-card + .decision-card.log-book-section-card {
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
   }
   .decision-card.log-book-section-card.decision-card-error {
-    box-shadow: inset 2px 0 0 var(--danger), var(--shadow-e1);
+    box-shadow: inset 2px 0 0 var(--danger);
   }
   .log-book-section-card-form {
-    padding: 0 16px 14px;
+    padding: 0 0 14px;
+  }
+  .decision-card.log-book-section-card .decision-card-body {
+    padding: 14px 0 8px;
   }
   .log-book-section-textarea {
     field-sizing: content;
@@ -931,20 +942,23 @@
   }
   .radio input { accent-color: var(--accent); }
 
-  /* Segmented radio group — used for urgency (Normal / Important / Urgent) */
+  /* Segmented radio group — used for urgency (Normal / Important / Urgent).
+     Full-width with each segment taking equal share. */
   .urgency-radios {
-    display: inline-flex;
-    flex-wrap: wrap;
+    display: flex;
     gap: 4px;
     background: var(--surface-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     padding: 4px;
+    width: 100%;
   }
   .urgency-radios[hidden] { display: none; }
   .radio.radio-segmented {
     border-radius: 8px;
     cursor: pointer;
+    flex: 1;
+    justify-content: center;
     min-height: 32px;
     padding: 4px 12px;
     transition: background-color 80ms ease, color 80ms ease;
@@ -2310,6 +2324,16 @@
     display: grid;
     gap: 0;
     grid-template-columns: 1.2fr 1fr 1fr;
+  }
+  /* When the actions row doesn't use the legacy 3-button `.decision-action`
+     grid (e.g. a single "Resolve" button in the Log Book follow-ups card),
+     fall back to a padded flex row so the button isn't flush left. */
+  .decision-card-actions:not(:has(.decision-action)) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 12px 16px;
   }
   .decision-action {
     border-right: 1px solid var(--line);
@@ -4155,8 +4179,8 @@
     .tasks-now-column,
     .tasks-staff-column,
     .tasks-month-column {
-      max-width: 358px;
-      width: min(100%, 358px);
+      max-width: 100%;
+      width: 100%;
     }
     .block-header-actions,
     .block-panel-actions,
