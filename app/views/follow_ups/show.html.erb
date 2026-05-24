@@ -30,6 +30,38 @@
     </section>
   <% end %>
 
+  <section class="follow-up-detail-section">
+    <h2 class="follow-up-detail-section-title">Notes</h2>
+
+    <% if @follow_up.notes.any? %>
+      <ol class="follow-up-thread">
+        <% @follow_up.notes.each do |note| %>
+          <li class="follow-up-note">
+            <div class="follow-up-note-meta">
+              <strong><%= note.author ? user_display_name(note.author) : "Unknown" %></strong>
+              <span class="muted small"><%= note.created_at.strftime("%b %-d · %-l:%M %p") %></span>
+            </div>
+            <p class="follow-up-note-body"><%= simple_format(note.body) %></p>
+          </li>
+        <% end %>
+      </ol>
+    <% else %>
+      <p class="muted small">No notes yet.</p>
+    <% end %>
+
+    <% unless @follow_up.resolved? %>
+      <%= form_with url: follow_up_notes_path(@follow_up), class: "follow-up-note-form" do |f| %>
+        <div class="field">
+          <%= label_tag "follow_up_note[body]", "Add a note" %>
+          <%= text_area_tag "follow_up_note[body]", nil, rows: 2, required: true %>
+        </div>
+        <div class="follow-up-note-form-footer">
+          <%= submit_tag "Post note", class: "button small" %>
+        </div>
+      <% end %>
+    <% end %>
+  </section>
+
   <% if @follow_up.resolved? %>
     <section class="follow-up-detail-section follow-up-detail-resolved">
       <h2 class="follow-up-detail-section-title">Resolved</h2>

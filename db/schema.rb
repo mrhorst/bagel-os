@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_24_100000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -37,6 +37,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_000001) do
     t.integer "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "follow_up_notes", force: :cascade do |t|
+    t.integer "author_id"
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.integer "follow_up_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_follow_up_notes_on_author_id"
+    t.index ["follow_up_id"], name: "index_follow_up_notes_on_follow_up_id"
   end
 
   create_table "follow_ups", force: :cascade do |t|
@@ -618,6 +628,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_000001) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "follow_up_notes", "follow_ups"
+  add_foreign_key "follow_up_notes", "users", column: "author_id"
   add_foreign_key "follow_ups", "users", column: "opened_by_id"
   add_foreign_key "follow_ups", "users", column: "resolved_by_id"
   add_foreign_key "import_batches", "suppliers"

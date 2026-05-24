@@ -30,7 +30,7 @@ class FollowUpsController < ApplicationController
   private
 
   def load_follow_up
-    @follow_up = FollowUp.find(params[:id])
+    @follow_up = FollowUp.includes(notes: :author).find(params[:id])
   end
 
   def scope_from_params

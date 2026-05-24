@@ -49,6 +49,7 @@ Rails.application.routes.draw do
       patch :resolve
       patch :reopen
     end
+    resources :notes, only: :create, controller: "follow_up_notes"
   end
 
   scope module: :tasks, path: :tasks, as: :tasks do

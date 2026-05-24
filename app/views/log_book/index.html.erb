@@ -73,25 +73,8 @@
   </div>
 </header>
 
-<%# Panel ordering depends on day-state. On read-only days the manager opens
-    the log book to triage follow-ups first; on today they're filling it in. %>
-<% follow_ups_panel = capture do %>
-  <%# Follow-ups live in their own submodule now; this is a one-line link. %>
-  <%= link_to follow_ups_path, class: "log-book-followups-link" do %>
-    <div>
-      <strong>
-        <% if @open_follow_up_count.positive? %>
-          <%= pluralize(@open_follow_up_count, "open follow-up") %>
-        <% else %>
-          No open follow-ups
-        <% end %>
-      </strong>
-      <p class="muted small">Flagged issues that still need attention.</p>
-    </div>
-    <span class="log-book-followups-link-chev" aria-hidden="true">›</span>
-  <% end %>
-<% end %>
-
+<%# Follow-ups now live in /follow-ups; the count link in the status strip
+    above is the only entry point on this screen. %>
 <% entry_panel = capture do %>
   <section class="block-panel">
     <header class="block-panel-header">
@@ -160,10 +143,4 @@
   </section>
 <% end %>
 
-<% if @editable %>
-  <%= entry_panel %>
-  <%= follow_ups_panel %>
-<% else %>
-  <%= follow_ups_panel %>
-  <%= entry_panel %>
-<% end %>
+<%= entry_panel %>

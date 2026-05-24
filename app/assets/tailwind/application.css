@@ -732,29 +732,38 @@
     padding: 12px 14px;
   }
 
-  /* Log Book → Follow-ups link (replaces the old open-follow-ups panel). */
-  .log-book-followups-link {
-    align-items: center;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
+  .follow-up-thread {
+    display: grid;
+    gap: 10px;
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+  }
+  .follow-up-note {
+    background: var(--surface-3);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-e1);
-    color: var(--ink);
+    padding: 10px 12px;
+  }
+  .follow-up-note-meta {
+    align-items: baseline;
     display: flex;
-    gap: 12px;
-    justify-content: space-between;
-    margin-bottom: 14px;
-    padding: 14px 16px;
-    text-decoration: none;
+    gap: 8px;
+    margin-bottom: 4px;
   }
-  .log-book-followups-link:hover { background: color-mix(in oklch, var(--surface-3) 60%, var(--surface-2)); }
-  .log-book-followups-link strong { display: block; font-size: 1.02rem; }
-  .log-book-followups-link p { margin: 2px 0 0; }
-  .log-book-followups-link-chev {
-    color: var(--ink-muted);
-    font-size: 1.4rem;
-    line-height: 1;
+  .follow-up-note-body { margin: 0; }
+  .follow-up-note-body p { margin: 0; }
+  .follow-up-note-form { margin-top: 8px; }
+  .follow-up-note-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
   }
+  .follow-up-note-form-footer input[type='submit'] {
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: auto;
+  }
+
 
   /* Floating action button — bottom-right above the mobile tab bar. */
   .mobile-fab {
