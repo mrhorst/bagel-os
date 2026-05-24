@@ -631,6 +631,131 @@
   .module-overflow { position: relative; }
   .module-overflow .popover-panel { right: 0; top: calc(100% + 6px); }
 
+  /* ── Follow-ups submodule ─────────────────────────────────────────── */
+  .follow-ups-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .follow-ups-tab {
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    color: var(--ink-2);
+    display: inline-flex;
+    font-size: 0.92rem;
+    font-weight: 500;
+    gap: 8px;
+    padding: 8px 14px;
+    text-decoration: none;
+  }
+  .follow-ups-tab:hover { background: var(--surface-3); }
+  .follow-ups-tab.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--surface);
+  }
+  .follow-ups-tab-count {
+    background: color-mix(in oklch, var(--ink) 12%, transparent);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 1px 8px;
+  }
+  .follow-ups-tab.active .follow-ups-tab-count {
+    background: color-mix(in oklch, var(--surface) 22%, transparent);
+    color: var(--surface);
+  }
+
+  .follow-ups-list {
+    display: grid;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .follow-up-card {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    color: var(--ink);
+    display: block;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  .follow-up-card:hover { background: color-mix(in oklch, var(--surface-3) 60%, var(--surface-2)); }
+  .follow-up-card-head {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .follow-up-card-head h2 {
+    font-size: 1.02rem;
+    margin: 0;
+  }
+  .follow-up-card-body {
+    color: var(--ink-2);
+    font-size: 0.92rem;
+    margin: 4px 0 6px;
+  }
+  /* Status indication via 2 px left rule per design system. */
+  .follow-up-card-urgent { box-shadow: inset 2px 0 0 var(--danger), var(--shadow-e1); }
+  .follow-up-card-important { box-shadow: inset 2px 0 0 var(--accent), var(--shadow-e1); }
+
+  .follow-up-detail {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    padding: 18px 18px 20px;
+  }
+  .follow-up-detail-head h1 {
+    font-size: 1.4rem;
+    margin: 6px 0 4px;
+  }
+  .follow-up-detail-section { margin-top: 18px; }
+  .follow-up-detail-section-title {
+    color: var(--ink-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .follow-up-detail-resolved {
+    background: var(--surface-3);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+  }
+
+  /* Log Book → Follow-ups link (replaces the old open-follow-ups panel). */
+  .log-book-followups-link {
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    color: var(--ink);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  .log-book-followups-link:hover { background: color-mix(in oklch, var(--surface-3) 60%, var(--surface-2)); }
+  .log-book-followups-link strong { display: block; font-size: 1.02rem; }
+  .log-book-followups-link p { margin: 2px 0 0; }
+  .log-book-followups-link-chev {
+    color: var(--ink-muted);
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
   /* Floating action button — bottom-right above the mobile tab bar. */
   .mobile-fab {
     align-items: center;

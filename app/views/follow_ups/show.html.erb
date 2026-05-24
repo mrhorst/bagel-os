@@ -1,0 +1,70 @@
+<% content_for :title, @follow_up.title %>
+
+<article class="follow-up-detail">
+  <header class="follow-up-detail-head">
+    <span class="badge badge-warning"><%= @follow_up.urgency.humanize %></span>
+    <h1><%= @follow_up.title %></h1>
+    <p class="muted">
+      Opened <%= @follow_up.opened_at.strftime("%B %-d, %Y · %-l:%M %p") %>
+      <% if @follow_up.opened_by %>
+        by <%= user_display_name(@follow_up.opened_by) %>
+      <% end %>
+    </p>
+  </header>
+
+  <% if @follow_up.description.present? %>
+    <section class="follow-up-detail-section">
+      <h2 class="follow-up-detail-section-title">Note</h2>
+      <p><%= simple_format(@follow_up.description) %></p>
+    </section>
+  <% end %>
+
+  <% if @follow_up.origin.is_a?(LogBookResponse) %>
+    <section class="follow-up-detail-section">
+      <h2 class="follow-up-detail-section-title">Origin</h2>
+      <p class="muted small">
+        Flagged in the Log Book on
+        <%= link_to @follow_up.origin.log_book_entry.operating_date.strftime("%B %-d, %Y"),
+              log_book_path(date: @follow_up.origin.log_book_entry.operating_date) %>.
+      </p>
+    </section>
+  <% end %>
+
+  <% if @follow_up.resolved? %>
+    <section class="follow-up-detail-section follow-up-detail-resolved">
+      <h2 class="follow-up-detail-section-title">Resolved</h2>
+      <p class="muted small">
+        <%= @follow_up.resolved_at.strftime("%B %-d, %Y · %-l:%M %p") %>
+        <% if @follow_up.resolved_by %>
+          by <%= user_display_name(@follow_up.resolved_by) %>
+        <% end %>
+        <% if @follow_up.resolved_via.present? %>
+          · <%= @follow_up.resolved_via.humanize %>
+        <% end %>
+      </p>
+      <% if @follow_up.resolution_note.present? %>
+        <p><%= simple_format(@follow_up.resolution_note) %></p>
+      <% end %>
+    </section>
+
+    <div class="form-footer">
+      <%= button_to "Reopen", reopen_follow_up_path(@follow_up), method: :patch, class: "button small" %>
+    </div>
+  <% else %>
+    <section class="follow-up-detail-section">
+      <h2 class="follow-up-detail-section-title">Resolve</h2>
+      <%= form_with url: resolve_follow_up_path(@follow_up), method: :patch, class: "stacked-form" do |f| %>
+        <div class="field">
+          <%= label_tag :resolved_via, "What happened?" %>
+          <%= select_tag :resolved_via,
+                options_for_select(FollowUp::RESOLUTION_KINDS.map { |k| [k.humanize, k] }, "action_taken") %>
+        </div>
+        <div class="field">
+          <%= label_tag :resolution_note, "Note (optional)" %>
+          <%= text_area_tag :resolution_note, nil, rows: 2 %>
+        </div>
+        <%= submit_tag "Mark resolved", class: "button primary" %>
+      <% end %>
+    </section>
+  <% end %>
+</article>

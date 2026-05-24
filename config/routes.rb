@@ -44,6 +44,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :follow_ups, path: "follow-ups", only: %i[index show] do
+    member do
+      patch :resolve
+      patch :reopen
+    end
+  end
+
   scope module: :tasks, path: :tasks, as: :tasks do
     # ── Work surface (read-mostly, used during shift) ───────────────────
     root "dashboard#index"

@@ -70,10 +70,7 @@ class LogBookController < ApplicationController
     @prev_date = @operating_date - 1
     @next_date = @operating_date < @today ? @operating_date + 1 : nil
 
-    @unresolved_follow_ups = LogBookResponse.unresolved
-      .includes(:log_book_section, :log_book_entry, :last_submitted_by)
-      .recent_first
-      .limit(10)
+    @open_follow_up_count = FollowUp.open.count
 
     @response_errors = build_response_errors(error_record)
     @form_overrides  = raw_params
@@ -121,6 +118,7 @@ class LogBookController < ApplicationController
       end
 
       response.save!
+      FollowUps::SyncFromLogBookResponse.new(response, user: Current.user).call
     end
   end
 

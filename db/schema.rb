@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_23_141818) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_24_000001) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -37,6 +37,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_23_141818) do
     t.integer "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "follow_ups", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.datetime "opened_at", null: false
+    t.integer "opened_by_id"
+    t.integer "origin_id"
+    t.string "origin_type"
+    t.text "resolution_note"
+    t.datetime "resolved_at"
+    t.integer "resolved_by_id"
+    t.string "resolved_via"
+    t.string "status", default: "open", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "urgency", default: "normal", null: false
+    t.index ["opened_by_id"], name: "index_follow_ups_on_opened_by_id"
+    t.index ["origin_type", "origin_id"], name: "index_follow_ups_on_origin"
+    t.index ["resolved_by_id"], name: "index_follow_ups_on_resolved_by_id"
+    t.index ["status"], name: "index_follow_ups_on_status"
+    t.index ["urgency"], name: "index_follow_ups_on_urgency"
   end
 
   create_table "import_batches", force: :cascade do |t|
@@ -596,6 +618,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_23_141818) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "follow_ups", "users", column: "opened_by_id"
+  add_foreign_key "follow_ups", "users", column: "resolved_by_id"
   add_foreign_key "import_batches", "suppliers"
   add_foreign_key "inventory_count_lines", "inventory_counts"
   add_foreign_key "inventory_count_lines", "inventory_items"

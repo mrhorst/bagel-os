@@ -1,0 +1,52 @@
+<% content_for :title, "Follow-ups" %>
+
+<div class="follow-ups-tabs" role="tablist" aria-label="Follow-up status">
+  <%= link_to follow_ups_path(scope: "open"), role: "tab",
+        class: ["follow-ups-tab", ("active" if @scope == "open")],
+        "aria-selected": @scope == "open" do %>
+    Open
+    <span class="follow-ups-tab-count tnum"><%= @open_count %></span>
+  <% end %>
+  <%= link_to follow_ups_path(scope: "resolved"), role: "tab",
+        class: ["follow-ups-tab", ("active" if @scope == "resolved")],
+        "aria-selected": @scope == "resolved" do %>
+    Resolved
+    <span class="follow-ups-tab-count tnum"><%= @resolved_count %></span>
+  <% end %>
+</div>
+
+<% if @follow_ups.any? %>
+  <ul class="follow-ups-list">
+    <% @follow_ups.each do |follow_up| %>
+      <%= link_to follow_up_path(follow_up), class: ["follow-up-card", "follow-up-card-#{follow_up.urgency}"] do %>
+        <div class="follow-up-card-head">
+          <h2><%= follow_up.title %></h2>
+          <span class="badge badge-warning"><%= follow_up.urgency.humanize %></span>
+        </div>
+        <% if follow_up.description.present? %>
+          <p class="follow-up-card-body"><%= truncate(follow_up.description, length: 140) %></p>
+        <% end %>
+        <p class="muted small">
+          <% if follow_up.origin.is_a?(LogBookResponse) %>
+            From Log Book ·
+          <% end %>
+          <%= follow_up.opened_at.strftime("%b %-d, %Y") %>
+          <% if follow_up.opened_by %>
+            · flagged by <%= user_display_name(follow_up.opened_by) %>
+          <% end %>
+          <% if follow_up.resolved? && follow_up.resolved_at %>
+            · resolved <%= follow_up.resolved_at.strftime("%b %-d") %>
+          <% end %>
+        </p>
+      <% end %>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="empty-state">
+    <% if @scope == "open" %>
+      No open follow-ups. Flag a Log Book note to create one.
+    <% else %>
+      No resolved follow-ups yet.
+    <% end %>
+  </p>
+<% end %>

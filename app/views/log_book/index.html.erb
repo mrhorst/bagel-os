@@ -58,9 +58,11 @@
       The ⋯ overflow lives at the right end of this strip, next to "Saved …". %>
   <div class="log-book-status-strip" aria-label="Log book summary">
     <span class="log-book-status-followups">
-      <% if @unresolved_follow_ups.size.positive? %>
-        <strong class="tnum"><%= @unresolved_follow_ups.size %></strong>
-        <%= "open follow-up".pluralize(@unresolved_follow_ups.size) %>
+      <% if @open_follow_up_count.positive? %>
+        <%= link_to follow_ups_path do %>
+          <strong class="tnum"><%= @open_follow_up_count %></strong>
+          <%= "open follow-up".pluralize(@open_follow_up_count) %>
+        <% end %>
       <% else %>
         <span class="muted">No open follow-ups</span>
       <% end %>
@@ -74,41 +76,20 @@
 <%# Panel ordering depends on day-state. On read-only days the manager opens
     the log book to triage follow-ups first; on today they're filling it in. %>
 <% follow_ups_panel = capture do %>
-  <section class="block-panel">
-    <header class="block-panel-header">
-      <div>
-        <h2>Open follow-ups</h2>
-        <p>Flagged notes that still need manager attention.</p>
-      </div>
-    </header>
-
-    <% if @unresolved_follow_ups.any? %>
-      <div class="stack">
-        <% @unresolved_follow_ups.each do |response| %>
-          <article class="decision-card">
-            <div class="decision-card-body">
-              <h2><%= response.section_title_snapshot %></h2>
-              <p><%= response.display_value %></p>
-              <p class="small muted">
-                <%= response.log_book_entry.operating_date.strftime("%B %-d, %Y") %>
-                <% if response.last_submitted_by %>
-                  · flagged by <%= user_display_name(response.last_submitted_by) %>
-                <% end %>
-              </p>
-              <span class="badge badge-warning"><%= response.urgency.humanize %></span>
-            </div>
-            <% if current_user.admin? %>
-              <div class="decision-card-actions">
-                <%= button_to "Resolve", resolve_log_book_response_path(response), method: :patch, class: "button small" %>
-              </div>
-            <% end %>
-          </article>
+  <%# Follow-ups live in their own submodule now; this is a one-line link. %>
+  <%= link_to follow_ups_path, class: "log-book-followups-link" do %>
+    <div>
+      <strong>
+        <% if @open_follow_up_count.positive? %>
+          <%= pluralize(@open_follow_up_count, "open follow-up") %>
+        <% else %>
+          No open follow-ups
         <% end %>
-      </div>
-    <% else %>
-      <p class="empty-state">No open follow-ups.</p>
-    <% end %>
-  </section>
+      </strong>
+      <p class="muted small">Flagged issues that still need attention.</p>
+    </div>
+    <span class="log-book-followups-link-chev" aria-hidden="true">›</span>
+  <% end %>
 <% end %>
 
 <% entry_panel = capture do %>
