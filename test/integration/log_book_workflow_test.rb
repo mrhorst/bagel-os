@@ -167,33 +167,48 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
     assert_equal "normal", response.urgency
   end
 
-  test "validation errors re-render the form with the user's input" do
-    LogBookSection.create!(
+  test "blank values save without errors — log book can be partially filled" do
+    section = LogBookSection.create!(
       title: "Safe Count",
       section_type: "number",
-      allow_no_note: false,
-      required: true
+      allow_no_note: false
     )
 
     patch log_book_path, params: {
       operating_date: Date.current.iso8601,
       responses: {
-        LogBookSection.sole.id => { value_number: "", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" }
+        section.id => { value_number: "", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" }
+      }
+    }
+
+    assert_redirected_to log_book_path(date: Date.current)
+    saved = LogBookResponse.find_by!(log_book_section: section)
+    assert_nil saved.value_number
+  end
+
+  test "yes/no with an invalid value is rejected" do
+    section = LogBookSection.create!(
+      title: "Walk-in ok?",
+      section_type: "yes_no",
+      allow_no_note: false
+    )
+
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        section.id => { value_text: "maybe", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" }
       }
     }
 
     assert_response :unprocessable_entity
-    assert_match "Value number is required", response.body
-    assert_select "div.log-book-section-error p.log-book-card-error",
-      text: /Value number is required/
+    assert_match "Value text must be Yes or No", response.body
   end
 
-  test "required section without no-note option saves when no_note param is absent" do
+  test "log book saves when no_note is absent and the value is blank" do
     section = LogBookSection.create!(
       title: "Manager Notes",
       section_type: "long_text",
-      allow_no_note: false,
-      required: true
+      allow_no_note: false
     )
 
     patch log_book_path, params: {

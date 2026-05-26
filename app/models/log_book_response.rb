@@ -63,13 +63,13 @@ class LogBookResponse < ApplicationRecord
 
     return if no_note?
 
+    # Blank is always OK — the manager can save the log book partially filled
+    # and come back to it later. We only validate the *shape* of values that
+    # were actually entered.
     case section_type_snapshot
-    when "number"
-      errors.add(:value_number, "is required") if value_number.blank?
     when "yes_no"
+      return if value_text.blank?
       errors.add(:value_text, "must be Yes or No") unless value_text.in?(%w[yes no])
-    else
-      errors.add(:value_text, "is required") if value_text.blank?
     end
   end
 end
