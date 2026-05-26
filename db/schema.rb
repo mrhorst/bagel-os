@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -190,6 +190,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_120000) do
 
   create_table "log_book_responses", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.text "fields_snapshot"
     t.boolean "flagged_for_follow_up", default: false, null: false
     t.datetime "follow_up_resolved_at"
     t.integer "follow_up_resolved_by_id"
@@ -203,6 +204,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_120000) do
     t.datetime "updated_at", null: false
     t.string "urgency", default: "normal", null: false
     t.integer "value_decimals_snapshot"
+    t.text "value_grid"
     t.decimal "value_number", precision: 12, scale: 3
     t.text "value_text"
     t.index ["flagged_for_follow_up", "follow_up_resolved_at"], name: "index_log_book_responses_on_follow_up_status"
@@ -220,6 +222,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_120000) do
     t.datetime "created_at", null: false
     t.integer "created_by_id"
     t.text "description"
+    t.text "fields"
     t.integer "position", default: 0, null: false
     t.boolean "required", default: false, null: false
     t.string "section_type", null: false

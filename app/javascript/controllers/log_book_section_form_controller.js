@@ -1,18 +1,21 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Admin form for a Log Section. Some fields only make sense for "number" type
-// (unit_label, decimal places). Show/hide them as the type changes.
+// Admin form for a Log Section. Toggles fields based on the section type:
+// - number → unit_label & decimal places visible
+// - multi  → sub-fields manager visible (and the single-input number knobs hidden)
 export default class extends Controller {
-  static targets = ["sectionType", "numberOnly"]
+  static targets = ["sectionType", "numberOnly", "multiOnly"]
 
   connect() {
     this.sync()
   }
 
   sync() {
-    const isNumber = this.sectionTypeTarget.value === "number"
-    this.numberOnlyTargets.forEach((field) => {
-      field.hidden = !isNumber
-    })
+    const type = this.sectionTypeTarget.value
+    const isNumber = type === "number"
+    const isMulti  = type === "multi"
+
+    this.numberOnlyTargets.forEach((el) => { el.hidden = !isNumber })
+    this.multiOnlyTargets.forEach((el) => { el.hidden = !isMulti })
   }
 }

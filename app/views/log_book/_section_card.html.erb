@@ -31,6 +31,44 @@
 
   <div class="stack small log-book-section-card-form">
     <% case section.section_type %>
+    <% when "multi" %>
+      <%
+        # Prefer the snapshot if the response exists — labels may have
+        # changed since this row was saved, but the snapshot is what got
+        # validated and stored.
+        rendered_fields = response&.fields_snapshot.presence || section.fields
+        current_grid = (overrides[:value_grid].is_a?(Hash) || overrides[:value_grid].is_a?(ActionController::Parameters)) \
+                        ? overrides[:value_grid].to_h : (response&.value_grid || {})
+      %>
+      <div class="log-book-grid-inputs" data-log-book-no-note-target="valueField">
+        <% rendered_fields.each do |field| %>
+          <% raw_value = current_grid[field["key"]].to_s %>
+          <div class="log-book-grid-input">
+            <%= label_tag "#{field_name}[value_grid][#{field['key']}]", field["label"] %>
+            <% case field["type"] %>
+            <% when "yes_no" %>
+              <select name="<%= "#{field_name}[value_grid][#{field['key']}]" %>"
+                      data-log-book-no-note-target="input">
+                <option value="" <%= "selected" if raw_value.blank? %>>—</option>
+                <option value="yes" <%= "selected" if raw_value == "yes" %>>Yes</option>
+                <option value="no"  <%= "selected" if raw_value == "no"  %>>No</option>
+              </select>
+            <% when "short_text" %>
+              <%= text_field_tag "#{field_name}[value_grid][#{field['key']}]", raw_value,
+                    placeholder: field["unit_label"],
+                    data: { log_book_no_note_target: "input" } %>
+            <% else %>
+              <%= number_field_tag "#{field_name}[value_grid][#{field['key']}]", raw_value,
+                    step: (field["value_decimals"].to_i.zero? ? 1 : 10.0**(-field["value_decimals"].to_i)),
+                    placeholder: field["unit_label"],
+                    data: { log_book_no_note_target: "input" } %>
+            <% end %>
+            <% if field["unit_label"].to_s.strip.present? && field["type"] == "number" %>
+              <span class="log-book-grid-input-unit muted small"><%= field["unit_label"] %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
     <% when "number" %>
       <div class="field" data-log-book-no-note-target="valueField">
         <%= label_tag "#{field_name}[value_number]", section.unit_label.presence || "Value" %>

@@ -38,7 +38,7 @@ module FollowUps
       FollowUp.create!(
         origin:      @response,
         title:       @response.section_title_snapshot.to_s,
-        description: @response.value_text.presence,
+        description: description_for(@response),
         urgency:     @response.urgency.presence || "normal",
         opened_by:   @user,
         opened_at:   @response.last_submitted_at || Time.current,
@@ -49,9 +49,15 @@ module FollowUps
     def refresh!(follow_up)
       follow_up.update!(
         title:       @response.section_title_snapshot.to_s,
-        description: @response.value_text.presence,
+        description: description_for(@response),
         urgency:     @response.urgency.presence || "normal"
       )
+    end
+
+    def description_for(response)
+      return response.value_text.presence unless response.multi?
+      formatted = response.display_value
+      formatted == "Blank" ? nil : formatted
     end
   end
 end

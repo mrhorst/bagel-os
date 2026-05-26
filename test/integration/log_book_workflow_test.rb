@@ -291,4 +291,70 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
     assert follow_up.reload.follow_up_resolved_at.present?
     assert_equal users(:one), follow_up.follow_up_resolved_by
   end
+
+  test "multi-input section saves per-field grid values and snapshots the fields" do
+    post log_book_sections_path, params: {
+      log_book_section: {
+        title: "Bagel count",
+        section_type: "multi",
+        position: 1,
+        allow_no_note: "1",
+        fields: [
+          { label: "Plain",           type: "number", value_decimals: "0", unit_label: "bagels" },
+          { label: "Sesame seeds",    type: "number", value_decimals: "0" },
+          { label: "Cinnamon raisin", type: "number", value_decimals: "0" }
+        ]
+      }
+    }
+
+    section = LogBookSection.find_by!(title: "Bagel count")
+    assert_equal "multi", section.section_type
+    assert_equal %w[plain sesame_seeds cinnamon_raisin], section.fields.map { |f| f["key"] }
+    assert_equal "bagels", section.fields.first["unit_label"]
+
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        section.id => {
+          no_note: "0",
+          flagged_for_follow_up: "0",
+          urgency: "normal",
+          value_grid: { "plain" => "24", "sesame_seeds" => "12", "cinnamon_raisin" => "" }
+        }
+      }
+    }
+
+    response_row = LogBookResponse.find_by!(log_book_section: section)
+    assert_equal({ "plain" => "24", "sesame_seeds" => "12" }, response_row.value_grid)
+    assert_equal %w[plain sesame_seeds cinnamon_raisin], response_row.fields_snapshot.map { |f| f["key"] }
+    assert_match "Plain: 24 bagels", response_row.display_value
+    assert_match "Sesame seeds: 12", response_row.display_value
+    refute_match "Cinnamon raisin", response_row.display_value
+  end
+
+  test "multi-input section rejects non-numeric values for number sub-fields" do
+    section = LogBookSection.create!(
+      title: "Bagel count",
+      section_type: "multi",
+      allow_no_note: false,
+      fields: [
+        { "key" => "plain", "label" => "Plain", "type" => "number", "value_decimals" => 0 }
+      ]
+    )
+
+    patch log_book_path, params: {
+      operating_date: Date.current.iso8601,
+      responses: {
+        section.id => {
+          no_note: "0",
+          flagged_for_follow_up: "0",
+          urgency: "normal",
+          value_grid: { "plain" => "abc" }
+        }
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_match "Plain must be a number", response.body
+  end
 end

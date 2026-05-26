@@ -1,0 +1,31 @@
+<%# locals: field: %>
+<li class="log-book-fields-row" data-controller="log-book-field-row" data-log-book-fields-target="row">
+  <input type="hidden" name="log_book_section[fields][][key]" value="<%= field['key'] %>">
+  <div class="log-book-fields-row-grid">
+    <label class="field">
+      <span class="field-label">Label</span>
+      <input type="text" name="log_book_section[fields][][label]" value="<%= field['label'] %>" placeholder="Plain">
+    </label>
+    <label class="field">
+      <span class="field-label">Type</span>
+      <select name="log_book_section[fields][][type]"
+              data-log-book-field-row-target="type"
+              data-action="change->log-book-field-row#sync">
+        <% LogBookSection::FIELD_TYPES.each do |type| %>
+          <option value="<%= type %>" <%= "selected" if field["type"] == type %>><%= type.humanize %></option>
+        <% end %>
+      </select>
+    </label>
+    <label class="field" data-log-book-field-row-target="numberOnly">
+      <span class="field-label">Unit</span>
+      <input type="text" name="log_book_section[fields][][unit_label]" value="<%= field['unit_label'] %>" placeholder="bagels">
+    </label>
+    <label class="field" data-log-book-field-row-target="numberOnly">
+      <span class="field-label">Decimals</span>
+      <input type="number" name="log_book_section[fields][][value_decimals]" value="<%= field['value_decimals'] || 0 %>" min="0" max="6">
+    </label>
+    <button type="button" class="button small log-book-fields-row-remove"
+            data-action="log-book-field-row#remove"
+            aria-label="Remove input">×</button>
+  </div>
+</li>

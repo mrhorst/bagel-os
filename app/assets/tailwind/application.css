@@ -1107,6 +1107,84 @@
     min-width: 0;
     padding: 0 0 14px;
   }
+
+  /* Multi-input section: one row per sub-field, two columns when there's
+     room. Each input gets an inline unit chip when the type is number. */
+  .log-book-grid-inputs {
+    display: grid;
+    gap: 10px 14px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+  .log-book-grid-input {
+    align-items: center;
+    display: grid;
+    gap: 2px 8px;
+    grid-template-columns: 1fr auto;
+    min-width: 0;
+  }
+  .log-book-grid-input label {
+    color: var(--ink-2);
+    font-size: 0.84rem;
+    grid-column: 1 / -1;
+  }
+  .log-book-grid-input input,
+  .log-book-grid-input select {
+    width: 100%;
+  }
+  .log-book-grid-input-unit {
+    align-self: end;
+    padding-bottom: 9px;
+  }
+
+  /* Multi-input sub-field manager (Log Book Settings form). */
+  .log-book-fields-manager {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 12px;
+  }
+  .log-book-fields-manager-title {
+    font-size: 0.95rem;
+    margin: 0 0 4px;
+  }
+  .log-book-fields-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    list-style: none;
+    margin: 8px 0;
+    padding: 0;
+  }
+  .log-book-fields-row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+  }
+  .log-book-fields-row-grid {
+    align-items: end;
+    display: grid;
+    gap: 6px 8px;
+    grid-template-columns: 2fr 1fr 1fr 0.7fr auto;
+  }
+  .log-book-fields-row-grid .field {
+    min-width: 0;
+  }
+  .log-book-fields-row-grid .field input,
+  .log-book-fields-row-grid .field select {
+    width: 100%;
+  }
+  .log-book-fields-row-remove {
+    align-self: center;
+  }
+  @media (max-width: 640px) {
+    .log-book-fields-row-grid {
+      grid-template-columns: 1fr 1fr auto;
+    }
+    .log-book-fields-row-grid .field:nth-child(1) {
+      grid-column: 1 / -1;
+    }
+  }
   .decision-card.log-book-section-card .decision-card-body {
     padding: 14px 0 8px;
   }

@@ -3,6 +3,9 @@ class LogBookResponse < ApplicationRecord
 
   has_paper_trail ignore: %i[updated_at]
 
+  serialize :value_grid,      coder: JSON
+  serialize :fields_snapshot, coder: JSON
+
   belongs_to :log_book_entry
   belongs_to :log_book_section
   belongs_to :follow_up_resolved_by, class_name: "User", optional: true
@@ -21,16 +24,34 @@ class LogBookResponse < ApplicationRecord
     update!(follow_up_resolved_at: Time.current, follow_up_resolved_by: user)
   end
 
+  def multi?
+    section_type_snapshot == "multi"
+  end
+
+  def value_grid
+    super || {}
+  end
+
+  def fields_snapshot
+    super || []
+  end
+
   # Human-friendly rendering of the response value. Numbers respect the
   # decimal precision snapshotted at save time (default 0 = whole numbers)
   # and append the section's unit label when present.
   def display_value
     return "No note today" if no_note?
 
+    if multi?
+      formatted = fields_snapshot.map { |field| format_grid_entry(field) }.reject(&:blank?)
+      return "Blank" if formatted.empty?
+      return formatted.join(", ")
+    end
+
     case section_type_snapshot
     when "number"
       return "Blank" if value_number.blank?
-      formatted = format_number(value_number)
+      formatted = format_number(value_number, value_decimals_snapshot.to_i)
       unit = log_book_section&.unit_label.presence
       unit ? "#{formatted} #{unit}" : formatted
     when "yes_no"
@@ -46,8 +67,30 @@ class LogBookResponse < ApplicationRecord
 
   private
 
-  def format_number(number)
-    decimals = value_decimals_snapshot.to_i.clamp(0, 6)
+  def format_grid_entry(field)
+    key   = field["key"].to_s
+    raw   = value_grid[key].to_s
+    return nil if raw.blank?
+
+    pretty = case field["type"]
+             when "number"
+               n = BigDecimal(raw)
+               formatted = format_number(n, field["value_decimals"].to_i)
+               unit = field["unit_label"].to_s.strip.presence
+               unit ? "#{formatted} #{unit}" : formatted
+             when "yes_no"
+               raw == "yes" ? "Yes" : (raw == "no" ? "No" : nil)
+             else
+               raw
+             end
+    return nil if pretty.blank?
+    "#{field['label']}: #{pretty}"
+  rescue ArgumentError
+    nil
+  end
+
+  def format_number(number, decimals)
+    decimals = decimals.clamp(0, 6)
     if decimals.zero?
       number.to_i.to_s
     else
@@ -63,13 +106,33 @@ class LogBookResponse < ApplicationRecord
 
     return if no_note?
 
-    # Blank is always OK — the manager can save the log book partially filled
-    # and come back to it later. We only validate the *shape* of values that
-    # were actually entered.
+    # Blank is always OK. We only check the shape of values that were
+    # actually entered.
     case section_type_snapshot
     when "yes_no"
       return if value_text.blank?
       errors.add(:value_text, "must be Yes or No") unless value_text.in?(%w[yes no])
+    when "multi"
+      validate_grid_values
+    end
+  end
+
+  def validate_grid_values
+    fields_snapshot.each do |field|
+      key = field["key"].to_s
+      raw = value_grid[key].to_s
+      next if raw.blank?
+
+      case field["type"]
+      when "yes_no"
+        errors.add(:value_grid, "#{field['label']} must be Yes or No") unless %w[yes no].include?(raw)
+      when "number"
+        begin
+          BigDecimal(raw)
+        rescue ArgumentError
+          errors.add(:value_grid, "#{field['label']} must be a number")
+        end
+      end
     end
   end
 end

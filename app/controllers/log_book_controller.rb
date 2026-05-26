@@ -1,5 +1,8 @@
 class LogBookController < ApplicationController
   RESPONSE_FIELDS = %i[value_text value_number no_note flagged_for_follow_up urgency].freeze
+  # value_grid is a Hash whose keys come from the section's sub-fields, so
+  # we permit it loosely (any key, scalar value).
+  GRID_FIELD = :value_grid
 
   require_module_access :log_book
 
@@ -106,7 +109,9 @@ class LogBookController < ApplicationController
           ActiveModel::Type::Boolean.new.cast(attrs[:flagged_for_follow_up]),
         urgency: section.allow_follow_up? ? (attrs[:urgency].presence || "normal") : "normal",
         value_text: value_text_for(section, attrs, no_note),
-        value_number: no_note ? nil : attrs[:value_number].presence
+        value_number: no_note ? nil : attrs[:value_number].presence,
+        value_grid: value_grid_for(section, attrs, no_note),
+        fields_snapshot: section.multi? ? section.fields : []
       )
 
       # Only attribute a write to a user if the response actually changed.
@@ -123,9 +128,24 @@ class LogBookController < ApplicationController
   end
 
   def value_text_for(section, attrs, no_note)
-    return nil if no_note || section.section_type == "number"
+    return nil if no_note || section.section_type.in?(%w[number multi])
 
     attrs[:value_text].presence
+  end
+
+  # Strip blank entries so a multi-input section saved with empty fields
+  # round-trips as an empty hash rather than a hash of blank strings.
+  def value_grid_for(section, attrs, no_note)
+    return {} unless section.multi?
+    return {} if no_note
+
+    raw = attrs[:value_grid]
+    return {} unless raw.is_a?(ActionController::Parameters) || raw.is_a?(Hash)
+
+    raw.to_h.each_with_object({}) do |(key, value), acc|
+      next if value.to_s.strip.empty?
+      acc[key.to_s] = value.to_s.strip
+    end
   end
 
   # Whitelist responses with a proper StrongParameters pass instead of
@@ -133,11 +153,18 @@ class LogBookController < ApplicationController
   def response_params
     return {} unless params[:responses].is_a?(ActionController::Parameters)
 
-    permitted = params.require(:responses).permit(
-      params[:responses].keys.index_with { RESPONSE_FIELDS.map(&:to_s) }
-    )
+    # value_grid is a hash with user-defined keys (one per sub-field on a
+    # multi-input section), so we permit it as a free-shape hash.
+    result = {}
+    params.require(:responses).to_unsafe_h.each do |sid, attrs|
+      next unless attrs.is_a?(Hash)
 
-    permitted.to_h.transform_values { |attrs| attrs.symbolize_keys }
+      permitted = attrs.slice(*RESPONSE_FIELDS.map(&:to_s)).symbolize_keys
+      grid = attrs[GRID_FIELD.to_s]
+      permitted[GRID_FIELD] = grid.transform_keys(&:to_s) if grid.is_a?(Hash)
+      result[sid] = permitted
+    end
+    result
   end
 
   def build_response_errors(error_record)
