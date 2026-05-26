@@ -1104,6 +1104,7 @@
     box-shadow: inset 2px 0 0 var(--danger);
   }
   .log-book-section-card-form {
+    max-width: 100%;
     min-width: 0;
     padding: 0 0 14px;
   }
@@ -1114,21 +1115,27 @@
     display: grid;
     gap: 10px 14px;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    max-width: 100%;
+    min-width: 0;
   }
   .log-book-grid-input {
     align-items: center;
     display: grid;
     gap: 2px 8px;
     grid-template-columns: 1fr auto;
+    max-width: 100%;
     min-width: 0;
   }
   .log-book-grid-input label {
     color: var(--ink-2);
     font-size: 0.84rem;
     grid-column: 1 / -1;
+    overflow-wrap: anywhere;
   }
   .log-book-grid-input input,
   .log-book-grid-input select {
+    box-sizing: border-box;
+    min-width: 0;
     width: 100%;
   }
   .log-book-grid-input-unit {
@@ -1235,6 +1242,7 @@
     background: var(--surface-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
+    min-width: 0;
     padding: 4px;
     width: 100%;
   }
@@ -1244,11 +1252,18 @@
     cursor: pointer;
     flex: 1;
     justify-content: center;
+    min-width: 0;
     min-height: 32px;
     padding: 4px 12px;
     transition: background-color 80ms ease, color 80ms ease;
   }
   .radio.radio-segmented input { position: absolute; opacity: 0; pointer-events: none; }
+  .radio.radio-segmented span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .radio.radio-segmented:has(input:checked) {
     background: var(--accent);
     color: var(--accent-fg);
@@ -4394,13 +4409,24 @@
 
     .log-book-header {
       grid-template-columns: 1fr;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: hidden;
     }
     .log-book-header-controls {
       align-items: stretch;
       width: 100%;
     }
     .log-book-date-nav {
+      box-sizing: border-box;
+      min-width: 0;
       width: 100%;
+    }
+    .log-book-date-nav-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .log-book-header-actions {
       justify-content: flex-end;
@@ -4481,6 +4507,8 @@
     .block-panel {
       margin-bottom: 10px;
       max-width: 100%;
+      min-width: 0;
+      overflow-x: hidden;
       padding: 14px;
       width: 100%;
     }
@@ -4552,6 +4580,45 @@
     }
     .check {
       min-height: 32px;
+    }
+
+    .log-book-section-card,
+    .log-book-section-card-form,
+    .log-book-section-card .field,
+    .log-book-grid-inputs,
+    .log-book-grid-input,
+    .urgency-radios {
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .log-book-grid-inputs {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .log-book-section-card input:not([type='checkbox']):not([type='radio']),
+    .log-book-section-card select,
+    .log-book-section-card textarea {
+      box-sizing: border-box;
+      font-size: 16px;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .log-book-section-card .button-row,
+    .log-book-section-card .check {
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .log-book-section-card .check span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .radio.radio-segmented {
+      padding-left: 6px;
+      padding-right: 6px;
     }
   }
 }
