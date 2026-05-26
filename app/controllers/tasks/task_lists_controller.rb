@@ -73,6 +73,7 @@ module Tasks
         .where(task_list_id: task_list.id)
         .includes(:task_list, :active_completion)
         .reject { |occurrence| occurrence.missed?(operating_day: operating_day) }
+        .reject { |occurrence| occurrence.stale_completed_carryover?(operating_day: operating_day) }
         .sort_by { |occurrence| sort_key(occurrence, operating_day) }
     end
 

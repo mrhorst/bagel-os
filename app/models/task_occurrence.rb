@@ -64,6 +64,18 @@ class TaskOccurrence < ApplicationRecord
     refreshable?(operating_day: operating_day)
   end
 
+  # One-time occurrences carry forward (no completion window) until completed.
+  # After that, we lock them to the day they were actually completed — they
+  # shouldn't keep showing up as "Done" on the dashboard every day after.
+  def one_time_carryover?
+    completion_window_ends_at.blank?
+  end
+
+  def stale_completed_carryover?(operating_day: Tasks::OperatingDay.new)
+    return false unless one_time_carryover? && active_completion.present?
+    active_completion.completed_at.to_date != operating_day.today
+  end
+
   private
 
   def period_dates_are_ordered

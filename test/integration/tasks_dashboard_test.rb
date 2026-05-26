@@ -130,6 +130,41 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "one-time task hides from the dashboard the day after it was completed" do
+    list = TaskList.create!(name: "Follow-up tasks", position: 1)
+    task = list.tasks.create!(
+      title: "Snake the toilet",
+      recurrence_type: "one_time",
+      one_time_on: Date.new(2026, 5, 18),
+      due_time: Time.zone.parse("17:00")
+    )
+
+    # Complete it on the 19th.
+    travel_to Time.zone.local(2026, 5, 19, 10) do
+      Tasks::OccurrenceBuilder.new.build!(from: Date.current, to: Date.current)
+      occurrence = task.task_occurrences.sole
+      post tasks_occurrence_completion_path(occurrence), params: { notes: "Done." }
+    end
+
+    # The day of completion: still appears (as "Done").
+    travel_to Time.zone.local(2026, 5, 19, 22) do
+      get tasks_root_path
+      assert_select ".tasks-list-picker-card h2", text: "Follow-up tasks"
+    end
+
+    # The next day: hidden — it shouldn't keep popping up forever.
+    travel_to Time.zone.local(2026, 5, 20, 9) do
+      get tasks_root_path
+      assert_select ".tasks-list-picker-card h2", text: "Follow-up tasks", count: 0
+    end
+
+    # Pager back to the completion day: still there (locked to that day).
+    travel_to Time.zone.local(2026, 5, 20, 9) do
+      get tasks_root_path(date: "2026-05-19")
+      assert_select ".tasks-list-picker-card h2", text: "Follow-up tasks"
+    end
+  end
+
   private
 
   def build_today_occurrence(requires_photo_evidence: false)

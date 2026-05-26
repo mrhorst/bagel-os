@@ -78,8 +78,9 @@ module Tasks
 
     def day_occurrences(operating_day)
       scope = operating_day.actionable_daily_scope.includes(:task_list, :active_completion)
+        .reject { |o| o.stale_completed_carryover?(operating_day: operating_day) }
       return scope.reject { |o| o.missed?(operating_day: operating_day) } if @viewing_today
-      scope.to_a
+      scope
     end
 
     def month_occurrences(operating_day)
