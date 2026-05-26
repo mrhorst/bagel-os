@@ -4076,6 +4076,7 @@
     body {
       max-width: 100%;
       overflow-x: hidden;
+      width: 100%;
     }
 
     .app-shell {
@@ -4293,6 +4294,79 @@
     }
     .app-main > * {
       max-width: 100%;
+      min-width: 0;
+    }
+
+    /* App-wide mobile containment. Task screens already behaved well because
+       their grids and cards use minmax(0, 1fr) plus min-width: 0. Apply the
+       same shrink rules to the shared surfaces so no module creates a wider
+       visual viewport when pinching or focusing fields. */
+    .app-main,
+    .app-main > *,
+    .page-heading,
+    .hero-panel,
+    .panel,
+    .metric,
+    .metric-grid,
+    .grid,
+    .filters,
+    .stack,
+    .stacked-form,
+    .field,
+    .field-row,
+    .form-grid,
+    .button-row,
+    .actions,
+    .block-page-header,
+    .block-panel,
+    .block-stat-card,
+    .block-stat-grid,
+    .block-header-actions,
+    .block-panel-actions,
+    .dashboard-hero,
+    .dashboard-block,
+    .dashboard-block-header,
+    .dashboard-metric-card,
+    .dashboard-priority-strip,
+    .dashboard-metric-grid,
+    .dashboard-layout,
+    .dashboard-work-grid,
+    .dashboard-gap-summary,
+    .product-workspace-grid,
+    .product-summary-panel,
+    .product-summary-facts,
+    .task-card,
+    .task-row,
+    .tasks-workspace,
+    .tasks-list-picker,
+    .tasks-list-picker-card {
+      box-sizing: border-box;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .app-main form,
+    .app-main input:not([type='checkbox']):not([type='radio']),
+    .app-main select,
+    .app-main textarea {
+      box-sizing: border-box;
+      font-size: 16px;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .app-main img,
+    .app-main svg,
+    .app-main canvas,
+    .app-main video {
+      max-width: 100%;
+    }
+
+    .button,
+    input[type='submit'] {
+      max-width: 100%;
+      min-width: 0;
+      white-space: normal;
     }
 
     /* Mobile-only / desktop-only visibility toggles */
