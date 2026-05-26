@@ -3,13 +3,13 @@ module Tasks
   # TaskOccurrences. Callers do their own grouping (per task list, across
   # all lists, etc.) and hand the resulting slices to this class.
   class TaskMetrics
-    Summary = Data.define(:late, :open, :completed, :monthly_open) do
+    Summary = Data.define(:late, :open, :completed, :missed, :monthly_open) do
       def to_h_with_today_suffix
-        { late_today: late, open_today: open, completed_today: completed, open_this_month: monthly_open }
+        { late_today: late, open_today: open, completed_today: completed, missed_today: missed, open_this_month: monthly_open }
       end
 
       def to_h_no_suffix
-        { late: late, open: open, completed: completed, monthly_open: monthly_open }
+        { late: late, open: open, completed: completed, missed: missed, monthly_open: monthly_open }
       end
     end
 
@@ -27,6 +27,7 @@ module Tasks
         late: counts["late"],
         open: counts["open"],
         completed: counts["completed"],
+        missed: counts["missed"],
         monthly_open: @monthly.size
       )
     end

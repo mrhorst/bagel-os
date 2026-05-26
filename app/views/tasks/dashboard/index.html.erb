@@ -1,6 +1,8 @@
 <% content_for :title, "Tasks" %>
-<% content_for :mobile_fab do %>
-  <%= mobile_fab_button new_tasks_manage_task_path, label: "New task" %>
+<% if @viewing_today %>
+  <% content_for :mobile_fab do %>
+    <%= mobile_fab_button new_tasks_manage_task_path, label: "New task" %>
+  <% end %>
 <% end %>
 
 <% content_for :mobile_right_action do %>
@@ -25,51 +27,79 @@
   </div>
 <% end %>
 
-<%# ── Page header: title + context ─────────────────────────────────────── %>
+<%# ── Page header: title + date pager ──────────────────────────────────── %>
 <section class="tasks-page-header-v2">
   <div class="tasks-page-header-titles">
     <h1>Tasks</h1>
-    <p class="tasks-today-date"><%= Time.zone.now.strftime("%A, %b %-d") %></p>
+    <nav class="tasks-date-pager" aria-label="Browse by day">
+      <% if @prev_date %>
+        <%= link_to tasks_root_path(date: @prev_date), class: "tasks-date-pager-arrow", "aria-label": "Previous day (#{@prev_date.strftime('%A, %b %-d')})" do %>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3-5 5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <% end %>
+      <% else %>
+        <span class="tasks-date-pager-arrow tasks-date-pager-arrow-disabled" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="m10 3-5 5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </span>
+      <% end %>
+      <form action="<%= tasks_root_path %>" method="get" class="tasks-date-pager-form" data-controller="auto-submit">
+        <label class="tasks-date-pager-label">
+          <span class="visually-hidden">Pick a date</span>
+          <span class="tasks-date-pager-label-text">
+            <%= @viewing_today ? "Today · #{@selected_date.strftime('%a, %b %-d')}" : @selected_date.strftime('%A, %b %-d') %>
+          </span>
+          <input type="date" name="date" value="<%= @selected_date.iso8601 %>"
+                 min="<%= (Date.current - Tasks::DashboardController::PAST_DAYS_WINDOW).iso8601 %>"
+                 max="<%= Date.current.iso8601 %>"
+                 data-action="change->auto-submit#submit">
+        </label>
+      </form>
+      <% if @next_date %>
+        <%= link_to tasks_root_path(date: @next_date), class: "tasks-date-pager-arrow", "aria-label": "Next day (#{@next_date.strftime('%A, %b %-d')})" do %>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <% end %>
+      <% else %>
+        <span class="tasks-date-pager-arrow tasks-date-pager-arrow-disabled" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </span>
+      <% end %>
+    </nav>
   </div>
 </section>
 
-<%# Totals across every list — quick "what's the day look like" %>
-<%= render "tasks/kpi_squares", metrics: @metrics, dom_id: "tasks_dashboard_kpis" %>
+<% unless @viewing_today %>
+  <aside class="tasks-past-banner" role="status">
+    <span>Viewing <%= @selected_date.strftime("%A, %b %-d") %> — read-only.</span>
+    <%= link_to "Back to today", tasks_root_path, class: "tasks-past-banner-link" %>
+  </aside>
+<% end %>
 
-<%# ── One card per list. Tap a card to work it. ─────────────────────── %>
+<%# Totals across every list — quick "what's the day look like" %>
+<%= render "tasks/kpi_squares", metrics: @metrics, dom_id: "tasks_dashboard_kpis", past: !@viewing_today %>
+
+<%# ── One card per list. Tap a card to work it (today only). ─────────── %>
 <section class="tasks-list-picker" aria-label="Task lists">
   <% if @list_summaries.any? %>
     <% @list_summaries.each do |summary| %>
       <% list = summary[:list] %>
-      <%= link_to tasks_list_path(list), class: "tasks-list-picker-card #{'tasks-list-picker-card-quiet' unless summary[:visible_now]}" do %>
-        <div class="tasks-list-picker-card-main">
-          <h2><%= list.name %></h2>
-          <p class="muted small"><%= task_list_display_window_label(list) %></p>
+      <% card_class = "tasks-list-picker-card #{'tasks-list-picker-card-quiet' unless summary[:visible_now]}" %>
+      <% if @viewing_today %>
+        <%= link_to tasks_list_path(list), class: card_class do %>
+          <%= render "tasks/dashboard/list_card_body", list: list, summary: summary, past: false %>
+        <% end %>
+      <% else %>
+        <div class="<%= card_class %> tasks-list-picker-card-readonly">
+          <%= render "tasks/dashboard/list_card_body", list: list, summary: summary, past: true %>
         </div>
-
-        <div class="tasks-list-picker-card-counts">
-          <% if summary[:late].positive? %>
-            <span class="badge badge-warn tnum"><%= summary[:late] %> late</span>
-          <% end %>
-          <% if summary[:open].positive? %>
-            <span class="badge tnum"><%= summary[:open] %> open</span>
-          <% elsif summary[:late].zero? && summary[:completed].positive? %>
-            <span class="badge badge-ok tnum">All done</span>
-          <% end %>
-          <% if summary[:monthly_open].positive? %>
-            <span class="badge badge-compact tnum"><%= summary[:monthly_open] %> monthly</span>
-          <% end %>
-        </div>
-
-        <svg class="tasks-list-picker-card-arrow" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
       <% end %>
     <% end %>
   <% else %>
     <p class="empty-state">
-      <strong>No active task lists.</strong>
-      <span>Create a list and some tasks under <%= link_to "Settings", tasks_manage_path %>.</span>
+      <% if @viewing_today %>
+        <strong>No active task lists.</strong>
+        <span>Create a list and some tasks under <%= link_to "Settings", tasks_manage_path %>.</span>
+      <% else %>
+        <strong>No tasks for this day.</strong>
+      <% end %>
     </p>
   <% end %>
 </section>

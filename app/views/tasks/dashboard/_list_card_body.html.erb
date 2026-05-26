@@ -1,0 +1,34 @@
+<%# locals: list:, summary:, past: false %>
+<div class="tasks-list-picker-card-main">
+  <h2><%= list.name %></h2>
+  <p class="muted small"><%= task_list_display_window_label(list) %></p>
+</div>
+
+<div class="tasks-list-picker-card-counts">
+  <% if past %>
+    <% if summary[:missed].positive? %>
+      <span class="badge badge-warn tnum"><%= summary[:missed] %> missed</span>
+    <% end %>
+    <% if summary[:completed].positive? %>
+      <span class="badge badge-ok tnum"><%= summary[:completed] %> done</span>
+    <% end %>
+  <% else %>
+    <% if summary[:late].positive? %>
+      <span class="badge badge-warn tnum"><%= summary[:late] %> late</span>
+    <% end %>
+    <% if summary[:open].positive? %>
+      <span class="badge tnum"><%= summary[:open] %> open</span>
+    <% elsif summary[:late].zero? && summary[:completed].positive? %>
+      <span class="badge badge-ok tnum">All done</span>
+    <% end %>
+    <% if summary[:monthly_open].positive? %>
+      <span class="badge badge-compact tnum"><%= summary[:monthly_open] %> monthly</span>
+    <% end %>
+  <% end %>
+</div>
+
+<% unless past %>
+  <svg class="tasks-list-picker-card-arrow" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+    <path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+<% end %>
