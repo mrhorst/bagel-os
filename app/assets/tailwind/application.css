@@ -1260,6 +1260,11 @@
     min-width: 0;
     min-height: 32px;
     padding: 4px 12px;
+    /* MUST be positioned — the hidden radio inside is position: absolute
+       and would otherwise resolve its containing block to the viewport,
+       which (combined with any width-related rule) blows the mobile
+       layout viewport wider than the device. See base input rule. */
+    position: relative;
     transition: background-color 80ms ease, color 80ms ease;
   }
   .radio.radio-segmented input { position: absolute; opacity: 0; pointer-events: none; }
