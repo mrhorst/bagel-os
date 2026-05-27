@@ -12,6 +12,7 @@ class DashboardChartkickTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
+    assert_select "meta[name='viewport'][content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover']", visible: false
     assert_select "h1", text: /Today/
     assert_select ".home-surface-grid"
     assert_select ".home-surface-card .home-surface-card-label", text: "Tasks"
