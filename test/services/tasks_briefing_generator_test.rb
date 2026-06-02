@@ -146,6 +146,83 @@ class TasksBriefingGeneratorTest < ActiveSupport::TestCase
     end
   end
 
+  test "matches gateway priority items by title when occurrence id is omitted" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      task = list.tasks.create!(
+        title: "Check sanitizer buckets",
+        instructions: "Use test strips before prep starts.",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("08:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+      occurrence = occurrence_for(task, Date.current)
+
+      briefing = Tasks::BriefingGenerator.new(
+        operating_day: operating_day,
+        gateway_client: FakeGatewayClient.new(
+          response: {
+            "headline" => "1 opening task is overdue",
+            "next_action" => "Check sanitizer buckets now with test strips and mark the task complete once verified.",
+            "priority_items" => [
+              {
+                "title" => "Check sanitizer buckets",
+                "status" => "late",
+                "due_label" => "8:00 AM",
+                "list_name" => "Opening",
+                "why_it_matters" => "Sanitizer concentration needs to be verified before prep starts."
+              }
+            ]
+          }
+        )
+      ).find_or_generate!
+
+      assert_equal "1 opening task is overdue", briefing.headline
+      assert_equal [ occurrence.id ], briefing.priority_items.map { |item| item["task_occurrence_id"] }
+      assert_equal "Sanitizer concentration needs to be verified before prep starts.", briefing.priority_items.first["reason"]
+    end
+  end
+
+  test "uses gateway note and due fields when matching title-only priority items" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      task = list.tasks.create!(
+        title: "Check sanitizer buckets",
+        instructions: "Use test strips before prep starts.",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("08:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+      occurrence = occurrence_for(task, Date.current)
+
+      briefing = Tasks::BriefingGenerator.new(
+        operating_day: operating_day,
+        gateway_client: FakeGatewayClient.new(
+          response: {
+            "headline" => "Opening task is overdue",
+            "next_action" => "Check sanitizer buckets now with test strips and mark the task complete once verified.",
+            "priority_items" => [
+              {
+                "title" => "Check sanitizer buckets",
+                "status" => "late",
+                "due" => "8:00 AM",
+                "note" => "Use test strips before prep starts."
+              }
+            ]
+          }
+        )
+      ).find_or_generate!
+
+      assert_equal [ occurrence.id ], briefing.priority_items.map { |item| item["task_occurrence_id"] }
+      assert_equal "8:00 AM", briefing.priority_items.first["due_label"]
+      assert_equal "Use test strips before prep starts.", briefing.priority_items.first["reason"]
+    end
+  end
+
   test "falls back to deterministic briefing when gateway response is invalid" do
     travel_to Time.zone.local(2026, 5, 18, 9, 0) do
       list = TaskList.create!(name: "Opening", position: 1)
@@ -161,6 +238,28 @@ class TasksBriefingGeneratorTest < ActiveSupport::TestCase
       briefing = Tasks::BriefingGenerator.new(
         operating_day: operating_day,
         gateway_client: FakeGatewayClient.new(response: { "headline" => "" })
+      ).find_or_generate!
+
+      assert_match "1 task is late", briefing.headline
+      assert_equal [ occurrence_for(task, Date.current).id ], briefing.priority_items.map { |item| item["task_occurrence_id"] }
+    end
+  end
+
+  test "falls back to deterministic briefing when gateway only acknowledges async delivery" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      task = list.tasks.create!(
+        title: "Check sanitizer buckets",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("08:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+
+      briefing = Tasks::BriefingGenerator.new(
+        operating_day: operating_day,
+        gateway_client: FakeGatewayClient.new(response: { "status" => "accepted", "route" => "task-briefing" })
       ).find_or_generate!
 
       assert_match "1 task is late", briefing.headline

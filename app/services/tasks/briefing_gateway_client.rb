@@ -1,4 +1,5 @@
 require "net/http"
+require "openssl"
 
 module Tasks
   class BriefingGatewayClient
@@ -29,8 +30,8 @@ module Tasks
       request = Net::HTTP::Post.new(uri)
       request["Content-Type"] = "application/json"
       request["Accept"] = "application/json"
-      request["Authorization"] = "Bearer #{token}" if token.present?
       request.body = JSON.generate(payload)
+      sign_request!(request)
 
       response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https", open_timeout: timeout_seconds, read_timeout: timeout_seconds) do |http|
         http.request(request)
@@ -46,5 +47,13 @@ module Tasks
     private
 
     attr_reader :endpoint, :token, :timeout_seconds
+
+    def sign_request!(request)
+      return if token.blank?
+
+      signature = OpenSSL::HMAC.hexdigest("SHA256", token, request.body)
+      request["X-Hub-Signature-256"] = "sha256=#{signature}"
+      request["X-Webhook-Signature"] = signature
+    end
   end
 end

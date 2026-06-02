@@ -90,8 +90,13 @@ The Tasks dashboard can talk directly to a local agent gateway for shift briefin
 Configure the gateway with environment variables:
 
 - `TASK_BRIEFING_AGENT_GATEWAY_URL`: full HTTP endpoint for the local agent, for example `http://127.0.0.1:8787/gateways/task-briefing`
-- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: optional bearer token sent as `Authorization: Bearer ...`
+- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: optional webhook signing secret used to send HMAC-SHA256 signatures
 - `TASK_BRIEFING_AGENT_GATEWAY_TIMEOUT`: optional timeout in seconds, default `8`
+
+When a token is configured, the app signs the exact JSON request body with HMAC-SHA256 and sends both common webhook signature headers:
+
+- `X-Hub-Signature-256: sha256=<hex digest>`
+- `X-Webhook-Signature: <hex digest>`
 
 The app sends a `POST` request with JSON:
 
@@ -141,9 +146,15 @@ The gateway should return JSON:
 }
 ```
 
+If the gateway only returns an async acknowledgement such as `{"status":"accepted"}` and sends the actual briefing somewhere else, such as Telegram, the Rails dashboard will not receive the agent-written briefing. In that case, the dashboard safely falls back to the deterministic briefing. To show the agent-written text in Rails, use one of these patterns:
+
+- **Synchronous response:** the webhook returns the briefing JSON in the HTTP response body.
+- **Callback response:** the webhook accepts the event, then posts the briefing JSON back to a future Rails callback endpoint.
+
 The app validates the response before displaying it:
 
 - `headline` and `next_action` must be present.
-- `priority_items` must reference task occurrence IDs from the request.
+- `priority_items` should reference task occurrence IDs from the request.
+- If a priority item omits `task_occurrence_id`, the app tries a strict fallback match by exact task title plus optional list/status/due label.
 - Unknown task IDs are ignored.
 - The agent output is saved in `task_briefings`, not generated on every page render.

@@ -169,7 +169,7 @@ module Tasks
       allowed = snapshot.index_by { |item| item[:id].to_i }
 
       Array(items).filter_map do |item|
-        task = allowed[item["task_occurrence_id"].to_i]
+        task = gateway_priority_task(item, snapshot, allowed)
         next if task.blank?
 
         {
@@ -177,10 +177,38 @@ module Tasks
           "title" => item["title"].to_s.presence || task[:title],
           "list_name" => item["list_name"].to_s.presence || task[:list_name],
           "status" => item["status"].to_s.presence || task[:status],
-          "due_label" => item["due_label"].to_s.presence || due_label_for(task),
-          "reason" => item["reason"].to_s.squish.presence || reason_for(task)
+          "due_label" => gateway_due_label(item).presence || due_label_for(task),
+          "reason" => gateway_reason(item).presence || reason_for(task)
         }
       end.first(MAX_PRIORITY_ITEMS)
+    end
+
+    def gateway_priority_task(item, snapshot, allowed)
+      task_occurrence_id = item["task_occurrence_id"].presence
+      return allowed[task_occurrence_id.to_i] if task_occurrence_id.present?
+
+      title = item["title"].to_s.squish
+      return nil if title.blank?
+
+      matches = snapshot.select { |task| task[:title] == title }
+      list_name = item["list_name"].to_s.squish
+      status = item["status"].to_s.squish
+      due_label = gateway_due_label(item)
+
+      matches = matches.select { |task| task[:list_name] == list_name } if list_name.present?
+      matches = matches.select { |task| task[:status] == status } if status.present?
+      matches = matches.select { |task| due_label_for(task) == due_label } if due_label.present?
+      matches.one? ? matches.first : nil
+    end
+
+    def gateway_due_label(item)
+      item["due_label"].to_s.presence || item["due"].to_s.presence
+    end
+
+    def gateway_reason(item)
+      item["reason"].to_s.squish.presence ||
+        item["why_it_matters"].to_s.squish.presence ||
+        item["note"].to_s.squish.presence
     end
 
     def headline_for(snapshot)
