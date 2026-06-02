@@ -10,6 +10,7 @@
   surfaces = [
     {
       label: "Tasks",
+      module_name: "tasks",
       path: tasks_root_path,
       count: @tasks_open_today,
       tone: @tasks_late_today.positive? ? "urgent" : (@tasks_open_today.positive? ? "active" : "ok"),
@@ -25,6 +26,7 @@
     },
     {
       label: "Log Book",
+      module_name: "log_book",
       path: log_book_path,
       count: @log_book_follow_up_count,
       tone: @log_book_follow_up_count.positive? ? "urgent" : "ok",
@@ -33,6 +35,7 @@
     },
     {
       label: "Review queue",
+      module_name: "normalization_reviews",
       path: normalization_reviews_path,
       count: @pending_review_count,
       tone: @pending_review_count.positive? ? "urgent" : "ok",
@@ -41,6 +44,7 @@
     },
     {
       label: "Order guides",
+      module_name: "order_guides",
       path: order_guides_path,
       count: @guide_items_needing_review_count,
       tone: @guide_items_needing_review_count.positive? ? "active" : "ok",
@@ -49,6 +53,7 @@
     },
     {
       label: "Inventory",
+      module_name: "inventory",
       path: inventory_path,
       count: @inventory_items_needing_review_count,
       tone: @inventory_items_needing_review_count.positive? ? "active" : "ok",
@@ -57,13 +62,14 @@
     },
     {
       label: "Products",
+      module_name: "products",
       path: products_path,
       count: @products_needing_review_count,
       tone: @products_needing_review_count.positive? ? "active" : "ok",
       summary: @products_needing_review_count.positive? ? "#{@products_needing_review_count} records to clean up" : "Records look complete",
       description: "The master catalog of everything purchased."
     }
-  ]
+  ].select { |surface| current_user&.can_access?(surface[:module_name]) }
 %>
 
 <section class="home-hero">

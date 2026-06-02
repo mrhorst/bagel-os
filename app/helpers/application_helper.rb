@@ -58,14 +58,20 @@ module ApplicationHelper
       MODULES.select { |m| module_visible?(m) }.map { |m| m.merge(path: send(m[:path_helper])) }
   end
 
-  # Mobile bottom tab bar: Home + the 4 hubs.
+  # Mobile bottom tab bar: Home + the hubs that hold at least one module
+  # the current user can actually open.
   def mobile_tab_items
     [{ key: :home, label: "Home", icon: "chart", path: root_path, root: true }] +
-      HUBS.map { |h| h.merge(path: send(h[:path_helper])) }
+      HUBS.select { |h| hub_visible?(h[:key]) }.map { |h| h.merge(path: send(h[:path_helper])) }
   end
 
   def hub_modules(hub_key)
     MODULES.select { |m| m[:hub] == hub_key && module_visible?(m) }
+  end
+
+  # A hub is worth showing only if the user can see something inside it.
+  def hub_visible?(hub_key)
+    hub_modules(hub_key).any?
   end
 
   def hub_def(hub_key)

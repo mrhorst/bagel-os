@@ -4179,10 +4179,15 @@
       box-sizing: border-box;
       display: grid;
       gap: 0;
-      /* minmax(0, 1fr) — without the 0 floor, 1fr can't shrink below each
+      /* One equal-width track per tab, however many the user's permissions
+         leave visible (3–5). grid-auto-flow: column + auto-columns spreads
+         them across the full bar instead of packing into a fixed 5-up grid
+         and leaving dead space on the right.
+         minmax(0, 1fr) — without the 0 floor, 1fr can't shrink below each
          tab's intrinsic content width, which on narrow phones pushes the
          whole bar past viewport and creates a phantom horizontal scroll. */
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
       left: 0;
       max-width: 100vw;
       padding: 4px 4px env(safe-area-inset-bottom, 4px);

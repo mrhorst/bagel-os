@@ -1,6 +1,7 @@
 <%# Bottom tab bar — visible only at <640px (kitchen / on-the-floor use).
-    Home + the 4 hubs. The hubs and the modules underneath them come from
-    the catalog in ApplicationHelper. %>
+    Home + the hubs that hold at least one module the user can access. The
+    hubs and the modules underneath them come from the catalog in
+    ApplicationHelper. %>
 <nav class="mobile-tabs" aria-label="Primary (mobile)">
   <% mobile_tab_items.each do |item| %>
     <%= link_to item[:path], class: ["mobile-tab", ("active" if active_nav_item?(item))] do %>
