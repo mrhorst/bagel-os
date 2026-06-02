@@ -82,3 +82,68 @@ Recommended first tools:
 - `price_spike_alerts(start_date:, end_date:)`
 
 All LLM-facing tools should be logged and should return IDs so the UI can link back to database records.
+
+## Task Briefing Gateway
+
+The Tasks dashboard can talk directly to a local agent gateway for shift briefings. If no gateway is configured, or the gateway returns an invalid response, the app falls back to its deterministic task-priority briefing.
+
+Configure the gateway with environment variables:
+
+- `TASK_BRIEFING_AGENT_GATEWAY_URL`: full HTTP endpoint for the local agent, for example `http://127.0.0.1:8787/gateways/task-briefing`
+- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: optional bearer token sent as `Authorization: Bearer ...`
+- `TASK_BRIEFING_AGENT_GATEWAY_TIMEOUT`: optional timeout in seconds, default `8`
+
+The app sends a `POST` request with JSON:
+
+```json
+{
+  "gateway": "task_briefing",
+  "version": 1,
+  "generated_at": "2026-06-02T09:05:00-04:00",
+  "scope": {
+    "type": "tasks_dashboard",
+    "key": "today",
+    "operating_date": "2026-06-02"
+  },
+  "instructions": [
+    "Prioritize late work, due-soon work, food-safety-sensitive work, photo-evidence work, then monthly work.",
+    "Do not invent tasks, legal requirements, completion claims, or compliance claims.",
+    "Return JSON with headline, next_action, and up to three priority_items."
+  ],
+  "tasks": [
+    {
+      "task_occurrence_id": 123,
+      "title": "Check sanitizer buckets",
+      "instructions": "Use test strips before prep starts.",
+      "list_name": "Opening",
+      "status": "late",
+      "due_at": "2026-06-02T08:00:00-04:00",
+      "due_label": "8:00 AM",
+      "requires_photo_evidence": false,
+      "priority_bucket": 0
+    }
+  ]
+}
+```
+
+The gateway should return JSON:
+
+```json
+{
+  "headline": "Sanitizer check needs attention before prep gets busier.",
+  "next_action": "Start with sanitizer buckets, then move into line restock.",
+  "priority_items": [
+    {
+      "task_occurrence_id": 123,
+      "reason": "It is already late and protects the food-safety workflow."
+    }
+  ]
+}
+```
+
+The app validates the response before displaying it:
+
+- `headline` and `next_action` must be present.
+- `priority_items` must reference task occurrence IDs from the request.
+- Unknown task IDs are ignored.
+- The agent output is saved in `task_briefings`, not generated on every page render.

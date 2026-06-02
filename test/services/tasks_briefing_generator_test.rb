@@ -107,9 +107,115 @@ class TasksBriefingGeneratorTest < ActiveSupport::TestCase
     end
   end
 
+  test "uses a valid agent gateway response" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      task = list.tasks.create!(
+        title: "Check sanitizer buckets",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("08:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+      occurrence = occurrence_for(task, Date.current)
+      gateway = FakeGatewayClient.new(
+        response: {
+          "headline" => "Sanitizer check is the move right now.",
+          "next_action" => "Start with sanitizer before prep gets busy.",
+          "priority_items" => [
+            {
+              "task_occurrence_id" => occurrence.id,
+              "reason" => "It protects food-safety workflow and is already late."
+            },
+            {
+              "task_occurrence_id" => 999_999,
+              "reason" => "This should be ignored because it is not in the snapshot."
+            }
+          ]
+        }
+      )
+
+      briefing = Tasks::BriefingGenerator.new(operating_day: operating_day, gateway_client: gateway).find_or_generate!
+
+      assert_equal "Sanitizer check is the move right now.", briefing.headline
+      assert_equal "Start with sanitizer before prep gets busy.", briefing.next_action
+      assert_equal [ occurrence.id ], briefing.priority_items.map { |item| item["task_occurrence_id"] }
+      assert_equal "Check sanitizer buckets", gateway.last_payload["tasks"].first["title"]
+      assert_equal "task_briefing", gateway.last_payload["gateway"]
+    end
+  end
+
+  test "falls back to deterministic briefing when gateway response is invalid" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      task = list.tasks.create!(
+        title: "Check sanitizer buckets",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("08:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+
+      briefing = Tasks::BriefingGenerator.new(
+        operating_day: operating_day,
+        gateway_client: FakeGatewayClient.new(response: { "headline" => "" })
+      ).find_or_generate!
+
+      assert_match "1 task is late", briefing.headline
+      assert_equal [ occurrence_for(task, Date.current).id ], briefing.priority_items.map { |item| item["task_occurrence_id"] }
+    end
+  end
+
+  test "refreshes a stale briefing even when the task snapshot is unchanged" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      list.tasks.create!(
+        title: "Check display case",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("12:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+
+      first = Tasks::BriefingGenerator.new(operating_day: operating_day).find_or_generate!
+
+      travel 61.minutes
+
+      second = Tasks::BriefingGenerator.new(operating_day: Tasks::OperatingDay.new).find_or_generate!
+
+      assert_equal first.id, second.id
+      assert_operator second.updated_at, :>, first.updated_at
+    end
+  end
+
   private
 
   def occurrence_for(task, starts_on)
     task.task_occurrences.find_by!(period_starts_on: starts_on)
+  end
+
+  class FakeGatewayClient
+    attr_reader :last_payload
+
+    def initialize(response:, configured: true)
+      @response = response
+      @configured = configured
+    end
+
+    def configured?
+      @configured
+    end
+
+    def config_digest
+      "fake-gateway"
+    end
+
+    def call(payload)
+      @last_payload = payload
+      @response
+    end
   end
 end

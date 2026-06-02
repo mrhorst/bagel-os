@@ -4,10 +4,11 @@ module Tasks
     SCOPE_KEY = "today".freeze
     MAX_PRIORITY_ITEMS = 3
 
-    def initialize(operating_day: OperatingDay.new, daily: nil, monthly: nil)
+    def initialize(operating_day: OperatingDay.new, daily: nil, monthly: nil, gateway_client: BriefingGatewayClient.new)
       @operating_day = operating_day
       @daily = daily
       @monthly = monthly
+      @gateway_client = gateway_client
     end
 
     def find_or_generate!
@@ -15,7 +16,7 @@ module Tasks
       digest = digest_for(snapshot)
       briefing = TaskBriefing.find_or_initialize_by(scope_type: SCOPE_TYPE, scope_key: SCOPE_KEY)
 
-      return briefing if briefing.persisted? && briefing.input_digest == digest
+      return briefing if briefing.persisted? && briefing.input_digest == digest && !briefing_stale?(briefing)
 
       attrs = briefing_attributes(snapshot, digest)
       briefing.update!(attrs)
@@ -24,7 +25,7 @@ module Tasks
 
     private
 
-    attr_reader :operating_day
+    attr_reader :operating_day, :gateway_client
 
     def build_snapshot
       daily_items = actionable_daily_occurrences.map { |occurrence| occurrence_snapshot(occurrence) }
@@ -81,21 +82,105 @@ module Tasks
       normalized = snapshot.map do |item|
         item.merge(due_at: item[:due_at]&.iso8601, priority_bucket: priority_bucket(item))
       end
-      Digest::SHA256.hexdigest(JSON.generate(normalized))
+      Digest::SHA256.hexdigest(JSON.generate(snapshot: normalized, gateway: gateway_digest))
     end
 
     def briefing_attributes(snapshot, digest)
-      priority_items = snapshot.take(MAX_PRIORITY_ITEMS).map { |item| priority_item_for(item) }
+      gateway_attrs = gateway_briefing_attributes(snapshot)
+      priority_items = gateway_attrs&.fetch(:priority_items) || snapshot.take(MAX_PRIORITY_ITEMS).map { |item| priority_item_for(item) }
 
       {
         generated_at: operating_day.now,
         stale_after: operating_day.now + 1.hour,
         input_digest: digest,
-        headline: headline_for(snapshot),
-        next_action: next_action_for(priority_items),
+        headline: gateway_attrs&.fetch(:headline) || headline_for(snapshot),
+        next_action: gateway_attrs&.fetch(:next_action) || next_action_for(priority_items),
         priority_items: priority_items,
         source_task_occurrence_ids: snapshot.map { |item| item[:id] }
       }
+    end
+
+    def briefing_stale?(briefing)
+      briefing.stale_after.present? && briefing.stale_after <= operating_day.now
+    end
+
+    def gateway_digest
+      return "disabled" unless gateway_client.configured?
+
+      gateway_client.config_digest
+    end
+
+    def gateway_briefing_attributes(snapshot)
+      return nil unless gateway_client.configured?
+
+      response = gateway_client.call(gateway_payload(snapshot))
+      normalize_gateway_response(response, snapshot)
+    end
+
+    def gateway_payload(snapshot)
+      {
+        "gateway" => "task_briefing",
+        "version" => 1,
+        "generated_at" => operating_day.now.iso8601,
+        "scope" => {
+          "type" => SCOPE_TYPE,
+          "key" => SCOPE_KEY,
+          "operating_date" => operating_day.today.iso8601
+        },
+        "instructions" => [
+          "Prioritize late work, due-soon work, food-safety-sensitive work, photo-evidence work, then monthly work.",
+          "Do not invent tasks, legal requirements, completion claims, or compliance claims.",
+          "Return JSON with headline, next_action, and up to three priority_items."
+        ],
+        "tasks" => snapshot.map { |item| gateway_task_payload(item) }
+      }
+    end
+
+    def gateway_task_payload(item)
+      {
+        "task_occurrence_id" => item[:id],
+        "title" => item[:title],
+        "instructions" => item[:instructions],
+        "list_name" => item[:list_name],
+        "status" => item[:status],
+        "due_at" => item[:due_at]&.iso8601,
+        "due_label" => due_label_for(item),
+        "requires_photo_evidence" => item[:requires_photo_evidence],
+        "priority_bucket" => priority_bucket(item)
+      }
+    end
+
+    def normalize_gateway_response(response, snapshot)
+      return nil unless response.is_a?(Hash)
+
+      headline = response["headline"].to_s.squish
+      next_action = response["next_action"].to_s.squish
+      priority_items = normalize_gateway_priority_items(response["priority_items"], snapshot)
+      return nil if headline.blank? || next_action.blank?
+
+      {
+        headline: headline,
+        next_action: next_action,
+        priority_items: priority_items.presence || snapshot.take(MAX_PRIORITY_ITEMS).map { |item| priority_item_for(item) }
+      }
+    end
+
+    def normalize_gateway_priority_items(items, snapshot)
+      allowed = snapshot.index_by { |item| item[:id].to_i }
+
+      Array(items).filter_map do |item|
+        task = allowed[item["task_occurrence_id"].to_i]
+        next if task.blank?
+
+        {
+          "task_occurrence_id" => task[:id],
+          "title" => item["title"].to_s.presence || task[:title],
+          "list_name" => item["list_name"].to_s.presence || task[:list_name],
+          "status" => item["status"].to_s.presence || task[:status],
+          "due_label" => item["due_label"].to_s.presence || due_label_for(task),
+          "reason" => item["reason"].to_s.squish.presence || reason_for(task)
+        }
+      end.first(MAX_PRIORITY_ITEMS)
     end
 
     def headline_for(snapshot)
