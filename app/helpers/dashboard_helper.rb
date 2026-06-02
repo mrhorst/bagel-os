@@ -28,6 +28,20 @@ module DashboardHelper
     "Today, #{date.strftime('%a %b %-d')}"
   end
 
+  # Time-of-day greeting, e.g. "Good morning, Sam". Uses the app time zone
+  # (Time.current) and the user's first name when we have one.
+  def dashboard_greeting(user = current_user, time = Time.current)
+    part_of_day =
+      case time.hour
+      when 5...12  then "Good morning"
+      when 12...17 then "Good afternoon"
+      else              "Good evening"
+      end
+
+    first_name = user&.name.to_s.split.first
+    first_name.present? ? "#{part_of_day}, #{first_name}" : part_of_day
+  end
+
   # Counts the number of distinct work areas that have anything to do.
   def dashboard_attention_buckets(*counts)
     counts.count { |c| c.to_i.positive? }

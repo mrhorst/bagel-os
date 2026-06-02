@@ -12,7 +12,8 @@ class DashboardChartkickTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "h1", text: /Today/
+    assert_select ".home-hero h1", text: /Good (morning|afternoon|evening)/
+    assert_select ".home-hero p", text: /Today/
     assert_select ".home-surface-grid"
     assert_select ".home-surface-card .home-surface-card-label", text: "Tasks"
     assert_select ".home-surface-card .home-surface-card-label", text: "Log Book"
