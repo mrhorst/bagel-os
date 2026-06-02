@@ -223,6 +223,42 @@ class TasksBriefingGeneratorTest < ActiveSupport::TestCase
     end
   end
 
+  test "accepts hermes summary and items response shape" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      task = list.tasks.create!(
+        title: "Check sanitizer buckets",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("08:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+      occurrence = occurrence_for(task, Date.current)
+
+      briefing = Tasks::BriefingGenerator.new(
+        operating_day: operating_day,
+        gateway_client: FakeGatewayClient.new(
+          response: {
+            "summary" => "Opening task is overdue",
+            "items" => [
+              {
+                "title" => "Check sanitizer buckets",
+                "status" => "late",
+                "due" => "8:00 AM",
+                "note" => "Use test strips before prep starts."
+              }
+            ]
+          }
+        )
+      ).find_or_generate!
+
+      assert_equal "Opening task is overdue", briefing.headline
+      assert_match "Start with Check sanitizer buckets", briefing.next_action
+      assert_equal [ occurrence.id ], briefing.priority_items.map { |item| item["task_occurrence_id"] }
+    end
+  end
+
   test "falls back to deterministic briefing when gateway response is invalid" do
     travel_to Time.zone.local(2026, 5, 18, 9, 0) do
       list = TaskList.create!(name: "Opening", position: 1)

@@ -153,9 +153,9 @@ module Tasks
     def normalize_gateway_response(response, snapshot)
       return nil unless response.is_a?(Hash)
 
-      headline = response["headline"].to_s.squish
-      next_action = response["next_action"].to_s.squish
-      priority_items = normalize_gateway_priority_items(response["priority_items"], snapshot)
+      headline = response["headline"].to_s.squish.presence || response["summary"].to_s.squish
+      priority_items = normalize_gateway_priority_items(response["priority_items"].presence || response["items"], snapshot)
+      next_action = response["next_action"].to_s.squish.presence || next_action_for(priority_items)
       return nil if headline.blank? || next_action.blank?
 
       {

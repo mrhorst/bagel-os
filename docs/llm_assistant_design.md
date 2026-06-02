@@ -87,11 +87,67 @@ All LLM-facing tools should be logged and should return IDs so the UI can link b
 
 The Tasks dashboard can talk directly to a local agent gateway for shift briefings. If no gateway is configured, or the gateway returns an invalid response, the app falls back to its deterministic task-priority briefing.
 
-Configure the gateway with environment variables:
+Configure the gateway with environment variables. For synchronous dashboard updates, prefer the OpenAI-compatible Hermes API endpoint:
 
-- `TASK_BRIEFING_AGENT_GATEWAY_URL`: full HTTP endpoint for the local agent, for example `http://127.0.0.1:8787/gateways/task-briefing`
-- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: optional webhook signing secret used to send HMAC-SHA256 signatures
-- `TASK_BRIEFING_AGENT_GATEWAY_TIMEOUT`: optional timeout in seconds, default `8`
+- `TASK_BRIEFING_AGENT_GATEWAY_URL`: full HTTP endpoint for the local agent, for example `http://127.0.0.1:8642/v1/chat/completions`
+- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: optional secret. Chat completions use it as a bearer token. Webhook endpoints use it as an HMAC signing secret.
+- `TASK_BRIEFING_AGENT_GATEWAY_TIMEOUT`: optional timeout in seconds, default `8`; synchronous local LLM calls may need `60`
+
+### Synchronous Chat Completions Endpoint
+
+When `TASK_BRIEFING_AGENT_GATEWAY_URL` ends in `/v1/chat/completions`, the app sends an OpenAI-style request:
+
+```json
+{
+  "model": "hermes-task-briefing",
+  "stream": false,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Return ONLY valid JSON. Generate a task briefing from this payload:\n\n{...Rails task payload...}"
+    }
+  ]
+}
+```
+
+The request uses bearer auth when a token is present:
+
+```txt
+Authorization: Bearer <token>
+```
+
+The app expects the response content at `choices[0].message.content` to be JSON. It accepts either the canonical dashboard shape:
+
+```json
+{
+  "headline": "Sanitizer check needs attention before prep gets busier.",
+  "next_action": "Start with sanitizer buckets, then move into line restock.",
+  "priority_items": [
+    {
+      "task_occurrence_id": 123,
+      "reason": "It is already late and protects the food-safety workflow."
+    }
+  ]
+}
+```
+
+Or the Hermes summary/items shape:
+
+```json
+{
+  "summary": "Opening task is overdue",
+  "items": [
+    {
+      "title": "Check sanitizer buckets",
+      "status": "late",
+      "due": "8:00 AM",
+      "note": "Use test strips before prep starts."
+    }
+  ]
+}
+```
+
+### Async Webhook Endpoint
 
 When a token is configured, the app signs the exact JSON request body with HMAC-SHA256 and sends both common webhook signature headers:
 
