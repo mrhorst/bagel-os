@@ -72,17 +72,18 @@ class LogBookResponse < ApplicationRecord
     raw   = value_grid[key].to_s
     return nil if raw.blank?
 
-    pretty = case field["type"]
-             when "number"
-               n = BigDecimal(raw)
-               formatted = format_number(n, field["value_decimals"].to_i)
-               unit = field["unit_label"].to_s.strip.presence
-               unit ? "#{formatted} #{unit}" : formatted
-             when "yes_no"
-               raw == "yes" ? "Yes" : (raw == "no" ? "No" : nil)
-             else
-               raw
-             end
+    pretty =
+      case field["type"]
+      when "number"
+        n = BigDecimal(raw)
+        formatted = format_number(n, field["value_decimals"].to_i)
+        unit = field["unit_label"].to_s.strip.presence
+        unit ? "#{formatted} #{unit}" : formatted
+      when "yes_no"
+        raw == "yes" ? "Yes" : (raw == "no" ? "No" : nil)
+      else
+        raw
+      end
     return nil if pretty.blank?
     "#{field['label']}: #{pretty}"
   rescue ArgumentError

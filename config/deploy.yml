@@ -1,0 +1,63 @@
+# Kamal deploy configuration for the small single-server Hetzner pilot.
+#
+# Before first deploy, replace YOUR_SERVER_IP, inventory.example.com, and the
+# registry username/image with real values. Keep secrets in .kamal/secrets.
+
+service: restaurant-inventory-os
+
+image: your-registry-user/restaurant-inventory-os
+
+servers:
+  web:
+    - YOUR_SERVER_IP
+
+proxy:
+  ssl: true
+  host: inventory.example.com
+  app_port: 3000
+
+registry:
+  username: your-registry-user
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+
+env:
+  clear:
+    APP_HOST: inventory.example.com
+    APP_PROTOCOL: https
+    POSTGRES_HOST: restaurant-inventory-os-postgres
+    POSTGRES_PORT: 5432
+    POSTGRES_DB: restaurant_inventory_os_production
+    POSTGRES_USER: restaurant_inventory_os
+    RAILS_LOG_LEVEL: info
+    RAILS_MAX_THREADS: 3
+    SOLID_QUEUE_IN_PUMA: true
+  secret:
+    - RAILS_MASTER_KEY
+    - POSTGRES_PASSWORD
+
+volumes:
+  - /var/lib/restaurant-inventory-os/storage:/rails/storage
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs
+  create_admin: app exec --interactive --reuse "bin/rails admin:create"
+
+accessories:
+  postgres:
+    image: postgres:17
+    host: YOUR_SERVER_IP
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_DB: restaurant_inventory_os_production
+        POSTGRES_USER: restaurant_inventory_os
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - /var/lib/restaurant-inventory-os/postgres:/var/lib/postgresql/data

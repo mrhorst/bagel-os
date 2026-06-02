@@ -3,6 +3,16 @@ default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
 
+production_primary: &production_primary
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("POSTGRES_HOST", "restaurant-inventory-os-postgres") %>
+  port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
+  database: <%= ENV.fetch("POSTGRES_DB", "restaurant_inventory_os_production") %>
+  username: <%= ENV.fetch("POSTGRES_USER", "restaurant_inventory_os") %>
+  password: <%= ENV["POSTGRES_PASSWORD"] %>
+
 development:
   <<: *default
   database: storage/development.sqlite3
@@ -13,8 +23,7 @@ test:
 
 production:
   primary:
-    <<: *default
-    database: storage/production.sqlite3
+    <<: *production_primary
   cache:
     <<: *default
     database: storage/production_cache.sqlite3
