@@ -718,6 +718,109 @@ textarea {
   margin-bottom: 0;
 }
 
+.tasks-briefing {
+  align-items: stretch;
+  background: #fff;
+  border: 1px solid #d7ded9;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(17, 52, 63, 0.06);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  margin-bottom: 20px;
+  padding: 16px;
+}
+
+.tasks-briefing-main {
+  display: grid;
+  gap: 10px;
+}
+
+.tasks-briefing-heading h2 {
+  color: #17252b;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  margin: 4px 0 0;
+}
+
+.tasks-briefing-kicker {
+  color: #64748b;
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.tasks-briefing-main p {
+  color: #33434c;
+  font-size: 1rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.tasks-briefing-timestamp {
+  color: #66727c;
+  font-size: 0.84rem;
+}
+
+.tasks-briefing-priorities {
+  counter-reset: task-priority;
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tasks-briefing-priorities li {
+  counter-increment: task-priority;
+}
+
+.tasks-briefing-priority-link {
+  background: #f7faf9;
+  border: 1px solid #d7e5e0;
+  border-radius: 8px;
+  color: inherit;
+  display: grid;
+  gap: 4px;
+  min-height: 74px;
+  padding: 10px 12px 10px 42px;
+  position: relative;
+}
+
+.tasks-briefing-priority-link::before {
+  align-items: center;
+  background: #173844;
+  border-radius: 999px;
+  color: #fff;
+  content: counter(task-priority);
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 850;
+  height: 24px;
+  justify-content: center;
+  left: 12px;
+  position: absolute;
+  top: 12px;
+  width: 24px;
+}
+
+.tasks-briefing-priority-link:hover {
+  text-decoration: none;
+}
+
+.tasks-briefing-priority-title {
+  color: #17252b;
+  font-weight: 800;
+}
+
+.tasks-briefing-priority-meta,
+.tasks-briefing-priority-reason {
+  color: #5b6670;
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
 .tasks-board {
   margin-bottom: 20px;
 }
@@ -1394,6 +1497,7 @@ tr:target {
   .grid.three,
   .form-grid,
   .check-card-grid,
+  .tasks-briefing,
   .task-card,
   .task-row {
     grid-template-columns: 1fr;

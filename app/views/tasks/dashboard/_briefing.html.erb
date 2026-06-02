@@ -1,0 +1,29 @@
+<%# locals: briefing: %>
+<section class="tasks-briefing" aria-label="Shift briefing">
+  <div class="tasks-briefing-main">
+    <div class="tasks-briefing-heading">
+      <span class="tasks-briefing-kicker">Next action</span>
+      <h2><%= briefing.headline %></h2>
+    </div>
+    <p><%= briefing.next_action %></p>
+    <span class="tasks-briefing-timestamp">
+      Generated <%= time_tag briefing.generated_at, briefing.generated_at.strftime("%-I:%M %p") %>
+    </span>
+  </div>
+
+  <% if briefing.priority_items.any? %>
+    <ol class="tasks-briefing-priorities">
+      <% briefing.priority_items.each do |item| %>
+        <li>
+          <%= link_to tasks_occurrence_path(item["task_occurrence_id"]), class: "tasks-briefing-priority-link" do %>
+            <span class="tasks-briefing-priority-title"><%= item["title"] %></span>
+            <span class="tasks-briefing-priority-meta">
+              <%= item["list_name"] %> · <%= item["due_label"] %>
+            </span>
+            <span class="tasks-briefing-priority-reason"><%= item["reason"] %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+</section>

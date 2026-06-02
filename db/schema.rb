@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -535,6 +535,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
     t.text "notes"
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_suppliers_on_name", unique: true
+  end
+
+  create_table "task_briefings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "generated_at", null: false
+    t.string "headline", null: false
+    t.string "input_digest", null: false
+    t.text "next_action", null: false
+    t.json "priority_items", default: [], null: false
+    t.string "scope_key", default: "today", null: false
+    t.string "scope_type", default: "tasks_dashboard", null: false
+    t.json "source_task_occurrence_ids", default: [], null: false
+    t.datetime "stale_after"
+    t.datetime "updated_at", null: false
+    t.index ["generated_at"], name: "index_task_briefings_on_generated_at"
+    t.index ["scope_type", "scope_key"], name: "index_task_briefings_on_scope_type_and_scope_key", unique: true
   end
 
   create_table "task_completions", force: :cascade do |t|

@@ -76,6 +76,8 @@
 <%# Totals across every list — quick "what's the day look like" %>
 <%= render "tasks/kpi_squares", metrics: @metrics, dom_id: "tasks_dashboard_kpis", past: !@viewing_today %>
 
+<%= render "tasks/dashboard/briefing", briefing: @briefing if @briefing.present? %>
+
 <%# ── One card per list. Tap a card to work it (today only). ─────────── %>
 <section class="tasks-list-picker" aria-label="Task lists">
   <% if @list_summaries.any? %>

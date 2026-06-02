@@ -26,6 +26,8 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       assert_select ".tasks-list-picker-card h2", text: "Opening"
       assert_select ".tasks-list-picker-card .badge", text: /1 late/
       assert_select ".tasks-list-picker-card .badge", text: /1 monthly/
+      assert_select ".tasks-briefing h2", text: /1 task is late/
+      assert_select ".tasks-briefing-priority-title", text: "Check display case"
       # The dashboard is a list picker now; tasks themselves are not rendered here.
       assert_select ".task-card-title", count: 0
     end
