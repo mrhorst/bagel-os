@@ -45,7 +45,29 @@ Rails.application.configure do
 
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
+  config.solid_queue.connects_to = { database: { writing: :queue } }
   config.active_storage.service = :local
+
+  # Used by password reset emails. In a no-email pilot, leave APP_HOST unset
+  # and create/reset users through the admin UI or admin:create task instead.
+  if ENV["APP_HOST"].present?
+    config.action_mailer.default_url_options = {
+      protocol: ENV.fetch("APP_PROTOCOL", "https"),
+      host: ENV.fetch("APP_HOST")
+    }
+  end
+
+  if ENV["SMTP_ADDRESS"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch("SMTP_ADDRESS"),
+      port: ENV.fetch("SMTP_PORT", 587).to_i,
+      user_name: ENV["SMTP_USERNAME"],
+      password: ENV["SMTP_PASSWORD"],
+      authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain"),
+      enable_starttls_auto: ENV.fetch("SMTP_ENABLE_STARTTLS_AUTO", "true") == "true"
+    }.compact
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

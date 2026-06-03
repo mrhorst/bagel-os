@@ -8,6 +8,8 @@ gem "csv"
 gem "propshaft"
 # Use SQLite for local development. PostgreSQL was detected but requires credentials on this machine.
 gem "sqlite3", ">= 2.1"
+# Use PostgreSQL for the production application database.
+gem "pg", "~> 1.5"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 
@@ -53,6 +55,7 @@ gem "turbo-rails", "~> 2.0"
 gem "importmap-rails", "~> 2.2"
 
 gem "foreman", "~> 0.90.0", group: :development
+gem "kamal", "~> 2.10", group: :development, require: false
 
 gem "chartkick", "~> 5.2"
 

@@ -32,7 +32,7 @@ class CreateFlexibleOrderGuides < ActiveRecord::Migration[8.1]
     add_index :order_guide_memberships,
       [ :inventory_item_id, :primary_guide ],
       unique: true,
-      where: "active = 1 AND primary_guide = 1",
+      where: "active = TRUE AND primary_guide = TRUE",
       name: "idx_order_guide_memberships_one_active_primary"
     add_index :order_guide_memberships,
       [ :order_guide_id, :active, :position ],
