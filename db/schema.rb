@@ -311,7 +311,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_26_000000) do
     t.decimal "reorder_point", precision: 12, scale: 4
     t.string "tracking_mode", default: "counted", null: false
     t.datetime "updated_at", null: false
-    t.index ["inventory_item_id", "primary_guide"], name: "idx_order_guide_memberships_one_active_primary", unique: true, where: "active = 1 AND primary_guide = 1"
+    t.index ["inventory_item_id", "primary_guide"], name: "idx_order_guide_memberships_one_active_primary", unique: true, where: "active = TRUE AND primary_guide = TRUE"
     t.index ["inventory_item_id"], name: "index_order_guide_memberships_on_inventory_item_id"
     t.index ["order_guide_id", "active", "position"], name: "idx_order_guide_memberships_on_guide_active_position"
     t.index ["order_guide_id", "inventory_item_id"], name: "idx_order_guide_memberships_unique_guide_item", unique: true
