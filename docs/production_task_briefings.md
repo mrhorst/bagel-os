@@ -34,6 +34,41 @@ SOLID_QUEUE_IN_PUMA=1
 
 That starts the Solid Queue supervisor inside Puma. Without this, the app can serve web requests but recurring jobs will not run unless a separate jobs process is running.
 
+The production Docker image sets these non-secret defaults:
+
+```sh
+SOLID_QUEUE_IN_PUMA=1
+TASK_BRIEFING_AGENT_GATEWAY_TIMEOUT=60
+```
+
+The gateway URL and token still need to be provided by the deploy environment.
+
+## Kamal Setup
+
+If your Kamal config is untracked/private, add this shape to its env section:
+
+```yml
+env:
+  clear:
+    TASK_BRIEFING_AGENT_GATEWAY_URL: http://YOUR_AGENT_TAILSCALE_IP:8642/v1/chat/completions
+    TASK_BRIEFING_AGENT_GATEWAY_TIMEOUT: 60
+    SOLID_QUEUE_IN_PUMA: 1
+  secret:
+    - TASK_BRIEFING_AGENT_GATEWAY_TOKEN
+```
+
+Then set the secret outside git:
+
+```sh
+kamal secret set TASK_BRIEFING_AGENT_GATEWAY_TOKEN
+```
+
+After updating Kamal config/secrets, redeploy:
+
+```sh
+kamal deploy
+```
+
 For a separate worker process instead, run:
 
 ```sh
@@ -58,4 +93,4 @@ To verify recurring tasks are loaded by Solid Queue, check the production queue 
 
 ## Failure Behavior
 
-If the Hermes gateway is unavailable or returns invalid JSON, the app keeps working and falls back to the deterministic task briefing. The dashboard will still show an AI recommendation panel when a saved briefing exists.
+If the agent gateway is unavailable or returns invalid JSON, the app keeps working and falls back to the deterministic task briefing. The dashboard will still show an AI recommendation panel when a saved briefing exists.
