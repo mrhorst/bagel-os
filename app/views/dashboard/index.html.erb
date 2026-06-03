@@ -1,4 +1,5 @@
 <% content_for :title, "Dashboard" %>
+<%= turbo_stream_from Tasks::LiveUpdates::STREAM if current_user&.can_access?("tasks") %>
 
 <% content_for :mobile_right_action do %>
   <%= link_to account_path, class: "mobile-header-action", aria: { label: "Account" } do %>

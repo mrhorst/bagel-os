@@ -9,6 +9,7 @@ module Tasks
         photo: params[:photo]
       )
 
+      LiveUpdates.task_state_changed!
       respond_with_updated_row(occurrence.reload, notice: "Completed #{occurrence.snapshot_title}.")
     rescue ActiveRecord::RecordInvalid, ArgumentError => error
       respond_with_error(error)
@@ -25,6 +26,7 @@ module Tasks
         note: params[:undone_note]
       )
 
+      LiveUpdates.task_state_changed!
       respond_with_updated_row(occurrence.reload, notice: "Undid #{occurrence.snapshot_title}.")
     rescue ActiveRecord::RecordInvalid, ArgumentError => error
       respond_with_error(error)

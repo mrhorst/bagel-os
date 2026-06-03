@@ -10,6 +10,7 @@ module Tasks
       OccurrenceBuilder.new(operating_day: operating_day).build!(from: today.beginning_of_month, to: today.end_of_month)
 
       BriefingGenerator.new(operating_day: operating_day).find_or_generate!
+      LiveUpdates.broadcast!
     end
   end
 end

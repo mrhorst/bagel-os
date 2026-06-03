@@ -1,6 +1,7 @@
 require "test_helper"
 
 class TasksDashboardTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   include ActiveSupport::Testing::TimeHelpers
 
   test "dashboard shows a card per list with today's counts" do
@@ -17,10 +18,31 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
         recurrence_type: "monthly",
         starts_on: Date.new(2026, 5, 1)
       )
+      TaskBriefing.create!(
+        scope_type: "tasks_dashboard",
+        scope_key: "today",
+        generated_at: Time.current,
+        stale_after: 1.hour.from_now,
+        input_digest: "test",
+        headline: "1 task is late",
+        next_action: "Start with Check display case.",
+        priority_items: [
+          {
+            "task_occurrence_id" => 123,
+            "title" => "Check display case",
+            "list_name" => "Opening",
+            "status" => "late",
+            "due_label" => "8:00 AM",
+            "reason" => "It is already late."
+          }
+        ],
+        source_task_occurrence_ids: [ 123 ]
+      )
 
       get tasks_root_path
 
       assert_response :success
+      assert_select "turbo-cable-stream-source"
       assert_select "h1", "Tasks"
       assert_select ".tasks-kpi strong", text: "1", minimum: 1
       assert_select ".tasks-list-picker-card h2", text: "Opening"
@@ -30,6 +52,37 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       assert_select ".tasks-briefing-priority-title", text: "Check display case"
       # The dashboard is a list picker now; tasks themselves are not rendered here.
       assert_select ".task-card-title", count: 0
+    end
+  end
+
+  test "dashboard reads saved briefing without generating during page load" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      list = TaskList.create!(name: "Opening", position: 1)
+      list.tasks.create!(
+        title: "Check display case",
+        recurrence_type: "daily",
+        starts_on: Date.new(2026, 5, 18),
+        due_time: Time.zone.parse("08:00")
+      )
+      saved = TaskBriefing.create!(
+        scope_type: "tasks_dashboard",
+        scope_key: "today",
+        generated_at: 2.hours.ago,
+        stale_after: 1.hour.ago,
+        input_digest: "old-digest",
+        headline: "Saved recommendation",
+        next_action: "Use the already saved briefing.",
+        priority_items: [],
+        source_task_occurrence_ids: []
+      )
+
+      assert_no_enqueued_jobs only: Tasks::GenerateBriefingJob do
+        get tasks_root_path
+      end
+
+      assert_response :success
+      assert_select ".tasks-briefing h2", text: "Saved recommendation"
+      assert_equal "old-digest", saved.reload.input_digest
     end
   end
 
@@ -51,6 +104,7 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       get tasks_list_path(list)
 
       assert_response :success
+      assert_select "turbo-cable-stream-source"
       assert_select "h1", "Opening"
       assert_select ".task-card-title", text: /Check display case/
       assert_select ".badge", text: "Late"
@@ -94,7 +148,9 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
     travel_to Time.zone.local(2026, 5, 18, 9) do
       occurrence = build_today_occurrence
 
-      post tasks_occurrence_completion_path(occurrence), params: { notes: "Done before lunch." }
+      assert_enqueued_with job: Tasks::GenerateBriefingJob do
+        post tasks_occurrence_completion_path(occurrence), params: { notes: "Done before lunch." }
+      end
 
       # No referer in the test → fallback to /tasks.
       assert_redirected_to tasks_root_path
@@ -110,7 +166,9 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
       follow_redirect!
       assert_match "Confirm undo before updating task history.", response.body
 
-      delete tasks_occurrence_completion_path(occurrence), params: { confirm_undo: "1", undone_note: "Wrong tap." }
+      assert_enqueued_with job: Tasks::GenerateBriefingJob do
+        delete tasks_occurrence_completion_path(occurrence), params: { confirm_undo: "1", undone_note: "Wrong tap." }
+      end
       assert_redirected_to tasks_root_path
       follow_redirect!
       assert_match "Undid Check display case.", response.body

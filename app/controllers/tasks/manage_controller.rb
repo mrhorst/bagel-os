@@ -18,6 +18,8 @@ module Tasks
       @task = Task.new(task_params)
 
       if @task.save
+        refresh_open_occurrences(@task)
+        LiveUpdates.task_state_changed!
         redirect_to tasks_manage_tasks_path, notice: "Task created."
       else
         render :new, status: :unprocessable_entity
@@ -33,6 +35,7 @@ module Tasks
 
       if @task.update(task_params)
         refresh_open_occurrences(@task)
+        LiveUpdates.task_state_changed!
         redirect_to tasks_manage_tasks_path, notice: "Task updated."
       else
         render :edit, status: :unprocessable_entity
@@ -41,11 +44,15 @@ module Tasks
 
     def archive
       Task.find(params[:id]).archive!
+      LiveUpdates.task_state_changed!
       redirect_to tasks_manage_tasks_path, notice: "Task archived."
     end
 
     def reactivate
-      Task.find(params[:id]).reactivate!
+      task = Task.find(params[:id])
+      task.reactivate!
+      refresh_open_occurrences(task)
+      LiveUpdates.task_state_changed!
       redirect_to tasks_manage_tasks_path, notice: "Task reactivated."
     end
 

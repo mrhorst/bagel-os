@@ -1,4 +1,5 @@
 <% content_for :title, @task_list.name %>
+<%= turbo_stream_from Tasks::LiveUpdates::STREAM %>
 
 <%# The focused list view shows live completion state. Don't let Turbo
     Drive show a cached preview from a previous visit — it's confusing

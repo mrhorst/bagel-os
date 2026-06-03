@@ -25,7 +25,7 @@ module Tasks
 
       @metrics = TaskMetrics.new(daily: daily, monthly: monthly, operating_day: operating_day).summary.to_h_with_today_suffix
       @list_summaries = build_list_summaries(daily, monthly, operating_day)
-      @briefing = BriefingGenerator.new(operating_day: operating_day, daily: daily, monthly: monthly).find_or_generate! if @viewing_today
+      @briefing = TaskBriefing.find_by(scope_type: BriefingGenerator::SCOPE_TYPE, scope_key: BriefingGenerator::SCOPE_KEY) if @viewing_today
 
       @prev_date = @selected_date - 1 if @selected_date - 1 >= earliest_browsable_date
       @next_date = @selected_date + 1 if @selected_date < Date.current

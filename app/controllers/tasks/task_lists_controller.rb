@@ -29,6 +29,7 @@ module Tasks
       @task_list.position = TaskList.maximum(:position).to_i + 1 if @task_list.position.to_i.zero?
 
       if @task_list.save
+        LiveUpdates.task_state_changed!
         redirect_to tasks_manage_lists_path, notice: "Task list created."
       else
         render :new, status: :unprocessable_entity
@@ -43,6 +44,7 @@ module Tasks
       @task_list = TaskList.find(params[:id])
 
       if @task_list.update(task_list_params)
+        LiveUpdates.task_state_changed!
         redirect_to tasks_manage_lists_path, notice: "Task list updated."
       else
         render :edit, status: :unprocessable_entity
@@ -51,11 +53,13 @@ module Tasks
 
     def archive
       TaskList.find(params[:id]).archive!
+      LiveUpdates.task_state_changed!
       redirect_to tasks_manage_lists_path, notice: "Task list archived."
     end
 
     def reactivate
       TaskList.find(params[:id]).reactivate!
+      LiveUpdates.task_state_changed!
       redirect_to tasks_manage_lists_path, notice: "Task list reactivated."
     end
 
