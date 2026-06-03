@@ -87,7 +87,7 @@ All LLM-facing tools should be logged and should return IDs so the UI can link b
 
 The Tasks dashboard can talk directly to a local agent gateway for shift briefings. If no gateway is configured, or the gateway returns an invalid response, the app falls back to its deterministic task-priority briefing.
 
-Configure the gateway with environment variables. For synchronous dashboard updates, prefer the OpenAI-compatible Hermes API endpoint:
+Configure the gateway with environment variables. For synchronous dashboard updates, prefer an OpenAI-compatible chat completions endpoint:
 
 - `TASK_BRIEFING_AGENT_GATEWAY_URL`: full HTTP endpoint for the local agent, for example `http://127.0.0.1:8642/v1/chat/completions`
 - `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: optional secret. Chat completions use it as a bearer token. Webhook endpoints use it as an HMAC signing secret.
@@ -131,7 +131,7 @@ The app expects the response content at `choices[0].message.content` to be JSON.
 }
 ```
 
-Or the Hermes summary/items shape:
+Or a summary/items shape:
 
 ```json
 {
@@ -202,7 +202,7 @@ The gateway should return JSON:
 }
 ```
 
-If the gateway only returns an async acknowledgement such as `{"status":"accepted"}` and sends the actual briefing somewhere else, such as Telegram, the Rails dashboard will not receive the agent-written briefing. In that case, the dashboard safely falls back to the deterministic briefing. To show the agent-written text in Rails, use one of these patterns:
+If the gateway only returns an async acknowledgement such as `{"status":"accepted"}` and sends the actual briefing somewhere else, the Rails dashboard will not receive the agent-written briefing. In that case, the dashboard safely falls back to the deterministic briefing. To show the agent-written text in Rails, use one of these patterns:
 
 - **Synchronous response:** the webhook returns the briefing JSON in the HTTP response body.
 - **Callback response:** the webhook accepts the event, then posts the briefing JSON back to a future Rails callback endpoint.
