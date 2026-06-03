@@ -45,6 +45,7 @@ Rails.application.configure do
 
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
+  config.solid_queue.connects_to = { database: { writing: :queue } }
   config.active_storage.service = :local
 
   # Used by password reset emails. In a no-email pilot, leave APP_HOST unset
