@@ -30,6 +30,7 @@ production:
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
+    pool: <%= ENV.fetch("SOLID_QUEUE_POOL") { 5 } %>
     database: storage/production_queue.sqlite3
     migrations_paths: db/queue_migrate
   cable:
