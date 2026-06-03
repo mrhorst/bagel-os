@@ -10,5 +10,6 @@ class DashboardController < ApplicationController
     @inventory_items_needing_review_count = InventoryItem.active.needs_review.count
     @products_needing_review_count = Product.needs_review.count
     @log_book_follow_up_count = LogBookResponse.unresolved.count
+    @task_briefing = TaskBriefing.find_by(scope_type: "tasks_dashboard", scope_key: "today") if Current.user&.can_access?("tasks")
   end
 end

@@ -77,6 +77,20 @@
   <p><%= dashboard_today_headline %> · Pick a surface to jump in.</p>
 </section>
 
+<% if @task_briefing.present? %>
+  <section class="home-ai-recommendation" aria-label="AI task recommendation">
+    <div class="home-ai-recommendation-main">
+      <span class="home-ai-recommendation-tag">AI recommendation</span>
+      <h2><%= @task_briefing.headline %></h2>
+      <p><%= @task_briefing.next_action %></p>
+      <span class="home-ai-recommendation-time">
+        Generated <%= time_tag @task_briefing.generated_at, @task_briefing.generated_at.strftime("%-I:%M %p") %>
+      </span>
+    </div>
+    <%= link_to "Open tasks", tasks_root_path, class: "button small" %>
+  </section>
+<% end %>
+
 <section class="home-surface-grid" aria-label="App surfaces">
   <% surfaces.each do |surface| %>
     <%= link_to surface[:path], class: "home-surface-card home-surface-card-#{surface[:tone]}" do %>

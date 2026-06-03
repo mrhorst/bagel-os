@@ -3171,6 +3171,61 @@
     max-width: 60ch;
   }
 
+  .home-ai-recommendation {
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow:
+      inset 2px 0 0 var(--info),
+      var(--shadow-e1);
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding: 16px;
+  }
+
+  .home-ai-recommendation-main {
+    min-width: 0;
+  }
+
+  .home-ai-recommendation-tag {
+    background: var(--info-soft);
+    border: 1px solid color-mix(in oklch, var(--info) 24%, transparent);
+    border-radius: var(--radius-pill);
+    color: var(--info-fg);
+    display: inline-flex;
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+    padding: 3px 9px;
+    text-transform: uppercase;
+  }
+
+  .home-ai-recommendation h2 {
+    color: var(--ink);
+    font-size: 1.1rem;
+    font-weight: 650;
+    line-height: 1.25;
+    margin: 0 0 6px;
+  }
+
+  .home-ai-recommendation p {
+    color: var(--ink-2);
+    line-height: 1.45;
+    margin: 0;
+    max-width: 82ch;
+  }
+
+  .home-ai-recommendation-time {
+    color: var(--ink-muted);
+    display: block;
+    font-size: 0.82rem;
+    margin-top: 10px;
+  }
+
   .home-surface-grid {
     display: grid;
     gap: 12px;
@@ -4113,6 +4168,7 @@
     .hero-panel,
     .dashboard-hero,
     .dashboard-block-header,
+    .home-ai-recommendation,
     .block-page-header,
     .block-panel-header,
     .topbar {
