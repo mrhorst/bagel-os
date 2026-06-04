@@ -4,7 +4,7 @@ This plan is for adding a 7tasks-style staff task system as a new module inside 
 
 ## Copy-Paste Implementation Prompt
 
-You are working in the `restaurant-inventory-os` Rails app. Build the first production-minded version of a Tasks module for restaurant staff.
+You are working in the Bagel OS Rails app. Build the first production-minded version of a Tasks module for restaurant staff.
 
 The product direction is Restaurant Operations OS: one Rails app composed of bounded modules. The existing Inventory module handles inventory counts, order guides, purchasing, receipt imports, and price intelligence. The new Tasks module should live beside Inventory as its own bounded module, not replace or rewrite the existing inventory/purchasing code. A future Schedule module may exist later, but do not build scheduling, shifts, payroll, availability, or timeclock features now.
 
@@ -41,7 +41,7 @@ Architecture direction:
   - `StaffMember`
 - Do not create a generic plugin architecture yet.
 - Do not call the future scheduling module into existence. `StaffMember` is allowed only because task completion needs staff attribution.
-- Do not rename app branding/UI from Inventory OS as part of the Tasks MVP. Broader Restaurant Operations OS language can live in domain docs first.
+- Do not rename app branding/UI as part of the Tasks MVP. Broader restaurant operations language can live in domain docs first.
 - Use staff attribution for the MVP, not authentication. Staff can select the staff member credited with the work; the app does not need to prove identity yet.
 - Do not enforce manager permissions in v1. Task setup screens are internal setup workflows, not protected manager-only surfaces yet.
 - Add simple staff setup inside the Tasks module so staff members can be created and deactivated without Rails console access.

@@ -1,4 +1,4 @@
-# Inventory OS
+# Bagel OS
 
 Rails app for restaurant inventory, order guides, vendor receipt imports, purchasing analytics, and price intelligence.
 
@@ -42,8 +42,8 @@ Example branding file:
 
 ```yaml
 # .private/branding.yml
-app_name: "Your Restaurant Inventory OS"
-short_name: "Inventory OS"
+app_name: "Your Restaurant Bagel OS"
+short_name: "Bagel OS"
 description: "Inventory, purchasing, and order-guide intelligence for your restaurant."
 ```
 

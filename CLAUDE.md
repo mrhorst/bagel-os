@@ -4,7 +4,7 @@ Read this first. It's the short version — the longer one is in [`AGENTS.md`](A
 
 ## What this repo is
 
-This is the **generic, public source** for Inventory OS — restaurant inventory, purchasing, order guides, and price intelligence. It is **not** a single tenant's installation. Anything tracked here must make sense for every deployment, not for one specific restaurant.
+This is the **generic, public source** for Bagel OS — restaurant inventory, purchasing, order guides, and price intelligence. It is **not** a single tenant's installation. Anything tracked here must make sense for every deployment, not for one specific restaurant.
 
 ## Privacy boundary (the rule that breaks the most often)
 
@@ -23,7 +23,7 @@ This is the **generic, public source** for Inventory OS — restaurant inventory
 - `data/receipts/`, `data/order_guides/` — both gitignored. Keep real exports out of the tree.
 
 **Generic placeholders that ARE tracked:**
-- `Inventory OS`, `Demo Restaurant`, `Primary Supplier` — intentional defaults. Don't replace them with real names.
+- `Bagel OS`, `Demo Restaurant`, `Primary Supplier` — intentional defaults. Don't replace them with real names.
 
 **Before every commit**, scan the staged diff for:
 - Real proper nouns (restaurant / vendor / staff names)
@@ -68,7 +68,7 @@ If you can't run them (e.g. mid-design pass), say so in your final message and e
 ## Commits
 
 - One focused commit per completed unit of work — bug fix, refactor, feature, UI change, doc update. Don't batch.
-- Imperative-mood subject, short. Recent style: `Polish tasks flow`, `Apply Inventory OS design system v1`, `Fix task due times timezone`.
+- Imperative-mood subject, short. Recent style: `Polish tasks flow`, `Apply Bagel OS design system v1`, `Fix task due times timezone`.
 - Use HEREDOC for multi-line bodies to keep formatting clean.
 - Inspect `git status` and `git diff --staged` before committing — leave unrelated dirty files alone.
 - Never amend or force-push without an explicit instruction; the standard move is a new commit.

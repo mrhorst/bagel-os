@@ -1,4 +1,4 @@
-# Inventory OS Agent Notes
+# Bagel OS Agent Notes
 
 This repository is the generic product source for restaurant inventory, order-guide, purchasing, and price intelligence work.
 
@@ -6,7 +6,7 @@ This repository is the generic product source for restaurant inventory, order-gu
 
 - Keep real restaurant names, receipt exports, order guide PDFs, vendor account data, staff/customer data, private notes, and agent prompts out of tracked files.
 - Keep install-specific data inside the ignored `.private/` workspace.
-- Generic tracked names like `Inventory OS`, `Demo Restaurant`, and `Primary Supplier` are intentional placeholders.
+- Generic tracked names like `Bagel OS`, `Demo Restaurant`, and `Primary Supplier` are intentional placeholders.
 - If a deployment needs real branding, load it from `.private/branding.yml` instead of hard-coding it.
 - Before committing, scan changed files for accidental private references.
 

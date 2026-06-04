@@ -1,7 +1,7 @@
 class AppBranding
   DEFAULTS = {
-    "app_name" => "Inventory OS",
-    "short_name" => "Inventory OS",
+    "app_name" => "Bagel OS",
+    "short_name" => "Bagel OS",
     "description" => "Restaurant inventory, purchasing, order-guide, and price intelligence."
   }.freeze
 

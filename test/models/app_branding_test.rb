@@ -25,7 +25,7 @@ class AppBrandingTest < ActiveSupport::TestCase
       with_config_path(Pathname(file.path)) do
         branding = AppBranding.current
 
-        assert_equal "Inventory OS", branding.app_name
+        assert_equal "Bagel OS", branding.app_name
       end
     end
   end
