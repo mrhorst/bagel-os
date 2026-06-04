@@ -16,6 +16,7 @@ ssh:
   keys:
     - <%= ENV.fetch("KAMAL_SSH_KEY_PATH", "~/.ssh/kamal_deploy_key") %>
   keys_only: true
+  config: <%= ENV.fetch("KAMAL_SSH_CONFIG_PATH") %>
 
 proxy:
   ssl: true
