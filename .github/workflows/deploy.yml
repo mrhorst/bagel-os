@@ -38,6 +38,7 @@ jobs:
       KAMAL_SSH_USER: ${{ secrets.KAMAL_SSH_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+      TASK_BRIEFING_AGENT_GATEWAY_TOKEN: ${{ secrets.TASK_BRIEFING_AGENT_GATEWAY_TOKEN }}
 
     steps:
       - name: Checkout code

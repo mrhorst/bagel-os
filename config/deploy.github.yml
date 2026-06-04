@@ -47,6 +47,7 @@ env:
   secret:
     - RAILS_MASTER_KEY
     - POSTGRES_PASSWORD
+    - TASK_BRIEFING_AGENT_GATEWAY_TOKEN
 
 volumes:
   - /var/lib/restaurant-inventory-os/storage:/rails/storage

@@ -30,6 +30,7 @@ KAMAL_SSH_PRIVATE_KEY
 KAMAL_SSH_USER
 POSTGRES_PASSWORD
 RAILS_MASTER_KEY
+TASK_BRIEFING_AGENT_GATEWAY_TOKEN
 ```
 
 Use a dedicated non-interactive deploy SSH key for `KAMAL_SSH_PRIVATE_KEY`.
@@ -46,6 +47,7 @@ Do not reuse a personal laptop or Termius key.
 - `KAMAL_SSH_USER`: server SSH user, usually `root` for the pilot.
 - `POSTGRES_PASSWORD`: production Postgres password.
 - `RAILS_MASTER_KEY`: contents of `config/master.key`.
+- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: bearer token for the task briefing agent gateway.
 
 ## First Production Run
 
