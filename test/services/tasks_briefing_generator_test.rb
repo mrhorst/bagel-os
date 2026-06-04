@@ -146,6 +146,52 @@ class TasksBriefingGeneratorTest < ActiveSupport::TestCase
     end
   end
 
+  test "sends only currently visible task work to the gateway" do
+    travel_to Time.zone.local(2026, 5, 18, 9, 0) do
+      opening = TaskList.create!(name: "Opening", position: 1)
+      closing = TaskList.create!(
+        name: "Closing",
+        position: 2,
+        display_start_time: Time.zone.parse("14:00"),
+        display_end_time: Time.zone.parse("22:00")
+      )
+      visible_task = opening.tasks.create!(
+        title: "Check sanitizer buckets",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("08:00")
+      )
+      hidden_task = closing.tasks.create!(
+        title: "Clean slicer",
+        recurrence_type: "daily",
+        starts_on: Date.current,
+        due_time: Time.zone.parse("15:00")
+      )
+      operating_day = Tasks::OperatingDay.new
+      Tasks::OccurrenceBuilder.new(operating_day: operating_day).build!(from: Date.current, to: Date.current)
+      visible_occurrence = occurrence_for(visible_task, Date.current)
+      hidden_occurrence = occurrence_for(hidden_task, Date.current)
+      gateway = FakeGatewayClient.new(
+        response: {
+          "headline" => "Opening task is the only current work.",
+          "next_action" => "Start with sanitizer before prep gets busy.",
+          "priority_items" => [
+            {
+              "task_occurrence_id" => visible_occurrence.id,
+              "reason" => "It is available right now."
+            }
+          ]
+        }
+      )
+
+      briefing = Tasks::BriefingGenerator.new(operating_day: operating_day, gateway_client: gateway).find_or_generate!
+
+      assert_equal [ "Check sanitizer buckets" ], gateway.last_payload["tasks"].map { |task| task["title"] }
+      assert_equal [ visible_occurrence.id ], briefing.source_task_occurrence_ids
+      refute_includes gateway.last_payload["tasks"].map { |task| task["task_occurrence_id"] }, hidden_occurrence.id
+    end
+  end
+
   test "matches gateway priority items by title when occurrence id is omitted" do
     travel_to Time.zone.local(2026, 5, 18, 9, 0) do
       list = TaskList.create!(name: "Opening", position: 1)

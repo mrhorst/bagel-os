@@ -46,11 +46,17 @@ module Tasks
       Array(@daily || operating_day.actionable_daily_scope.includes(:task_list, :active_completion))
         .reject { |occurrence| occurrence.completed? || occurrence.missed?(operating_day: operating_day) }
         .reject { |occurrence| occurrence.stale_completed_carryover?(operating_day: operating_day) }
+        .select { |occurrence| occurrence_available_now?(occurrence) }
     end
 
     def actionable_monthly_occurrences
       Array(@monthly || operating_day.actionable_monthly_scope.includes(:task_list, :active_completion))
         .reject { |occurrence| occurrence.completed? || occurrence.missed?(operating_day: operating_day) }
+        .select { |occurrence| occurrence_available_now?(occurrence) }
+    end
+
+    def occurrence_available_now?(occurrence)
+      occurrence.task_list.visible_at?(operating_day.now)
     end
 
     def occurrence_snapshot(occurrence, monthly: false)
