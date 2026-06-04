@@ -59,7 +59,16 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${{ secrets.KAMAL_SSH_PRIVATE_KEY }}" > "$KAMAL_SSH_KEY_PATH"
           chmod 600 "$KAMAL_SSH_KEY_PATH"
-          ssh-keyscan -T 30 -H "$KAMAL_SERVER_IP" > "$KAMAL_SSH_KNOWN_HOSTS_PATH"
+          : > "$KAMAL_SSH_KNOWN_HOSTS_PATH"
+          for host in "$KAMAL_SERVER_IP" "$KAMAL_APP_HOST"; do
+            if [ -n "$host" ]; then
+              ssh-keyscan -T 30 "$host" >> "$KAMAL_SSH_KNOWN_HOSTS_PATH" || true
+            fi
+          done
+          if [ ! -s "$KAMAL_SSH_KNOWN_HOSTS_PATH" ]; then
+            echo "No SSH host keys were found for the configured Kamal hosts." >&2
+            exit 1
+          fi
           chmod 600 "$KAMAL_SSH_KNOWN_HOSTS_PATH"
           cp "$KAMAL_SSH_KNOWN_HOSTS_PATH" ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
