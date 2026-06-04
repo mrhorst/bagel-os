@@ -61,6 +61,8 @@ jobs:
           chmod 600 "$KAMAL_SSH_KEY_PATH"
           ssh-keyscan -T 30 -H "$KAMAL_SERVER_IP" > "$KAMAL_SSH_KNOWN_HOSTS_PATH"
           chmod 600 "$KAMAL_SSH_KNOWN_HOSTS_PATH"
+          cp "$KAMAL_SSH_KNOWN_HOSTS_PATH" ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
 
           {
             echo "Host *"
