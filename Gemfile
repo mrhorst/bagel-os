@@ -12,6 +12,8 @@ gem "sqlite3", ">= 2.1"
 gem "pg", "~> 1.5"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
+# Generate Active Storage image variants for task completion photos.
+gem "image_processing", "~> 1.2"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
