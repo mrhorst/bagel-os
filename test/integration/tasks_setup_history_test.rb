@@ -39,6 +39,9 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
     assert_select ".task-wizard"
     assert_select "select[name='task[task_list_id]'] option[selected]", "Prep"
     assert_select ".task-wizard-step", 5
+    assert_select "input[type='hidden'][name='task[starts_on]']", 1
+    assert_select "label", text: "Start date", count: 0
+    assert_select "label", text: "End date", count: 0
   end
 
   test "guided task creation returns to the dashboard" do

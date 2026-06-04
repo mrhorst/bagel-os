@@ -6,6 +6,8 @@
       class: "task-wizard stacked-form",
       data: { controller: "task-wizard task-schedule-form", action: "submit->task-wizard#submit" } do |form| %>
   <%= hidden_field_tag :return_to, params[:return_to].presence || "dashboard" %>
+  <%= form.hidden_field :starts_on %>
+  <%= form.hidden_field :ends_on %>
 
   <% if task.errors.any? %>
     <div class="form-errors" role="alert">
@@ -57,7 +59,7 @@
   <section class="task-wizard-panel" data-task-wizard-target="panel" hidden>
     <p class="task-wizard-kicker">Step 3 of 5</p>
     <h2>Set the timing</h2>
-    <p class="muted">Group the schedule details here so the task shows up on the right day and time.</p>
+    <p class="muted">Lists control when work appears on the dashboard. Tasks only need their repeat pattern and deadline.</p>
     <div class="form-grid">
       <div class="field">
         <%= form.label :recurrence_type, "Repeats" %>
@@ -70,16 +72,6 @@
       <div class="field" data-task-schedule-form-target="oneTime">
         <%= form.label :one_time_on, "Date" %>
         <%= form.date_field :one_time_on %>
-      </div>
-      <div class="field-row field-row-recurring" data-task-schedule-form-target="recurring">
-        <div class="field">
-          <%= form.label :starts_on, "Start date" %>
-          <%= form.date_field :starts_on %>
-        </div>
-        <div class="field">
-          <%= form.label :ends_on, "End date" %>
-          <%= form.date_field :ends_on %>
-        </div>
       </div>
     </div>
 

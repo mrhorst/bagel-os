@@ -113,7 +113,7 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "lists outside their display window still appear on the dashboard but are dimmed" do
+  test "lists outside their display window are hidden from the live dashboard" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       opening = TaskList.create!(name: "Opening", position: 1)
       closing = TaskList.create!(
@@ -139,8 +139,55 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select ".tasks-list-picker-card h2", text: "Opening"
-      # Closing list is still tappable — just dimmed because its window is closed.
-      assert_select ".tasks-list-picker-card-quiet h2", text: "Closing"
+      assert_select ".tasks-list-picker-card h2", text: "Closing", count: 0
+      assert_select ".tasks-kpi strong", text: "1", minimum: 1
+    end
+  end
+
+  test "focused list view redirects when a list is outside its display window" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      closing = TaskList.create!(
+        name: "Closing",
+        position: 1,
+        display_start_time: Time.zone.parse("14:00"),
+        display_end_time: Time.zone.parse("22:00")
+      )
+      closing.tasks.create!(
+        title: "Clean slicer",
+        recurrence_type: "daily",
+        starts_on: Date.new(2026, 5, 18),
+        due_time: Time.zone.parse("15:00")
+      )
+
+      get tasks_list_path(closing)
+
+      assert_redirected_to tasks_root_path
+      follow_redirect!
+      assert_match "Closing is not visible on the Tasks screen right now.", response.body
+      assert_select ".tasks-list-picker-card h2", text: "Closing", count: 0
+    end
+  end
+
+  test "focused list view renders once the list display window opens" do
+    travel_to Time.zone.local(2026, 5, 18, 14, 30) do
+      closing = TaskList.create!(
+        name: "Closing",
+        position: 1,
+        display_start_time: Time.zone.parse("14:00"),
+        display_end_time: Time.zone.parse("22:00")
+      )
+      closing.tasks.create!(
+        title: "Clean slicer",
+        recurrence_type: "daily",
+        starts_on: Date.new(2026, 5, 18),
+        due_time: Time.zone.parse("15:00")
+      )
+
+      get tasks_list_path(closing)
+
+      assert_response :success
+      assert_select "h1", "Closing"
+      assert_select ".task-card-title", text: /Clean slicer/
     end
   end
 

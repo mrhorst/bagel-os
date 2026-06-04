@@ -6,6 +6,11 @@ module Tasks
       @task_list = TaskList.find(params[:id])
 
       @operating_day = OperatingDay.new
+      unless @task_list.visible_at?(@operating_day.now)
+        redirect_to tasks_root_path, alert: "#{@task_list.name} is not visible on the Tasks screen right now."
+        return
+      end
+
       OccurrenceBuilder.new(operating_day: @operating_day).build!(from: @operating_day.today, to: @operating_day.today)
       OccurrenceBuilder.new(operating_day: @operating_day).build!(from: @operating_day.today.beginning_of_month, to: @operating_day.today.end_of_month)
 
@@ -79,9 +84,9 @@ module Tasks
       end
     end
 
-    # Single-list versions of the dashboard queries. We deliberately do NOT
-    # filter by display_start/end_time here — if you explicitly opened a
-    # list, you want to see its work even if its window is closed.
+    # Single-list versions of the dashboard queries. Visibility is checked
+    # once at the top of #show so a direct URL follows the same work-surface
+    # rule as the dashboard.
     def day_occurrences_for(task_list, operating_day)
       operating_day.actionable_daily_scope
         .where(task_list_id: task_list.id)

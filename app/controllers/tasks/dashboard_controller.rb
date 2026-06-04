@@ -22,6 +22,7 @@ module Tasks
 
       daily   = day_occurrences(operating_day)
       monthly = month_occurrences(operating_day)
+      daily, monthly = visible_work_surface_occurrences(daily, monthly, operating_day) if @viewing_today
 
       @metrics = TaskMetrics.new(daily: daily, monthly: monthly, operating_day: operating_day).summary.to_h_with_today_suffix
       @list_summaries = build_list_summaries(daily, monthly, operating_day)
@@ -75,6 +76,14 @@ module Tasks
 
         metrics.to_h_no_suffix.merge(list: list, visible_now: list.visible_at?(operating_day.now))
       end
+    end
+
+    def visible_work_surface_occurrences(daily, monthly, operating_day)
+      visible_list_ids = TaskList.active.select { |list| list.visible_at?(operating_day.now) }.map(&:id)
+      [
+        daily.select { |occurrence| visible_list_ids.include?(occurrence.task_list_id) },
+        monthly.select { |occurrence| visible_list_ids.include?(occurrence.task_list_id) }
+      ]
     end
 
     def day_occurrences(operating_day)
