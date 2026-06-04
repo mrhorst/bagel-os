@@ -4,10 +4,16 @@
   render "tasks/subpage_header",
     title: "New task list",
     subtitle: "Group related tasks — e.g. Prep, Cleaning, Closing.",
-    back_path: tasks_manage_lists_path,
-    back_label: "Task lists"
+    back_path: @continue_to_task ? setup_tasks_manage_tasks_path : tasks_manage_lists_path,
+    back_label: @continue_to_task ? "Add task" : "Task lists"
 %>
 
 <section class="panel panel-compact">
-  <%= render "form", task_list: @task_list, url: tasks_manage_lists_path, method: :post, submit_label: "Create list" %>
+  <%= render "form",
+        task_list: @task_list,
+        url: tasks_manage_lists_path,
+        method: :post,
+        submit_label: "Create list",
+        continue_to_task: @continue_to_task,
+        cancel_path: @continue_to_task ? setup_tasks_manage_tasks_path : tasks_manage_lists_path %>
 </section>

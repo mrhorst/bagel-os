@@ -1,0 +1,131 @@
+<% task_list_options = (@task_lists.to_a + [task.task_list]).compact.uniq.sort_by { |task_list| [task_list.position, task_list.name] } %>
+
+<%= form_with model: task,
+      url: url,
+      method: method,
+      class: "task-wizard stacked-form",
+      data: { controller: "task-wizard task-schedule-form", action: "submit->task-wizard#submit" } do |form| %>
+  <%= hidden_field_tag :return_to, params[:return_to].presence || "dashboard" %>
+
+  <% if task.errors.any? %>
+    <div class="form-errors" role="alert">
+      <strong><%= pluralize(task.errors.count, "error") %> kept this task from saving:</strong>
+      <ul>
+        <% task.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <nav class="task-wizard-steps" aria-label="Task setup progress">
+    <% [ "List", "Task", "Timing", "Instructions", "Review" ].each_with_index do |label, index| %>
+      <button type="button"
+              class="task-wizard-step"
+              data-task-wizard-target="step"
+              data-action="task-wizard#goTo"
+              data-task-wizard-index-param="<%= index %>">
+        <span><%= index + 1 %></span>
+        <%= label %>
+      </button>
+    <% end %>
+  </nav>
+
+  <section class="task-wizard-panel" data-task-wizard-target="panel">
+    <p class="task-wizard-kicker">Step 1 of 5</p>
+    <h2>Choose the list</h2>
+    <p class="muted">Lists keep the dashboard scannable for staff. Pick the work area this task belongs to.</p>
+    <div class="field">
+      <%= form.label :task_list_id, "Task list" %>
+      <%= form.select :task_list_id, options_from_collection_for_select(task_list_options, :id, :name, task.task_list_id), { include_blank: "Choose list" }, required: true %>
+    </div>
+    <div class="task-wizard-inline-action">
+      <%= link_to "Create a different list", new_tasks_manage_list_path(continue_to_task: "1"), class: "button" %>
+    </div>
+  </section>
+
+  <section class="task-wizard-panel" data-task-wizard-target="panel" hidden>
+    <p class="task-wizard-kicker">Step 2 of 5</p>
+    <h2>Name the work</h2>
+    <p class="muted">Use the same words staff would search for during a busy shift.</p>
+    <div class="field">
+      <%= form.label :title, "Task name" %>
+      <%= form.text_field :title, required: true, placeholder: "Clean espresso machine" %>
+    </div>
+  </section>
+
+  <section class="task-wizard-panel" data-task-wizard-target="panel" hidden>
+    <p class="task-wizard-kicker">Step 3 of 5</p>
+    <h2>Set the timing</h2>
+    <p class="muted">Group the schedule details here so the task shows up on the right day and time.</p>
+    <div class="form-grid">
+      <div class="field">
+        <%= form.label :recurrence_type, "Repeats" %>
+        <%= form.select :recurrence_type, Task::RECURRENCE_TYPES.map { |value| [ value.humanize, value ] }, {}, required: true, data: { task_schedule_form_target: "recurrence", action: "task-schedule-form#sync" } %>
+      </div>
+      <div class="field" data-task-schedule-form-target="dueTime">
+        <%= form.label :due_time, "Due time" %>
+        <%= form.time_field :due_time, value: task.due_time&.strftime("%H:%M") %>
+      </div>
+      <div class="field" data-task-schedule-form-target="oneTime">
+        <%= form.label :one_time_on, "Date" %>
+        <%= form.date_field :one_time_on %>
+      </div>
+      <div class="field-row field-row-recurring" data-task-schedule-form-target="recurring">
+        <div class="field">
+          <%= form.label :starts_on, "Start date" %>
+          <%= form.date_field :starts_on %>
+        </div>
+        <div class="field">
+          <%= form.label :ends_on, "End date" %>
+          <%= form.date_field :ends_on %>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" data-task-schedule-form-target="weekly">
+      <label>Weekly days</label>
+      <%= hidden_field_tag "task[weekdays][]", "" %>
+      <div class="day-toggle-grid">
+        <% Date::ABBR_DAYNAMES.each_with_index do |day_name, weekday| %>
+          <label class="day-toggle" for="<%= "#{dom_id(task)}_guided_weekday_#{weekday}" %>">
+            <%= check_box_tag "task[weekdays][]", weekday, task.weekday_values.include?(weekday), id: "#{dom_id(task)}_guided_weekday_#{weekday}" %>
+            <span><%= day_name %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="task-wizard-panel" data-task-wizard-target="panel" hidden>
+    <p class="task-wizard-kicker">Step 4 of 5</p>
+    <h2>Add staff instructions</h2>
+    <p class="muted">Keep it short, plain, and useful on the task card.</p>
+    <div class="field">
+      <%= form.label :instructions, "Instructions" %>
+      <%= form.text_area :instructions, rows: 5, placeholder: "Plain text steps the team will see on the task card." %>
+    </div>
+  </section>
+
+  <section class="task-wizard-panel" data-task-wizard-target="panel" hidden>
+    <p class="task-wizard-kicker">Step 5 of 5</p>
+    <h2>Final options</h2>
+    <p class="muted">Only turn on proof or sort order when the task really needs it.</p>
+    <label class="check">
+      <%= form.check_box :requires_photo_evidence %>
+      <span>Require one completion photo</span>
+    </label>
+    <div class="field">
+      <%= form.label :position, "Sort order" %>
+      <%= form.number_field :position, step: 1 %>
+      <p class="field-hint">Lower numbers appear first inside the list.</p>
+    </div>
+  </section>
+
+  <div class="task-wizard-actions">
+    <%= link_to "Cancel", tasks_root_path, class: "button" %>
+    <button type="button" class="button" data-task-wizard-target="back" data-action="task-wizard#back">Back</button>
+    <button type="button" class="button primary" data-task-wizard-target="next" data-action="task-wizard#next">Next</button>
+    <%= form.submit submit_label, class: "button primary", data: { task_wizard_target: "submit" } %>
+  </div>
+<% end %>

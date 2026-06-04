@@ -80,6 +80,10 @@ Rails.application.routes.draw do
       end
 
       resources :tasks, controller: "manage", only: %i[index new create edit update] do
+        collection do
+          get :setup
+        end
+
         member do
           patch :archive
           patch :reactivate

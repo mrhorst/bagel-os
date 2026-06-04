@@ -3,10 +3,10 @@
 <%=
   render "tasks/subpage_header",
     title: "New task",
-    back_path: tasks_manage_tasks_path,
-    back_label: "Tasks"
+    back_path: setup_tasks_manage_tasks_path,
+    back_label: "Add task"
 %>
 
 <section class="panel panel-compact">
-  <%= render "task_form", task: @task, url: tasks_manage_tasks_path, method: :post, submit_label: "Create task" %>
+  <%= render "guided_task_form", task: @task, url: tasks_manage_tasks_path, method: :post, submit_label: "Create task" %>
 </section>

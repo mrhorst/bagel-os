@@ -22,6 +22,7 @@ module Tasks
 
     def new
       @task_list = TaskList.new(position: TaskList.maximum(:position).to_i + 1)
+      @continue_to_task = params[:continue_to_task] == "1"
     end
 
     def create
@@ -30,8 +31,9 @@ module Tasks
 
       if @task_list.save
         LiveUpdates.task_state_changed!
-        redirect_to tasks_manage_lists_path, notice: "Task list created."
+        redirect_to after_create_path(@task_list), notice: "Task list created."
       else
+        @continue_to_task = params[:continue_to_task] == "1"
         render :new, status: :unprocessable_entity
       end
     end
@@ -67,6 +69,14 @@ module Tasks
 
     def task_list_params
       params.require(:task_list).permit(:name, :position, :notes, :display_start_time, :display_end_time)
+    end
+
+    def after_create_path(task_list)
+      if params[:continue_to_task] == "1"
+        new_tasks_manage_task_path(task_list_id: task_list.id, flow: "guided", return_to: "dashboard")
+      else
+        tasks_manage_lists_path
+      end
     end
 
     # Single-list versions of the dashboard queries. We deliberately do NOT

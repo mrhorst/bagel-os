@@ -3,15 +3,22 @@ module Tasks
   # We keep the controller name "Manage" because the controller predates
   # the resourceful URL; renaming the file would just be churn.
   class ManageController < ApplicationController
-    before_action :load_form_collections, only: %i[index new create edit update]
+    before_action :load_form_collections, only: %i[index setup new create edit update]
 
     def index
       @tasks = Task.includes(:task_list).joins(:task_list)
         .order("task_lists.position ASC", "tasks.position ASC", "tasks.title ASC")
     end
 
+    def setup
+    end
+
     def new
-      @task = Task.new(recurrence_type: "daily", starts_on: Time.zone.today)
+      @task = Task.new(
+        task_list_id: params[:task_list_id],
+        recurrence_type: "daily",
+        starts_on: Time.zone.today
+      )
     end
 
     def create
@@ -20,7 +27,7 @@ module Tasks
       if @task.save
         refresh_open_occurrences(@task)
         LiveUpdates.task_state_changed!
-        redirect_to tasks_manage_tasks_path, notice: "Task created."
+        redirect_to after_create_path, notice: "Task created."
       else
         render :new, status: :unprocessable_entity
       end
@@ -87,6 +94,10 @@ module Tasks
         from: Time.zone.today,
         to: [ Time.zone.today.end_of_month, task.ends_on ].compact.min
       )
+    end
+
+    def after_create_path
+      params[:return_to] == "dashboard" ? tasks_root_path : tasks_manage_tasks_path
     end
   end
 end

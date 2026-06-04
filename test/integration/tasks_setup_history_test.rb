@@ -3,6 +3,67 @@ require "test_helper"
 class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
   include ActiveSupport::Testing::TimeHelpers
 
+  test "dashboard add button opens guided task setup menu" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      TaskList.create!(name: "Opening", position: 1)
+
+      get tasks_root_path
+
+      assert_response :success
+      assert_select "a.mobile-fab[href=?]", setup_tasks_manage_tasks_path
+
+      get setup_tasks_manage_tasks_path
+
+      assert_response :success
+      assert_select "h1", "Add task"
+      assert_select ".task-builder-card strong", "Add to an existing list"
+      assert_select ".task-builder-card strong", "Create a new list"
+    end
+  end
+
+  test "new list from guided setup continues into guided task form" do
+    post tasks_manage_lists_path, params: {
+      continue_to_task: "1",
+      task_list: {
+        name: "Prep",
+        position: 1
+      }
+    }
+
+    task_list = TaskList.sole
+    assert_redirected_to new_tasks_manage_task_path(task_list_id: task_list.id, flow: "guided", return_to: "dashboard")
+
+    follow_redirect!
+
+    assert_response :success
+    assert_select ".task-wizard"
+    assert_select "select[name='task[task_list_id]'] option[selected]", "Prep"
+    assert_select ".task-wizard-step", 5
+  end
+
+  test "guided task creation returns to the dashboard" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      task_list = TaskList.create!(name: "Opening", position: 1)
+
+      post tasks_manage_tasks_path, params: {
+        return_to: "dashboard",
+        task: {
+          task_list_id: task_list.id,
+          title: "Check display case",
+          instructions: "Make it full before the rush.",
+          recurrence_type: "daily",
+          starts_on: "2026-05-18",
+          due_time: "08:00",
+          weekdays: [ "" ],
+          requires_photo_evidence: "0"
+        }
+      }
+
+      assert_redirected_to tasks_root_path
+      assert_equal "Check display case", Task.sole.title
+    end
+  end
+
   test "creates task lists and tasks from setup screens" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       get tasks_manage_lists_path

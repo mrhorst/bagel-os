@@ -1,0 +1,37 @@
+<% content_for :title, "Add task" %>
+
+<%=
+  render "tasks/subpage_header",
+    title: "Add task",
+    subtitle: "Choose where this work should live first.",
+    back_path: tasks_root_path,
+    back_label: "Tasks"
+%>
+
+<section class="task-builder-menu" aria-label="Task builder options">
+  <% if @task_lists.any? %>
+    <%= link_to new_tasks_manage_task_path(flow: "guided", return_to: "dashboard"), class: "task-builder-card task-builder-card-primary" do %>
+      <span class="task-builder-card-icon" aria-hidden="true">+</span>
+      <span>
+        <strong>Add to an existing list</strong>
+        <small>Use Prep, Cleaning, Closing, or any list already on the dashboard.</small>
+      </span>
+    <% end %>
+  <% else %>
+    <div class="task-builder-card task-builder-card-disabled">
+      <span class="task-builder-card-icon" aria-hidden="true">+</span>
+      <span>
+        <strong>Add to an existing list</strong>
+        <small>Create your first list before adding task work.</small>
+      </span>
+    </div>
+  <% end %>
+
+  <%= link_to new_tasks_manage_list_path(continue_to_task: "1"), class: "task-builder-card" do %>
+    <span class="task-builder-card-icon" aria-hidden="true">#</span>
+    <span>
+      <strong>Create a new list</strong>
+      <small>Make a fresh group like Opening, Prep, Cleaning, or Closing, then add the first task.</small>
+    </span>
+  <% end %>
+</section>
