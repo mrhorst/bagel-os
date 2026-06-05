@@ -36,6 +36,7 @@ jobs:
       KAMAL_SERVER_IP: ${{ secrets.KAMAL_SERVER_IP }}
       KAMAL_SSH_CONFIG_PATH: /home/runner/.ssh/kamal_ssh_config
       KAMAL_SSH_KEY_PATH: /home/runner/.ssh/kamal_deploy_key
+      KAMAL_SSH_KNOWN_HOSTS: ${{ secrets.KAMAL_SSH_KNOWN_HOSTS }}
       KAMAL_SSH_KNOWN_HOSTS_PATH: /home/runner/.ssh/kamal_known_hosts
       KAMAL_SSH_USER: ${{ secrets.KAMAL_SSH_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -59,7 +60,11 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${{ secrets.KAMAL_SSH_PRIVATE_KEY }}" > "$KAMAL_SSH_KEY_PATH"
           chmod 600 "$KAMAL_SSH_KEY_PATH"
-          ssh-keyscan -T 30 -H "$KAMAL_SERVER_IP" > "$KAMAL_SSH_KNOWN_HOSTS_PATH"
+          if [ -z "$KAMAL_SSH_KNOWN_HOSTS" ]; then
+            echo "KAMAL_SSH_KNOWN_HOSTS is required for pinned deploy host verification." >&2
+            exit 1
+          fi
+          printf '%s\n' "$KAMAL_SSH_KNOWN_HOSTS" > "$KAMAL_SSH_KNOWN_HOSTS_PATH"
           chmod 600 "$KAMAL_SSH_KNOWN_HOSTS_PATH"
           cp "$KAMAL_SSH_KNOWN_HOSTS_PATH" ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
