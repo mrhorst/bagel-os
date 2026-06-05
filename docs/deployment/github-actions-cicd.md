@@ -49,6 +49,10 @@ Do not reuse a personal laptop or Termius key.
 - `RAILS_MASTER_KEY`: contents of `config/master.key`.
 - `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: bearer token for the task briefing agent gateway.
 
+The GitHub deploy config uses `.kamal/secrets.github`, which reads these values
+from the workflow environment. Local manual deploys keep using `.kamal/secrets`,
+where `RAILS_MASTER_KEY` can still come from `config/master.key`.
+
 ## First Production Run
 
 After secrets are configured, start the `Deploy` workflow manually and choose:

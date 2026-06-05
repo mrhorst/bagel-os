@@ -5,6 +5,8 @@
 
 service: restaurant-inventory-os
 
+secrets_path: .kamal/secrets.github
+
 image: <%= ENV.fetch("KAMAL_IMAGE") %>
 
 servers:
