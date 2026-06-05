@@ -1682,6 +1682,9 @@
   .field input[type='time'] {
     max-width: 200px;
   }
+  .field input[type='time'] {
+    min-width: 0;
+  }
 
   .details {
     display: grid;
@@ -3894,6 +3897,17 @@
     }
     .task-wizard-panel {
       padding: 14px;
+    }
+    .task-wizard,
+    .task-wizard-panel,
+    .task-wizard-panel .form-grid,
+    .task-wizard-panel .field,
+    .task-wizard-panel input[type='time'] {
+      min-width: 0;
+    }
+    .task-wizard-panel input[type='time'] {
+      max-width: 100%;
+      width: 100%;
     }
     .task-wizard-actions {
       display: grid;

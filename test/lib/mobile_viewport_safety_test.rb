@@ -58,4 +58,19 @@ class MobileViewportSafetyTest < ActiveSupport::TestCase
         "#{parent} hosts an absolutely-positioned child but no rule block for it sets position: relative (or absolute/fixed/sticky). The child will escape its intended container and resolve its containing block to the viewport."
     end
   end
+
+  test "task wizard time input is constrained on mobile" do
+    css = File.read(CSS_PATH)
+    mobile_css = css[/@media \(max-width: 640px\).*?\z/m]
+    refute_nil mobile_css, "could not locate the mobile stylesheet block"
+
+    selector = ".task-wizard-panel input[type='time']"
+    blocks = mobile_css.scan(/([^{}]+)\{([^}]*)\}/)
+      .select { |selectors, _body| selectors.include?(selector) }
+    refute_empty blocks, "expected #{selector} to have an explicit mobile containment rule"
+
+    combined_body = blocks.map(&:last).join("\n")
+    assert_match(/max-width:\s*100%/, combined_body)
+    assert_match(/width:\s*100%/, combined_body)
+  end
 end
