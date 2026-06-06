@@ -62,4 +62,4 @@ gem "kamal", "~> 2.10", group: :development, require: false
 gem "chartkick", "~> 5.2"
 
 # Audit trail — versions every change with the acting user as whodunnit.
-gem "paper_trail", "~> 16.0"
+gem "paper_trail", "~> 17.0"
