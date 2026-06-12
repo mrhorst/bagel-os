@@ -1,52 +1,33 @@
-require "anthropic"
-
 module PhotoAssets
-  # First-pass review of a photo asset by Claude: judges whether the shot is
-  # usable for marketing, what needs fixing, and whether a light AI treatment
-  # (background cleanup, dirty plate) would make it usable. Staff can always
-  # override the verdict from the photo's page.
+  # First-pass review of a photo asset by the configured agent gateway
+  # (e.g. Hermes, same pattern as task briefings): judges whether the shot
+  # is usable for marketing, what needs fixing, and whether a light AI
+  # treatment (background cleanup, dirty plate) would make it usable.
+  # Staff can always override the verdict from the photo's page.
   class AiReviewer
-    DEFAULT_MODEL = "claude-opus-4-8".freeze
+    VERDICT_STATUSES = %w[approved needs_work rejected].freeze
 
-    VERDICT_SCHEMA = {
-      type: "object",
-      additionalProperties: false,
-      required: %w[status notes treatment_recommended treatment_instructions],
-      properties: {
-        status: { type: "string", enum: %w[approved needs_work rejected] },
-        notes: { type: "string", description: "1-3 plain sentences for restaurant staff: what works, what to fix or why it was rejected." },
-        treatment_recommended: { type: "boolean", description: "True only when a light edit (clean background clutter, wipe a dirty plate or smudge) would clearly help. Never to alter the food itself." },
-        treatment_instructions: { type: "string", description: "Short edit instructions when treatment is recommended, otherwise empty." }
-      }
-    }.freeze
-
-    SYSTEM_PROMPT = <<~PROMPT.freeze
-      You review photos for a restaurant's marketing library (menus, social media, website).
-      Judge each photo on: focus and lighting, composition, cleanliness (dirty plates,
-      smudges, messy or distracting backgrounds), and whether the food looks appetizing
-      and realistic.
-
-      Statuses:
-      - approved: usable as-is, or usable after a light cleanup edit.
-      - needs_work: a reshoot would fix it; give concrete guidance (angle, light, staging).
-      - rejected: not usable for marketing (out of focus, unappetizing, wrong subject).
-
-      Recommend treatment only for issues an edit can fix without touching the food:
-      background clutter, dirty plate rims, counter smudges. Keep everything realistic —
-      no replacing or beautifying the food itself.
-    PROMPT
+    INSTRUCTIONS = [
+      "You review photos for a restaurant's marketing library (menus, social media, website).",
+      "Judge the photo on: focus and lighting, composition, cleanliness (dirty plates, smudges, messy or distracting backgrounds), and whether the food looks appetizing and realistic.",
+      "status must be one of: approved (usable as-is or after a light cleanup edit), needs_work (a reshoot would fix it; give concrete guidance on angle, light, staging), rejected (not usable for marketing).",
+      "notes: 1-3 plain sentences for restaurant staff.",
+      "treatment_recommended: true only when a light edit (clear background clutter, wipe a dirty plate rim or smudge) would clearly help; never to alter the food itself.",
+      "treatment_instructions: short edit instructions when treatment is recommended, otherwise empty.",
+      "Do not invent details you cannot see. Return JSON with exactly these keys: status, notes, treatment_recommended, treatment_instructions."
+    ].freeze
 
     def self.configured?
-      ENV["ANTHROPIC_API_KEY"].present?
+      ReviewGatewayClient.new.configured?
     end
 
-    def initialize(client: nil, model: ENV.fetch("MARKETING_AI_REVIEW_MODEL", DEFAULT_MODEL))
-      @client = client
-      @model = model
+    def initialize(gateway_client: ReviewGatewayClient.new)
+      @gateway_client = gateway_client
     end
 
-    # Reviews and applies the verdict. Returns the verdict hash, or nil when
-    # the API is unavailable or declines (asset stays unreviewed for a human).
+    # Reviews and applies the verdict. Returns the normalized verdict hash,
+    # or nil when the gateway is unavailable or returns something unusable
+    # (asset stays unreviewed for a human).
     def review!(asset)
       verdict = fetch_verdict(asset)
       return nil if verdict.nil?
@@ -73,38 +54,42 @@ module PhotoAssets
 
     private
 
-    attr_reader :model
-
-    def client
-      @client ||= Anthropic::Client.new
-    end
+    attr_reader :gateway_client
 
     def fetch_verdict(asset)
+      return nil unless gateway_client.configured?
+
       data, media_type = PhotoBytes.jpeg_payload(asset.photo)
-
-      message = client.messages.create(
-        model: model,
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        messages: [ {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: media_type, data: Base64.strict_encode64(data) } },
-            { type: "text", text: "Review this photo for the marketing library. Photo ##{asset.id}." }
-          ]
-        } ],
-        output_config: { format: { type: "json_schema", schema: VERDICT_SCHEMA } }
+      response = gateway_client.call(
+        gateway_payload(asset),
+        image_base64: Base64.strict_encode64(data),
+        image_mime: media_type
       )
+      normalize_verdict(response)
+    end
 
-      return nil if message.stop_reason.to_s == "refusal"
+    def gateway_payload(asset)
+      {
+        "gateway" => "photo_review",
+        "version" => 1,
+        "photo_asset_id" => asset.id,
+        "instructions" => INSTRUCTIONS
+      }
+    end
 
-      text = message.content.find { |block| block.type.to_s == "text" }
-      return nil if text.nil?
+    def normalize_verdict(response)
+      return nil unless response.is_a?(Hash)
 
-      JSON.parse(text.text)
-    rescue Anthropic::Errors::APIError, JSON::ParserError => error
-      Rails.logger.warn("AI photo review failed for photo asset #{asset.id}: #{error.class}: #{error.message}")
-      nil
+      status = response["status"].to_s.strip.downcase.tr(" -", "__")
+      return nil unless VERDICT_STATUSES.include?(status)
+
+      recommended = [ true, "true", "yes", 1 ].include?(response["treatment_recommended"])
+      {
+        "status" => status,
+        "notes" => response["notes"].to_s.squish,
+        "treatment_recommended" => recommended,
+        "treatment_instructions" => recommended ? response["treatment_instructions"].to_s.squish : ""
+      }
     end
   end
 end

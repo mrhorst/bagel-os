@@ -14,7 +14,8 @@ module PhotoAssets
       else
         [ blob.download, blob.content_type ]
       end
-    rescue ActiveStorage::Error, ActiveStorage::FileNotFoundError
+    rescue ActiveStorage::Error, ActiveStorage::FileNotFoundError, LoadError
+      # LoadError: libvips missing on this host — send the original instead.
       [ blob.download, blob.content_type ]
     end
   end

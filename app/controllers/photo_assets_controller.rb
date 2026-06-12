@@ -66,7 +66,7 @@ class PhotoAssetsController < ApplicationController
 
   def ai_review
     unless PhotoAssets::AiReviewer.configured?
-      redirect_to photo_assets_path, alert: "AI review isn't configured. Set ANTHROPIC_API_KEY first."
+      redirect_to photo_assets_path, alert: "AI review isn't configured. Set MARKETING_PHOTO_AGENT_GATEWAY_URL first."
       return
     end
 
