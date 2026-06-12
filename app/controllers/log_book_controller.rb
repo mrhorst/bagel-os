@@ -28,7 +28,7 @@ class LogBookController < ApplicationController
 
     ActiveRecord::Base.transaction do
       entry.update!(submitted_by: Current.user, submitted_at: saved_at)
-      sync_responses!(entry, response_params)
+      LogBook::SyncResponses.new(entry, user: Current.user).call(response_params)
     end
 
     setup_view_state
@@ -92,60 +92,6 @@ class LogBookController < ApplicationController
 
     section_ids = entry.log_book_responses.select(:log_book_section_id)
     LogBookSection.where(id: section_ids).ordered
-  end
-
-  def sync_responses!(entry, response_params)
-    response_params.each do |section_id, attrs|
-      section = LogBookSection.active.find(section_id)
-      response = entry.log_book_responses.find_or_initialize_by(log_book_section: section)
-      no_note = ActiveModel::Type::Boolean.new.cast(attrs.fetch(:no_note, false))
-
-      response.assign_attributes(
-        section_title_snapshot: section.title,
-        section_type_snapshot: section.section_type,
-        value_decimals_snapshot: section.value_decimals,
-        no_note: no_note,
-        flagged_for_follow_up: section.allow_follow_up? &&
-          ActiveModel::Type::Boolean.new.cast(attrs[:flagged_for_follow_up]),
-        urgency: section.allow_follow_up? ? (attrs[:urgency].presence || "normal") : "normal",
-        value_text: value_text_for(section, attrs, no_note),
-        value_number: no_note ? nil : attrs[:value_number].presence,
-        value_grid: value_grid_for(section, attrs, no_note),
-        fields_snapshot: section.multi? ? section.fields : []
-      )
-
-      # Only attribute a write to a user if the response actually changed.
-      # Touching the form and resaving without edits shouldn't rewrite who
-      # last filled out the section.
-      if response.new_record? || response.changed?
-        response.last_submitted_by = Current.user
-        response.last_submitted_at = Time.current
-      end
-
-      response.save!
-      FollowUps::SyncFromLogBookResponse.new(response, user: Current.user).call
-    end
-  end
-
-  def value_text_for(section, attrs, no_note)
-    return nil if no_note || section.section_type.in?(%w[number multi])
-
-    attrs[:value_text].presence
-  end
-
-  # Strip blank entries so a multi-input section saved with empty fields
-  # round-trips as an empty hash rather than a hash of blank strings.
-  def value_grid_for(section, attrs, no_note)
-    return {} unless section.multi?
-    return {} if no_note
-
-    raw = attrs[:value_grid]
-    return {} unless raw.is_a?(ActionController::Parameters) || raw.is_a?(Hash)
-
-    raw.to_h.each_with_object({}) do |(key, value), acc|
-      next if value.to_s.strip.empty?
-      acc[key.to_s] = value.to_s.strip
-    end
   end
 
   # Whitelist responses with a proper StrongParameters pass instead of
