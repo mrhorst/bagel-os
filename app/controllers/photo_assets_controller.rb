@@ -56,7 +56,7 @@ class PhotoAssetsController < ApplicationController
 
   def treat
     unless PhotoAssets::AiTreatment.configured?
-      redirect_to photo_asset_path(@asset), alert: "AI treatment isn't configured. Set GEMINI_API_KEY first."
+      redirect_to photo_asset_path(@asset), alert: "AI treatment isn't configured. Set MARKETING_PHOTO_AGENT_GATEWAY_URL first."
       return
     end
 

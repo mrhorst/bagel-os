@@ -2,11 +2,29 @@ require "test_helper"
 
 module PhotoAssets
   class AiTreatmentTest < ActiveSupport::TestCase
-    test "attach_treated! attaches the edited copy and keeps the original" do
-      asset = create_asset
-      original_checksum = asset.photo.checksum
+    class FakeGateway
+      attr_reader :last_instructions
 
-      AiTreatment.new(api_key: "test").attach_treated!(asset, "fake-image-bytes", "image/png")
+      def initialize(result, configured: true)
+        @result = result
+        @configured = configured
+      end
+
+      def configured? = @configured
+
+      def call(instructions, image_base64:, image_mime:)
+        @last_instructions = instructions
+        @result
+      end
+    end
+
+    test "treat! attaches the edited copy from the gateway and keeps the original" do
+      asset = create_asset
+      asset.update!(treatment_instructions: "Remove the rag on the counter.")
+      original_checksum = asset.photo.checksum
+      gateway = FakeGateway.new([ "fake-image-bytes", "image/png" ])
+
+      assert AiTreatment.new(gateway_client: gateway).treat!(asset)
 
       asset.reload
       assert asset.treated_photo.attached?
@@ -14,23 +32,15 @@ module PhotoAssets
       assert_not_nil asset.treated_at
       assert_equal original_checksum, asset.photo.checksum
       assert_equal asset.treated_photo, asset.publishable_photo
+      assert_includes gateway.last_instructions, "Remove the rag on the counter."
     end
 
-    test "extract_image reads both camelCase and snake_case response shapes" do
-      treatment = AiTreatment.new(api_key: "test")
-      data = Base64.strict_encode64("edited")
+    test "treat! is false when the gateway is unconfigured or returns no image" do
+      asset = create_asset
 
-      camel = { "candidates" => [ { "content" => { "parts" => [
-        { "text" => "done" },
-        { "inlineData" => { "mimeType" => "image/png", "data" => data } }
-      ] } } ] }
-      snake = { "candidates" => [ { "content" => { "parts" => [
-        { "inline_data" => { "mime_type" => "image/jpeg", "data" => data } }
-      ] } } ] }
-
-      assert_equal [ "edited", "image/png" ], treatment.send(:extract_image, camel)
-      assert_equal [ "edited", "image/jpeg" ], treatment.send(:extract_image, snake)
-      assert_nil treatment.send(:extract_image, { "candidates" => [] })
+      assert_not AiTreatment.new(gateway_client: FakeGateway.new(nil, configured: false)).treat!(asset)
+      assert_not AiTreatment.new(gateway_client: FakeGateway.new(nil)).treat!(asset)
+      assert_not asset.reload.treated_photo.attached?
     end
 
     private
