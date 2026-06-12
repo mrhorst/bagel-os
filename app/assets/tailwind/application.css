@@ -2527,6 +2527,64 @@
     color: #fff;
   }
 
+  /* ── Marketing photo library ──────────────────────────────────────── */
+  .badge-danger {
+    background: var(--danger-soft);
+    color: var(--danger-fg);
+  }
+
+  .photo-library-filters {
+    margin-bottom: 16px;
+  }
+
+  .photo-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .photo-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    display: block;
+    overflow: hidden;
+    position: relative;
+  }
+  .photo-card:hover {
+    box-shadow: var(--shadow-e2);
+  }
+  .photo-card img {
+    aspect-ratio: 4 / 3;
+    display: block;
+    height: auto;
+    object-fit: cover;
+    width: 100%;
+  }
+  .photo-card-status {
+    left: 8px;
+    position: absolute;
+    top: 8px;
+  }
+
+  .photo-detail-img {
+    border-radius: var(--radius-md);
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+
+  .photo-review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
   /* ── Chart styling ────────────────────────────────────────────────── */
   .price-chart {
     background: var(--surface-3);

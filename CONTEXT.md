@@ -20,6 +20,22 @@ _Avoid_: whole app
 The module for staff task lists, recurring work, completion history, and task evidence.
 _Avoid_: schedule, shift planner, timeclock
 
+**Marketing Module**:
+The module for collecting, reviewing, and exporting marketing photo assets.
+_Avoid_: social media scheduler, digital asset management platform
+
+**Photo Asset**:
+One photo collected for marketing use, carrying a review status, caption, and notes.
+_Avoid_: photo evidence, task attachment
+
+**Photo Asset Status**:
+The single review outcome on a photo asset: unreviewed, approved, needs work, or rejected.
+_Avoid_: multi-step approval workflow
+
+**Photo Export**:
+The one-command export of photo assets and their manifest for use outside the app.
+_Avoid_: external API integration
+
 **Staff Member**:
 A person credited with completing restaurant operating work.
 _Avoid_: user, login, employee record

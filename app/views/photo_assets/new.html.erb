@@ -1,0 +1,24 @@
+<% content_for :title, "Add photos" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Add photos</h1>
+    <p>Take a photo now or pick several from your library. New photos land as “Unreviewed” for the next pass.</p>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= form_with url: photo_assets_path, multipart: true, class: "stack" do |form| %>
+    <div class="field">
+      <%= label_tag "photo_asset_camera_photo", "Take a photo" %>
+      <%= file_field_tag "photo_asset[camera_photo]", id: "photo_asset_camera_photo",
+            accept: "image/*", capture: "environment" %>
+    </div>
+    <div class="field">
+      <%= label_tag "photo_asset_photos", "Or choose from your library" %>
+      <%= file_field_tag "photo_asset[photos][]", id: "photo_asset_photos",
+            accept: "image/*", multiple: true %>
+    </div>
+    <%= form.submit "Add to library", class: "button primary" %>
+  <% end %>
+</article>

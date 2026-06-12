@@ -1,0 +1,42 @@
+<% content_for :title, "Marketing" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Photo library</h1>
+    <p>Collect photos from the team, run a review pass, and pull the approved set for marketing.</p>
+  </div>
+  <%= link_to "Add photos", new_photo_asset_path, class: "button primary" %>
+</section>
+
+<nav class="segmented photo-library-filters" aria-label="Filter by review status">
+  <% PhotoAssetsController::SCOPES.each do |scope| %>
+    <% count = scope == "all" ? @counts.values.sum : @counts.fetch(scope, 0) %>
+    <%= link_to photo_assets_path(scope: scope), class: ("active" if @scope == scope) do %>
+      <%= scope == "all" ? "All" : scope.humanize %> <span class="tnum">(<%= count %>)</span>
+    <% end %>
+  <% end %>
+</nav>
+
+<% if @assets.any? %>
+  <ul class="photo-grid" aria-label="Photo assets">
+    <% @assets.each do |asset| %>
+      <li>
+        <%= link_to photo_asset_path(asset), class: "photo-card" do %>
+          <%= photo_asset_image asset, { resize_to_fill: [ 480, 360 ] },
+                alt: asset.caption.presence || "Photo ##{asset.id}", loading: "lazy" %>
+          <span class="photo-card-status"><%= photo_status_badge(asset) %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="empty-state">
+    <% if @scope == "all" %>
+      No photos yet. Add the first batch from your phone or library.
+    <% else %>
+      No <%= @scope.humanize.downcase %> photos right now.
+    <% end %>
+  </p>
+<% end %>
+
+<%= mobile_fab_button new_photo_asset_path, label: "Add photos" %>

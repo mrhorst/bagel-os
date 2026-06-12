@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -344,6 +344,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
     t.datetime "updated_at", null: false
     t.index ["active", "position"], name: "index_order_guides_on_active_and_position"
     t.index ["key"], name: "index_order_guides_on_key", unique: true
+  end
+
+  create_table "photo_assets", force: :cascade do |t|
+    t.string "caption"
+    t.datetime "created_at", null: false
+    t.text "notes"
+    t.datetime "reviewed_at"
+    t.integer "reviewed_by_id"
+    t.string "status", default: "unreviewed", null: false
+    t.datetime "updated_at", null: false
+    t.integer "uploaded_by_id"
+    t.index ["reviewed_by_id"], name: "index_photo_assets_on_reviewed_by_id"
+    t.index ["status"], name: "index_photo_assets_on_status"
+    t.index ["uploaded_by_id"], name: "index_photo_assets_on_uploaded_by_id"
   end
 
   create_table "price_observations", force: :cascade do |t|
@@ -694,6 +708,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
   add_foreign_key "order_guide_memberships", "order_guides"
   add_foreign_key "order_guide_memberships", "suppliers", column: "preferred_supplier_id"
   add_foreign_key "order_guide_sections", "order_guides"
+  add_foreign_key "photo_assets", "users", column: "reviewed_by_id"
+  add_foreign_key "photo_assets", "users", column: "uploaded_by_id"
   add_foreign_key "price_observations", "products"
   add_foreign_key "price_observations", "receipt_line_items"
   add_foreign_key "price_observations", "supplier_product_packs", column: "case_pack_id"

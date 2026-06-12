@@ -1,0 +1,72 @@
+<% content_for :title, "Photo ##{@asset.id}" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Photo <span class="tnum">#<%= @asset.id %></span></h1>
+    <p>
+      <%= photo_status_badge(@asset) %>
+      · added <%= @asset.created_at.strftime("%b %-d, %Y") %>
+      <% if @asset.uploaded_by %>
+        by <%= user_display_name(@asset.uploaded_by) %>
+      <% end %>
+      <% if @asset.reviewed_at && @asset.reviewed_by %>
+        · reviewed <%= @asset.reviewed_at.strftime("%b %-d") %> by <%= user_display_name(@asset.reviewed_by) %>
+      <% end %>
+    </p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to "Back to library", photo_assets_path, class: "button" %>
+    <%= link_to "Download original", rails_blob_path(@asset.photo, disposition: "attachment"), class: "button" %>
+  </div>
+</section>
+
+<div class="grid two">
+  <article class="panel">
+    <%= photo_asset_image @asset, { resize_to_limit: [ 1600, 1600 ] },
+          alt: @asset.caption.presence || "Photo ##{@asset.id}", class: "photo-detail-img" %>
+  </article>
+
+  <article class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Review</h2>
+        <p>Mark whether this shot is usable for marketing or needs another take.</p>
+      </div>
+    </div>
+
+    <div class="photo-review-actions">
+      <% PhotoAsset::STATUSES.each do |status| %>
+        <% next if status == @asset.status %>
+        <%= button_to status.humanize, photo_asset_path(@asset), method: :patch,
+              params: { photo_asset: { status: status } },
+              class: [ "button", "small", ("primary" if status == "approved") ] %>
+      <% end %>
+    </div>
+
+    <%= form_with url: photo_asset_path(@asset), method: :patch, class: "stack" do |form| %>
+      <div class="field">
+        <%= form.label :photo_asset_caption, "Caption" %>
+        <%= text_field_tag "photo_asset[caption]", @asset.caption, id: "photo_asset_caption",
+              placeholder: "What this shows, where it could run" %>
+      </div>
+      <div class="field">
+        <%= form.label :photo_asset_notes, "Review notes" %>
+        <%= text_area_tag "photo_asset[notes]", @asset.notes, id: "photo_asset_notes", rows: 3,
+              placeholder: "e.g. Retake — too dark, crop out the counter" %>
+      </div>
+      <%= form.submit "Save details", class: "button small" %>
+    <% end %>
+
+    <dl class="details">
+      <dt>File</dt>
+      <dd><%= @asset.photo.filename %></dd>
+      <dt>Size</dt>
+      <dd class="tnum"><%= number_to_human_size(@asset.photo.byte_size) %></dd>
+      <dt>Status</dt>
+      <dd><%= @asset.status_label %></dd>
+    </dl>
+
+    <%= button_to "Delete photo", photo_asset_path(@asset), method: :delete,
+          class: "button small", form: { data: { turbo_confirm: "Delete this photo permanently?" } } %>
+  </article>
+</div>
