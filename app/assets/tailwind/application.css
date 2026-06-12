@@ -2585,6 +2585,10 @@
     margin-bottom: 16px;
   }
 
+  .photo-treated-heading {
+    margin-top: 20px;
+  }
+
   /* ── Chart styling ────────────────────────────────────────────────── */
   .price-chart {
     background: var(--surface-3);

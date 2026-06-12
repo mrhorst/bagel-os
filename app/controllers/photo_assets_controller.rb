@@ -3,7 +3,7 @@ class PhotoAssetsController < ApplicationController
 
   SCOPES = (%w[all] + PhotoAsset::STATUSES).freeze
 
-  before_action :load_asset, only: %i[show update destroy]
+  before_action :load_asset, only: %i[show update destroy treat]
 
   def index
     @scope = SCOPES.include?(params[:scope]) ? params[:scope] : "all"
@@ -39,7 +39,7 @@ class PhotoAssetsController < ApplicationController
   def update
     attrs = params.require(:photo_asset).permit(:status, :caption, :notes)
     if attrs[:status].present? && attrs[:status] != @asset.status
-      @asset.assign_attributes(reviewed_by: Current.user, reviewed_at: Time.current)
+      @asset.assign_attributes(reviewed_by: Current.user, reviewed_at: Time.current, reviewed_via: "manual")
     end
 
     if @asset.update(attrs)
@@ -52,6 +52,32 @@ class PhotoAssetsController < ApplicationController
   def destroy
     @asset.destroy!
     redirect_to photo_assets_path, notice: "Photo deleted."
+  end
+
+  def treat
+    unless PhotoAssets::AiTreatment.configured?
+      redirect_to photo_asset_path(@asset), alert: "AI treatment isn't configured. Set GEMINI_API_KEY first."
+      return
+    end
+
+    PhotoAssets::TreatmentJob.perform_later(@asset.id)
+    redirect_to photo_asset_path(@asset), notice: "Treatment queued — the edited copy will appear here shortly."
+  end
+
+  def ai_review
+    unless PhotoAssets::AiReviewer.configured?
+      redirect_to photo_assets_path, alert: "AI review isn't configured. Set ANTHROPIC_API_KEY first."
+      return
+    end
+
+    queued = 0
+    PhotoAsset.with_status("unreviewed").where(reviewed_at: nil).find_each do |asset|
+      PhotoAssets::AiReviewJob.perform_later(asset.id)
+      queued += 1
+    end
+
+    redirect_to photo_assets_path(scope: "unreviewed"),
+      notice: queued.zero? ? "Nothing to review." : "AI review queued for #{queued} #{"photo".pluralize(queued)}."
   end
 
   private

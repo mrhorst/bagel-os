@@ -109,7 +109,14 @@ Rails.application.routes.draw do
   resources :products, only: %i[index show edit update] do
     resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
   end
-  resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy]
+  resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy] do
+    member do
+      post :treat
+    end
+    collection do
+      post :ai_review
+    end
+  end
   get "marketing", to: redirect("/marketing/photos")
   resources :receipt_line_items, only: %i[edit update]
   resources :normalization_reviews, only: %i[index] do

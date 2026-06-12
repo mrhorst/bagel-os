@@ -9,8 +9,9 @@
       <% if @asset.uploaded_by %>
         by <%= user_display_name(@asset.uploaded_by) %>
       <% end %>
-      <% if @asset.reviewed_at && @asset.reviewed_by %>
-        · reviewed <%= @asset.reviewed_at.strftime("%b %-d") %> by <%= user_display_name(@asset.reviewed_by) %>
+      <% if @asset.reviewed_at %>
+        · reviewed <%= @asset.reviewed_at.strftime("%b %-d") %>
+        by <%= @asset.ai_reviewed? ? "AI" : user_display_name(@asset.reviewed_by) %>
       <% end %>
     </p>
   </div>
@@ -24,6 +25,17 @@
   <article class="panel">
     <%= photo_asset_image @asset, { resize_to_limit: [ 1600, 1600 ] },
           alt: @asset.caption.presence || "Photo ##{@asset.id}", class: "photo-detail-img" %>
+
+    <% if @asset.treated_photo.attached? %>
+      <div class="panel-heading photo-treated-heading">
+        <div>
+          <h2>AI-treated copy</h2>
+          <p>Lightly edited for publishing — the original above is untouched.</p>
+        </div>
+        <%= link_to "Download treated", rails_blob_path(@asset.treated_photo, disposition: "attachment"), class: "button small" %>
+      </div>
+      <%= image_tag @asset.treated_photo, alt: "AI-treated copy of photo ##{@asset.id}", class: "photo-detail-img" %>
+    <% end %>
   </article>
 
   <article class="panel">
@@ -41,7 +53,15 @@
               params: { photo_asset: { status: status } },
               class: [ "button", "small", ("primary" if status == "approved") ] %>
       <% end %>
+      <% if PhotoAssets::AiTreatment.configured? %>
+        <%= button_to @asset.treated_photo.attached? ? "Re-treat with AI" : "Treat with AI",
+              treat_photo_asset_path(@asset), class: "button small" %>
+      <% end %>
     </div>
+
+    <% if @asset.treatment_instructions.present? %>
+      <p class="muted small">AI treatment note: <%= @asset.treatment_instructions %></p>
+    <% end %>
 
     <%= form_with url: photo_asset_path(@asset), method: :patch, class: "stack" do |form| %>
       <div class="field">

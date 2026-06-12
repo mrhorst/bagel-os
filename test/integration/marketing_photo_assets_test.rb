@@ -53,8 +53,26 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
     asset.reload
     assert_equal "needs_work", asset.status
     assert_equal users(:one), asset.reviewed_by
+    assert_equal "manual", asset.reviewed_via
     assert_not_nil asset.reviewed_at
     assert_equal "Too dark, retake.", asset.notes
+  end
+
+  test "treat is refused with an alert when AI treatment is not configured" do
+    sign_in_as(users(:one))
+    asset = create_asset
+
+    post treat_photo_asset_path(asset)
+    assert_redirected_to photo_asset_path(asset)
+    assert_match(/isn't configured/, flash[:alert])
+  end
+
+  test "bulk AI review is refused with an alert when the reviewer is not configured" do
+    sign_in_as(users(:one))
+
+    post ai_review_photo_assets_path
+    assert_redirected_to photo_assets_path
+    assert_match(/isn't configured/, flash[:alert])
   end
 
   test "deleting a photo removes it from the library" do

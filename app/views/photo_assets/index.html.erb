@@ -5,7 +5,12 @@
     <h1>Photo library</h1>
     <p>Collect photos from the team, run a review pass, and pull the approved set for marketing.</p>
   </div>
-  <%= link_to "Add photos", new_photo_asset_path, class: "button primary" %>
+  <div class="hero-actions">
+    <% if PhotoAssets::AiReviewer.configured? && @counts.fetch("unreviewed", 0).positive? %>
+      <%= button_to "Run AI review", ai_review_photo_assets_path, class: "button" %>
+    <% end %>
+    <%= link_to "Add photos", new_photo_asset_path, class: "button primary" %>
+  </div>
 </section>
 
 <nav class="segmented photo-library-filters" aria-label="Filter by review status">

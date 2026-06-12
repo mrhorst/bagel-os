@@ -36,6 +36,14 @@ _Avoid_: multi-step approval workflow
 The one-command export of photo assets and their manifest for use outside the app.
 _Avoid_: external API integration
 
+**AI Photo Review**:
+The automated first-pass review of a photo asset by an AI model, always overridable by staff.
+_Avoid_: final approval authority, human replacement
+
+**Treated Photo**:
+The AI-edited copy of a photo asset kept alongside the untouched original.
+_Avoid_: replacing the original, heavy retouching
+
 **Staff Member**:
 A person credited with completing restaurant operating work.
 _Avoid_: user, login, employee record
