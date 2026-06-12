@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+# Agent-facing CLI for Bagel OS: create and update tasks, follow-ups, and
+# the daily log book from the command line. Prints JSON envelopes so the
+# output is easy for agents (and scripts) to consume.
+#
+#   bin/bagel --help
+#   bin/bagel tasks create --title "Wipe down slicer" --list opening --due-time 16:00
+#
+# See docs/agents/cli.md for the full command reference.
+
+require_relative "../config/environment"
+
+exit AgentCli::Runner.run(ARGV)

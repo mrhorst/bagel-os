@@ -80,6 +80,7 @@ bin/dev                          # Foreman: rails server + tailwind:watch
 bin/rails tailwindcss:build      # One-off CSS build (faster than restarting bin/dev)
 bin/rails test                   # Full test suite
 bin/rails runner "puts X.count"  # Quick db poke
+bin/bagel <resource> <action>    # Agent CLI for tasks, follow-ups, log book (docs/agents/cli.md)
 ```
 
 ## More
