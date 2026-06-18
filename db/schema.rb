@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_18_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -434,6 +434,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
     t.index ["supplier_id"], name: "index_products_on_supplier_id"
   end
 
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.string "auth_key", null: false
+    t.datetime "created_at", null: false
+    t.string "endpoint", null: false
+    t.string "p256dh_key", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.integer "user_id", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
   create_table "receipt_line_items", force: :cascade do |t|
     t.integer "case_pack_id"
     t.decimal "case_quantity", precision: 12, scale: 4
@@ -701,6 +713,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
   add_foreign_key "product_aliases", "products"
   add_foreign_key "products", "product_categories"
   add_foreign_key "products", "suppliers"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "receipt_line_items", "import_batches"
   add_foreign_key "receipt_line_items", "products"
   add_foreign_key "receipt_line_items", "receipts"

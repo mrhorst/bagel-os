@@ -20,6 +20,11 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Web Push opt-in: the service-worker subscribe flow POSTs a subscription and
+  # DELETEs it (endpoint in the body) on opt-out.
+  post   "push-subscriptions", to: "push_subscriptions#create",  as: :push_subscriptions
+  delete "push-subscriptions", to: "push_subscriptions#destroy"
+
   root "dashboard#index"
 
   # Mobile bottom-nav group hubs. Each hub shows the modules in its group.
