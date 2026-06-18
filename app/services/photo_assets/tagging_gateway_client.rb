@@ -2,13 +2,13 @@ require "net/http"
 require "openssl"
 
 module PhotoAssets
-  # Mirrors Tasks::BriefingGatewayClient: posts the photo review request to a
-  # configured agent gateway. Endpoints ending in /v1/chat/completions get an
-  # OpenAI-style vision payload (Hermes); anything else gets the raw payload
-  # with HMAC signing.
-  class ReviewGatewayClient
+  # Mirrors Tasks::BriefingGatewayClient: posts a photo tagging request to a
+  # configured agent gateway (e.g. Hermes). Endpoints ending in
+  # /v1/chat/completions get an OpenAI-style vision payload; anything else gets
+  # the raw payload with HMAC signing.
+  class TaggingGatewayClient
     DEFAULT_TIMEOUT_SECONDS = 30
-    DEFAULT_MODEL = "hermes-photo-review".freeze
+    DEFAULT_MODEL = "hermes-photo-tagging".freeze
 
     def initialize(
       endpoint: ENV["MARKETING_PHOTO_AGENT_GATEWAY_URL"],
@@ -51,7 +51,7 @@ module PhotoAssets
 
       parsed_response
     rescue JSON::ParserError, SocketError, SystemCallError, Timeout::Error, URI::InvalidURIError, OpenSSL::SSL::SSLError => error
-      Rails.logger.warn("Photo review gateway failed: #{error.class}: #{error.message}")
+      Rails.logger.warn("Photo tagging gateway failed: #{error.class}: #{error.message}")
       nil
     end
 
@@ -71,7 +71,7 @@ module PhotoAssets
           {
             "role" => "user",
             "content" => [
-              { "type" => "text", "text" => "Return ONLY valid JSON. Review this photo per the payload:\n\n#{JSON.pretty_generate(payload)}" },
+              { "type" => "text", "text" => "Return ONLY valid JSON. Tag this photo per the payload:\n\n#{JSON.pretty_generate(payload)}" },
               { "type" => "image_url", "image_url" => { "url" => "data:#{image_mime};base64,#{image_base64}" } }
             ]
           }

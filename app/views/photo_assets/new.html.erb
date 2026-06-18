@@ -3,7 +3,7 @@
 <section class="page-heading">
   <div>
     <h1>Add photos</h1>
-    <p>Take a photo now or pick several from your library. New photos land as “Unreviewed” for the next pass.</p>
+    <p>Take a photo now or pick several from your library. They go straight into the shared library<%= " and get auto-tagged for review" if PhotoAssets::AiTagger.configured? %>.</p>
   </div>
 </section>
 

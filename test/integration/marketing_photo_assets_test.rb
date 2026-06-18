@@ -30,9 +30,9 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to photo_assets_path(scope: "unreviewed")
+    assert_redirected_to photo_assets_path
     assert_equal users(:one), PhotoAsset.last.uploaded_by
-    assert_equal "unreviewed", PhotoAsset.last.status
+    assert_equal "pending", PhotoAsset.last.status
   end
 
   test "submitting no photos re-renders the form with an alert" do
@@ -44,35 +44,93 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_photo_asset_path
   end
 
-  test "reviewing a photo records status, reviewer, and notes" do
+  test "the photo page renders suggestions and applied tags" do
+    sign_in_as(users(:one))
+    asset = create_asset
+    asset.taggings.create!(tag: tags(:food), source: "ai") # pending suggestion
+    asset.taggings.create!(tag: tags(:product), source: "manual", confirmed_at: Time.current)
+
+    get photo_asset_path(asset)
+    assert_response :success
+    assert_select ".suggestion-row", 1
+    assert_select ".tag-chip-list li", 1
+  end
+
+  test "the photo page offers unapplied active tags to add by hand" do
     sign_in_as(users(:one))
     asset = create_asset
 
-    patch photo_asset_path(asset), params: { photo_asset: { status: "needs_work", notes: "Too dark, retake." } }
+    get photo_asset_path(asset)
+    assert_response :success
+    assert_select "form.tag-add"
+    # Active vocabulary is selectable; the inactive tag is not.
+    assert_select "form.tag-add option", text: tags(:food).name
+    assert_select "form.tag-add option", text: tags(:inactive_promo).name, count: 0
+  end
+
+  test "the add-photos page renders" do
+    sign_in_as(users(:one))
+    get new_photo_asset_path
+    assert_response :success
+  end
+
+  test "saving caption and notes updates the asset" do
+    sign_in_as(users(:one))
+    asset = create_asset
+
+    patch photo_asset_path(asset), params: { photo_asset: { caption: "Front counter bagels", notes: "Morning light." } }
 
     asset.reload
-    assert_equal "needs_work", asset.status
-    assert_equal users(:one), asset.reviewed_by
-    assert_equal "manual", asset.reviewed_via
-    assert_not_nil asset.reviewed_at
-    assert_equal "Too dark, retake.", asset.notes
+    assert_equal "Front counter bagels", asset.caption
+    assert_equal "Morning light.", asset.notes
   end
 
-  test "treat is refused with an alert when AI treatment is not configured" do
+  test "adding a tag by hand files the photo as tagged" do
     sign_in_as(users(:one))
     asset = create_asset
 
-    post treat_photo_asset_path(asset)
-    assert_redirected_to photo_asset_path(asset)
-    assert_match(/isn't configured/, flash[:alert])
+    assert_difference "asset.taggings.count", 1 do
+      post photo_asset_taggings_path(asset), params: { tag_id: tags(:food).id }
+    end
+
+    tagging = asset.taggings.sole
+    assert_equal "manual", tagging.source
+    assert tagging.confirmed?
+    assert_equal "tagged", asset.reload.status
   end
 
-  test "bulk AI review is refused with an alert when the reviewer is not configured" do
+  test "confirming an AI suggestion moves the photo to tagged" do
     sign_in_as(users(:one))
+    asset = create_asset
+    suggestion = asset.taggings.create!(tag: tags(:food), source: "ai")
+    assert_equal "needs_review", asset.reload.status
 
-    post ai_review_photo_assets_path
-    assert_redirected_to photo_assets_path
-    assert_match(/isn't configured/, flash[:alert])
+    patch confirm_photo_asset_tagging_path(asset, suggestion)
+
+    assert suggestion.reload.confirmed?
+    assert_equal "tagged", asset.reload.status
+  end
+
+  test "dismissing a suggestion removes the tagging" do
+    sign_in_as(users(:one))
+    asset = create_asset
+    suggestion = asset.taggings.create!(tag: tags(:food), source: "ai")
+
+    assert_difference "asset.taggings.count", -1 do
+      delete photo_asset_tagging_path(asset, suggestion)
+    end
+    assert_equal "pending", asset.reload.status
+  end
+
+  test "filtering the library by tag shows only matching photos" do
+    sign_in_as(users(:one))
+    tagged = create_asset
+    tagged.taggings.create!(tag: tags(:food), source: "manual", confirmed_at: Time.current)
+    create_asset # untagged
+
+    get photo_assets_path(tag: "food")
+    assert_response :success
+    assert_select "a.photo-card", 1
   end
 
   test "deleting a photo removes it from the library" do

@@ -21,28 +21,32 @@ The module for staff task lists, recurring work, completion history, and task ev
 _Avoid_: schedule, shift planner, timeclock
 
 **Marketing Module**:
-The module for collecting, reviewing, and exporting marketing photo assets.
+The shared library for collecting, tagging, and exporting marketing photo assets (food and product photos).
 _Avoid_: social media scheduler, digital asset management platform
 
 **Photo Asset**:
-One photo collected for marketing use, carrying a review status, caption, and notes.
+One photo collected for marketing use, carrying tags, a caption, and notes.
 _Avoid_: photo evidence, task attachment
 
 **Photo Asset Status**:
-The single review outcome on a photo asset: unreviewed, approved, needs work, or rejected.
-_Avoid_: multi-step approval workflow
+The tagging lifecycle of a photo asset: pending (untagged), needs review (AI suggestions awaiting a human), or tagged.
+_Avoid_: approval workflow, publish state
 
 **Photo Export**:
 The one-command export of photo assets and their manifest for use outside the app.
 _Avoid_: external API integration
 
-**AI Photo Review**:
-The automated first-pass review of a photo asset by an AI model, always overridable by staff.
-_Avoid_: final approval authority, human replacement
+**Marketing Tag**:
+An admin-managed label in the marketing vocabulary, with a rule that tells the AI tagger when to apply it.
+_Avoid_: free-form keyword, hashtag
 
-**Treated Photo**:
-The AI-edited copy of a photo asset kept alongside the untouched original.
-_Avoid_: replacing the original, heavy retouching
+**Photo Tagging**:
+The link between a photo asset and a marketing tag, recording whether a human or the AI added it and whether it's confirmed.
+_Avoid_: category column, enum
+
+**AI Photo Tagging**:
+The automated first pass that suggests tags from the vocabulary for a photo, always confirmed by staff before they count.
+_Avoid_: final say, auto-publish
 
 **Staff Member**:
 A person credited with completing restaurant operating work.

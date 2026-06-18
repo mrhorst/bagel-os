@@ -10,6 +10,7 @@ Rails.application.routes.draw do
         post :transfer_ownership
       end
     end
+    resources :tags, except: %i[show]
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -110,11 +111,10 @@ Rails.application.routes.draw do
     resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
   end
   resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy] do
-    member do
-      post :treat
-    end
-    collection do
-      post :ai_review
+    resources :taggings, only: %i[create destroy], controller: "photo_asset_taggings" do
+      member do
+        patch :confirm
+      end
     end
   end
   get "marketing", to: redirect("/marketing/photos")

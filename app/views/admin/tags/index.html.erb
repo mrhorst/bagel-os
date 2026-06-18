@@ -1,0 +1,46 @@
+<% content_for :title, "Marketing tags" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Marketing tags</h1>
+    <p>The vocabulary photos are filed under. Each rule tells the AI tagger when to suggest the tag.</p>
+  </div>
+  <div class="actions">
+    <%= link_to "New tag", new_admin_tag_path, class: "button primary" %>
+  </div>
+</section>
+
+<% if @tags.any? %>
+  <section class="panel">
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          <th>Tag</th>
+          <th>Slug</th>
+          <th>Rule for the AI tagger</th>
+          <th>Photos</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @tags.each do |tag| %>
+          <tr>
+            <td data-label="Tag"><%= tag.name %></td>
+            <td data-label="Slug"><code><%= tag.slug %></code></td>
+            <td data-label="Rule" class="muted"><%= tag.instruction.presence || "—" %></td>
+            <td data-label="Photos" class="tnum"><%= @usage.fetch(tag.id, 0) %></td>
+            <td data-label="Status">
+              <span class="badge <%= "badge-ok" if tag.active? %>"><%= tag.active? ? "Active" : "Inactive" %></span>
+            </td>
+            <td data-label="">
+              <%= link_to "Edit", edit_admin_tag_path(tag), class: "button small" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% else %>
+  <p class="empty-state">No tags yet. Add the first one to start filing photos.</p>
+<% end %>

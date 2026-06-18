@@ -1,10 +1,10 @@
 require "test_helper"
 
 class PhotoAssetTest < ActiveSupport::TestCase
-  test "defaults to unreviewed and saves with an attached image" do
+  test "defaults to pending and saves with an attached image" do
     asset = build_asset
     assert asset.save
-    assert_equal "unreviewed", asset.status
+    assert_equal "pending", asset.status
   end
 
   test "requires a photo" do
@@ -30,11 +30,41 @@ class PhotoAssetTest < ActiveSupport::TestCase
     assert asset.errors[:status].any?
   end
 
-  test "with_status scopes the library" do
-    approved = build_asset(status: "approved").tap(&:save!)
-    build_asset(status: "needs_work").save!
+  test "status_label calls pending Untagged" do
+    assert_equal "Untagged", build_asset.tap(&:save!).status_label
+  end
 
-    assert_equal [ approved.id ], PhotoAsset.with_status("approved").ids
+  test "refresh_status! tracks the tagging lifecycle" do
+    asset = build_asset.tap(&:save!)
+    assert_equal "pending", asset.status
+
+    pending = asset.taggings.create!(tag: tags(:food), source: "ai")
+    assert_equal "needs_review", asset.reload.status
+
+    pending.update!(confirmed_at: Time.current)
+    assert_equal "tagged", asset.reload.status
+
+    pending.destroy!
+    assert_equal "pending", asset.reload.status
+  end
+
+  test "tagged_with finds photos by a confirmed tag slug" do
+    confirmed = build_asset.tap(&:save!)
+    confirmed.taggings.create!(tag: tags(:food), source: "manual", confirmed_at: Time.current)
+
+    suggested = build_asset.tap(&:save!)
+    suggested.taggings.create!(tag: tags(:food), source: "ai") # unconfirmed
+
+    assert_equal [ confirmed.id ], PhotoAsset.tagged_with("food").ids
+  end
+
+  test "search matches caption, notes, and tag names" do
+    asset = build_asset(caption: "Bagel platter").tap(&:save!)
+    asset.taggings.create!(tag: tags(:food), source: "manual", confirmed_at: Time.current)
+
+    assert_includes PhotoAsset.search("platter").ids, asset.id
+    assert_includes PhotoAsset.search("food").ids, asset.id
+    assert_empty PhotoAsset.search("espresso machine").ids
   end
 
   private

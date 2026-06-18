@@ -9,10 +9,6 @@
       <% if @asset.uploaded_by %>
         by <%= user_display_name(@asset.uploaded_by) %>
       <% end %>
-      <% if @asset.reviewed_at %>
-        · reviewed <%= @asset.reviewed_at.strftime("%b %-d") %>
-        by <%= @asset.ai_reviewed? ? "AI" : user_display_name(@asset.reviewed_by) %>
-      <% end %>
     </p>
   </div>
   <div class="hero-actions">
@@ -25,42 +21,61 @@
   <article class="panel">
     <%= photo_asset_image @asset, { resize_to_limit: [ 1600, 1600 ] },
           alt: @asset.caption.presence || "Photo ##{@asset.id}", class: "photo-detail-img" %>
-
-    <% if @asset.treated_photo.attached? %>
-      <div class="panel-heading photo-treated-heading">
-        <div>
-          <h2>AI-treated copy</h2>
-          <p>Lightly edited for publishing — the original above is untouched.</p>
-        </div>
-        <%= link_to "Download treated", rails_blob_path(@asset.treated_photo, disposition: "attachment"), class: "button small" %>
-      </div>
-      <%= image_tag @asset.treated_photo, alt: "AI-treated copy of photo ##{@asset.id}", class: "photo-detail-img" %>
-    <% end %>
   </article>
 
   <article class="panel">
     <div class="panel-heading">
       <div>
-        <h2>Review</h2>
-        <p>Mark whether this shot is usable for marketing or needs another take.</p>
+        <h2>Tags</h2>
+        <p>How this photo is filed in the library. Confirm AI suggestions or add your own.</p>
       </div>
     </div>
 
-    <div class="photo-review-actions">
-      <% PhotoAsset::STATUSES.each do |status| %>
-        <% next if status == @asset.status %>
-        <%= button_to status.humanize, photo_asset_path(@asset), method: :patch,
-              params: { photo_asset: { status: status } },
-              class: [ "button", "small", ("primary" if status == "approved") ] %>
-      <% end %>
-      <% if PhotoAssets::AiTreatment.configured? %>
-        <%= button_to @asset.treated_photo.attached? ? "Re-treat with AI" : "Treat with AI",
-              treat_photo_asset_path(@asset), class: "button small" %>
+    <% if @suggestions.any? %>
+      <div class="tag-suggestions">
+        <h3 class="muted small">Suggested by AI — confirm the ones that fit</h3>
+        <% @suggestions.each do |tagging| %>
+          <div class="suggestion-row">
+            <%= tag_pill(tagging.tag.name, pending: true) %>
+            <span class="suggestion-actions">
+              <%= button_to "Confirm", confirm_photo_asset_tagging_path(@asset, tagging), method: :patch,
+                    class: "button small primary" %>
+              <%= button_to "Dismiss", photo_asset_tagging_path(@asset, tagging), method: :delete,
+                    class: "button small" %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="tag-applied">
+      <h3 class="muted small">On this photo</h3>
+      <% if @applied.any? %>
+        <ul class="tag-chip-list">
+          <% @applied.each do |tagging| %>
+            <li>
+              <%= tag_pill(tagging.tag.name) %>
+              <%= button_to "×", photo_asset_tagging_path(@asset, tagging), method: :delete,
+                    class: "tag-remove", aria: { label: "Remove #{tagging.tag.name}" } %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="muted small">No confirmed tags yet.</p>
       <% end %>
     </div>
 
-    <% if @asset.treatment_instructions.present? %>
-      <p class="muted small">AI treatment note: <%= @asset.treatment_instructions %></p>
+    <% if @available_tags.any? %>
+      <%= form_with url: photo_asset_taggings_path(@asset), method: :post, class: "tag-add" do %>
+        <%= select_tag :tag_id, options_from_collection_for_select(@available_tags, :id, :name),
+              prompt: "Add a tag…" %>
+        <%= submit_tag "Add", class: "button small" %>
+      <% end %>
+    <% elsif @tags_vocabulary_empty %>
+      <p class="muted small">
+        No tags defined yet.
+        <% if Current.user.admin? %><%= link_to "Add some", admin_tags_path %>.<% end %>
+      </p>
     <% end %>
 
     <%= form_with url: photo_asset_path(@asset), method: :patch, class: "stack" do |form| %>
@@ -70,9 +85,9 @@
               placeholder: "What this shows, where it could run" %>
       </div>
       <div class="field">
-        <%= form.label :photo_asset_notes, "Review notes" %>
+        <%= form.label :photo_asset_notes, "Notes" %>
         <%= text_area_tag "photo_asset[notes]", @asset.notes, id: "photo_asset_notes", rows: 3,
-              placeholder: "e.g. Retake — too dark, crop out the counter" %>
+              placeholder: "Anything worth knowing — shoot date, who's in it, usage notes" %>
       </div>
       <%= form.submit "Save details", class: "button small" %>
     <% end %>
@@ -82,8 +97,6 @@
       <dd><%= @asset.photo.filename %></dd>
       <dt>Size</dt>
       <dd class="tnum"><%= number_to_human_size(@asset.photo.byte_size) %></dd>
-      <dt>Status</dt>
-      <dd><%= @asset.status_label %></dd>
     </dl>
 
     <%= button_to "Delete photo", photo_asset_path(@asset), method: :delete,

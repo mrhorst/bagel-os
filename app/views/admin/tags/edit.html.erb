@@ -1,0 +1,23 @@
+<% content_for :title, "Edit tag" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Edit tag</h1>
+    <p><%= @tag.name %></p>
+  </div>
+  <div class="actions">
+    <%= link_to "Back to tags", admin_tags_path, class: "button small" %>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <%= render "form", tag: @tag %>
+</section>
+
+<section class="panel narrow panel-danger-zone">
+  <h2>Delete tag</h2>
+  <p class="muted">Removes this tag from the vocabulary and from every photo it's on. Captions and notes stay.</p>
+  <%= button_to "Delete tag", admin_tag_path(@tag), method: :delete,
+        class: "button",
+        data: { turbo_confirm: "Delete #{@tag.name}? It will be removed from all photos." } %>
+</section>
