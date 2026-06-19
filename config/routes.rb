@@ -124,7 +124,15 @@ Rails.application.routes.draw do
     end
     resources :collection_memberships, only: %i[create destroy]
   end
-  resources :collections, path: "marketing/collections"
+  # ZIP downloads: GET = a collection or the current filter, POST = a selection.
+  get  "marketing/exports", to: "photo_asset_exports#show",   as: :photo_asset_exports
+  post "marketing/exports", to: "photo_asset_exports#create"
+  resources :collections, path: "marketing/collections" do
+    resources :shares, only: %i[create destroy]
+  end
+  # Public, login-free shared collection galleries.
+  get "share/:token",          to: "public/shared_collections#show",     as: :shared_collection
+  get "share/:token/download", to: "public/shared_collections#download", as: :shared_collection_download
   get "marketing", to: redirect("/marketing/photos")
   resources :receipt_line_items, only: %i[edit update]
   resources :normalization_reviews, only: %i[index] do

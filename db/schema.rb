@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_19_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_000004) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -541,6 +541,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_000003) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "shares", force: :cascade do |t|
+    t.integer "collection_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.datetime "expires_at"
+    t.datetime "revoked_at"
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id"], name: "index_shares_on_collection_id"
+    t.index ["created_by_id"], name: "index_shares_on_created_by_id"
+    t.index ["token"], name: "index_shares_on_token", unique: true
+  end
+
   create_table "supplier_product_packs", force: :cascade do |t|
     t.boolean "approved", default: false, null: false
     t.decimal "confidence_score", precision: 5, scale: 2, default: "0.0", null: false
@@ -777,6 +790,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_000003) do
   add_foreign_key "receipts", "import_batches"
   add_foreign_key "receipts", "suppliers"
   add_foreign_key "sessions", "users"
+  add_foreign_key "shares", "collections"
   add_foreign_key "supplier_product_packs", "products"
   add_foreign_key "supplier_product_packs", "suppliers"
   add_foreign_key "taggings", "photo_assets"

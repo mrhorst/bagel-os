@@ -16,11 +16,9 @@ class PhotoAssetsController < ApplicationController
     @collections = Collection.ordered
     @counts = status_counts
 
-    assets = SCOPE_STATUS.key?(@scope) ? PhotoAsset.with_status(SCOPE_STATUS[@scope]) : PhotoAsset.all
-    assets = assets.favorites if @favorites_only
-    assets = assets.tagged_with(@active_tag.slug) if @active_tag
-    assets = assets.search(@query) if @query.present?
-    @assets = assets.with_attached_photo.includes(:confirmed_tags).recent_first
+    @assets = PhotoAsset
+      .library(status: SCOPE_STATUS[@scope], tag_slug: @active_tag&.slug, query: @query, favorites: @favorites_only)
+      .with_attached_photo.includes(:confirmed_tags).recent_first
   end
 
   def new

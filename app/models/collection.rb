@@ -8,6 +8,7 @@ class Collection < ApplicationRecord
 
   has_many :collection_memberships, dependent: :destroy
   has_many :photo_assets, through: :collection_memberships
+  has_many :shares, dependent: :destroy
 
   before_validation :normalize_slug
 

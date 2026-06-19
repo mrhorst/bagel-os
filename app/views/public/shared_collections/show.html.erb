@@ -1,0 +1,37 @@
+<% content_for :title, @collection.name %>
+
+<section class="page-heading">
+  <div>
+    <h1><%= @collection.name %></h1>
+    <% if @collection.description.present? %>
+      <p><%= @collection.description %></p>
+    <% else %>
+      <p><%= pluralize(@assets.size, "photo") %> shared with you.</p>
+    <% end %>
+  </div>
+  <% if @assets.any? %>
+    <div class="hero-actions">
+      <%= link_to "Download all (ZIP)", shared_collection_download_path(@share.token), class: "button primary", data: { turbo: false } %>
+    </div>
+  <% end %>
+</section>
+
+<% if @assets.any? %>
+  <ul class="photo-grid" aria-label="Shared photos">
+    <% @assets.each do |asset| %>
+      <li>
+        <%= link_to rails_blob_path(asset.photo, disposition: "attachment"), class: "photo-card", data: { turbo: false } do %>
+          <%= photo_asset_image asset, { resize_to_fill: [ 480, 360 ] },
+                alt: asset.caption.presence || "Photo ##{asset.id}", loading: "lazy" %>
+          <% if asset.caption.present? %>
+            <div class="photo-card-meta">
+              <span class="photo-card-caption"><%= asset.caption %></span>
+            </div>
+          <% end %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="empty-state">This collection is empty right now.</p>
+<% end %>

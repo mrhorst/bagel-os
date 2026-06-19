@@ -12,6 +12,7 @@ class CollectionsController < ApplicationController
     @assets = @collection.photo_assets
       .with_attached_photo.includes(:confirmed_tags)
       .order("collection_memberships.position", "collection_memberships.id")
+    @share = @collection.shares.active.first
   end
 
   def new

@@ -23,16 +23,7 @@ namespace :marketing do
       blob = asset.photo
       filename = "photo-#{asset.id}#{blob.filename.extension_with_delimiter}"
       File.binwrite(dir.join(filename), blob.download)
-      {
-        id: asset.id,
-        file: filename,
-        status: asset.status,
-        caption: asset.caption,
-        notes: asset.notes,
-        tags: asset.confirmed_tags.map(&:slug).sort,
-        uploaded_by: asset.uploaded_by&.then { |u| u.name.presence || u.email_address },
-        uploaded_at: asset.created_at.iso8601
-      }
+      PhotoAssets::ZipBuilder.manifest_row(asset, filename)
     end
 
     File.write(dir.join("manifest.json"), JSON.pretty_generate(manifest))
