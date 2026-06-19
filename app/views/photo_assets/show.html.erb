@@ -17,12 +17,15 @@
           class: [ "button", ("primary" if @asset.favorite?) ] do %>
       <%= @asset.favorite? ? "★ Favorited" : "☆ Favorite" %>
     <% end %>
-    <%# Downloads open in a new browser context. In the standalone PWA (no
-        browser chrome) a same-window navigation to an attachment leaves iOS
-        showing a Quick Look / "Open in…" sheet with no way back. target=_blank
-        hands it to an in-app Safari view that has a Done button. %>
+    <%# Tapping fetches the file and offers it to the native share sheet (Save to
+        Photos / Files) rather than navigating away — a same-window nav to an
+        attachment strands the chrome-less standalone PWA on a page that can't
+        even render it. target=_blank is the no-JS fallback. See
+        download_controller.js. %>
     <%= link_to "Download original", rails_blob_path(@asset.photo, disposition: "attachment"),
-          class: "button", target: "_blank", rel: "noopener" %>
+          class: "button", target: "_blank", rel: "noopener",
+          data: { controller: "download", action: "download#save",
+                  download_filename_value: @asset.photo.filename.to_s } %>
   </div>
 </section>
 
@@ -37,13 +40,12 @@
         <p class="muted small">Centre-cropped and ready to post — no editing needed.</p>
         <div class="crop-download-row">
           <% PhotoAssetCropsController::FORMATS.each do |style, config| %>
-            <%# target=_blank so the download opens in an in-app Safari view with
-                a Done button — a same-window nav traps the standalone PWA (see
-                "Download original" above). %>
+            <%# Same share-sheet flow as "Download original" above. %>
             <%= link_to "#{config[:label]} #{config[:dimensions].join("×")}",
                   crop_photo_asset_path(@asset, style: style),
                   class: "button small", target: "_blank", rel: "noopener",
-                  data: { turbo: false } %>
+                  data: { controller: "download", action: "download#save",
+                          download_filename_value: "photo-#{@asset.id}-#{style}.jpg" } %>
           <% end %>
         </div>
       </div>
