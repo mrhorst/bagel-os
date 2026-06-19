@@ -13,6 +13,10 @@
   </div>
   <div class="hero-actions">
     <%= link_to "Back to library", photo_assets_path, class: "button" %>
+    <%= button_to toggle_favorite_photo_asset_path(@asset), method: :patch,
+          class: [ "button", ("primary" if @asset.favorite?) ] do %>
+      <%= @asset.favorite? ? "★ Favorited" : "☆ Favorite" %>
+    <% end %>
     <%= link_to "Download original", rails_blob_path(@asset.photo, disposition: "attachment"), class: "button" %>
   </div>
 </section>
@@ -21,6 +25,20 @@
   <article class="panel">
     <%= photo_asset_image @asset, { resize_to_limit: [ 1600, 1600 ] },
           alt: @asset.caption.presence || "Photo ##{@asset.id}", class: "photo-detail-img" %>
+
+    <% if @asset.photo.variable? %>
+      <div class="crop-downloads">
+        <h3 class="muted small">Post-ready crops</h3>
+        <p class="muted small">Centre-cropped and ready to post — no editing needed.</p>
+        <div class="crop-download-row">
+          <% PhotoAssetCropsController::FORMATS.each do |style, config| %>
+            <%= link_to "#{config[:label]} #{config[:dimensions].join("×")}",
+                  crop_photo_asset_path(@asset, style: style),
+                  class: "button small", data: { turbo: false } %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </article>
 
   <article class="panel">
@@ -78,11 +96,77 @@
       </p>
     <% end %>
 
+    <div class="tag-applied collections-section">
+      <h3 class="muted small">In collections</h3>
+      <% if @memberships.any? %>
+        <ul class="tag-chip-list">
+          <% @memberships.each do |membership| %>
+            <li>
+              <%= link_to membership.collection.name, collection_path(membership.collection), class: "tag-chip" %>
+              <%= button_to "×", photo_asset_collection_membership_path(@asset, membership), method: :delete,
+                    class: "tag-remove", aria: { label: "Remove from #{membership.collection.name}" } %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="muted small">Not in any collection yet.</p>
+      <% end %>
+
+      <% if @available_collections.any? %>
+        <%= form_with url: photo_asset_collection_memberships_path(@asset), method: :post, class: "tag-add" do %>
+          <%= select_tag :collection_id, options_from_collection_for_select(@available_collections, :id, :name),
+                prompt: "Add to collection…" %>
+          <%= submit_tag "Add", class: "button small" %>
+        <% end %>
+      <% else %>
+        <p class="muted small">
+          <%= link_to "Create a collection", new_collection_path %> to group photos.
+        </p>
+      <% end %>
+    </div>
+
+    <div class="tag-applied ai-copy-section">
+      <div class="ai-copy-header">
+        <h3 class="muted small">AI marketing copy</h3>
+        <% if PhotoAssets::AiDescriber.configured? %>
+          <%= button_to(@asset.described_at ? "Regenerate" : "Generate", describe_photo_asset_path(@asset),
+                method: :post, class: "button small") %>
+        <% end %>
+      </div>
+
+      <% if @asset.described_at %>
+        <% if @asset.suggested_caption.present? %>
+          <div class="suggested-copy">
+            <p class="suggested-caption"><%= @asset.suggested_caption %></p>
+            <%= button_to "Use as caption", photo_asset_path(@asset), method: :patch,
+                  params: { photo_asset: { caption: @asset.suggested_caption } }, class: "button small primary" %>
+          </div>
+        <% end %>
+        <% if @asset.hashtags.present? %>
+          <p class="muted small"><%= @asset.hashtags %></p>
+        <% end %>
+      <% elsif PhotoAssets::AiDescriber.configured? %>
+        <p class="muted small">Generate a caption, hashtags, and alt text straight from the photo.</p>
+      <% else %>
+        <p class="muted small">AI copy isn't set up for this install.</p>
+      <% end %>
+    </div>
+
     <%= form_with url: photo_asset_path(@asset), method: :patch, class: "stack" do |form| %>
       <div class="field">
         <%= form.label :photo_asset_caption, "Caption" %>
         <%= text_field_tag "photo_asset[caption]", @asset.caption, id: "photo_asset_caption",
               placeholder: "What this shows, where it could run" %>
+      </div>
+      <div class="field">
+        <%= form.label :photo_asset_alt_text, "Alt text" %>
+        <%= text_field_tag "photo_asset[alt_text]", @asset.alt_text, id: "photo_asset_alt_text",
+              placeholder: "Describe the photo for screen readers and SEO" %>
+      </div>
+      <div class="field">
+        <%= form.label :photo_asset_hashtags, "Hashtags" %>
+        <%= text_field_tag "photo_asset[hashtags]", @asset.hashtags, id: "photo_asset_hashtags",
+              placeholder: "#bagel #brunch" %>
       </div>
       <div class="field">
         <%= form.label :photo_asset_notes, "Notes" %>

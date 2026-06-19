@@ -1,0 +1,57 @@
+<% content_for :title, @collection.name %>
+
+<section class="page-heading">
+  <div>
+    <h1><%= @collection.name %></h1>
+    <% if @collection.description.present? %>
+      <p><%= @collection.description %></p>
+    <% else %>
+      <p><%= pluralize(@assets.size, "photo") %> in this collection.</p>
+    <% end %>
+  </div>
+  <div class="hero-actions">
+    <%= link_to "All collections", collections_path, class: "button" %>
+    <% if @assets.any? %>
+      <%= link_to "Download ZIP", photo_asset_exports_path(collection_id: @collection.id), class: "button", data: { turbo: false } %>
+    <% end %>
+    <%= link_to "Edit", edit_collection_path(@collection), class: "button" %>
+  </div>
+</section>
+
+<section class="panel share-panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Share link</h2>
+      <p>A public, login-free link to this collection — hand it to a designer or printer to view and download the photos.</p>
+    </div>
+  </div>
+
+  <% if @share %>
+    <div class="share-link-row">
+      <%= text_field_tag :share_url, shared_collection_url(@share.token), readonly: true, class: "share-url", onclick: "this.select()" %>
+      <%= link_to "Open", shared_collection_path(@share.token), class: "button small", target: "_blank", rel: "noopener" %>
+      <%= button_to "Revoke", collection_share_path(@collection, @share), method: :delete, class: "button small",
+            form: { data: { turbo_confirm: "Revoke this link? It will stop working immediately." } } %>
+    </div>
+    <p class="muted small">Anyone with this link can view and download — revoke it when you're done.</p>
+  <% else %>
+    <%= button_to "Create share link", collection_shares_path(@collection), method: :post, class: "button small primary" %>
+  <% end %>
+</section>
+
+<% if @assets.any? %>
+  <ul class="photo-grid" aria-label="Photos in <%= @collection.name %>">
+    <%= render partial: "photo_assets/photo_card", collection: @assets, as: :asset %>
+  </ul>
+<% else %>
+  <p class="empty-state">
+    No photos here yet. Open a photo in the <%= link_to "library", photo_assets_path %> and add it to this collection.
+  </p>
+<% end %>
+
+<section class="panel-danger-zone">
+  <h2>Delete collection</h2>
+  <p>This removes the collection only — the photos stay in the library.</p>
+  <%= button_to "Delete collection", collection_path(@collection), method: :delete,
+        class: "button", form: { data: { turbo_confirm: "Delete the “#{@collection.name}” collection? Photos stay in the library." } } %>
+</section>

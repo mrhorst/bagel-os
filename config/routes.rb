@@ -116,12 +116,30 @@ Rails.application.routes.draw do
     resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
   end
   resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy] do
+    collection do
+      post :bulk, to: "photo_asset_bulk_actions#create", as: :bulk_actions
+    end
+    member do
+      patch :toggle_favorite
+      get "crop/:style", to: "photo_asset_crops#show", as: :crop
+      post :describe, to: "photo_asset_descriptions#create"
+    end
     resources :taggings, only: %i[create destroy], controller: "photo_asset_taggings" do
       member do
         patch :confirm
       end
     end
+    resources :collection_memberships, only: %i[create destroy]
   end
+  # ZIP downloads: GET = a collection or the current filter, POST = a selection.
+  get  "marketing/exports", to: "photo_asset_exports#show",   as: :photo_asset_exports
+  post "marketing/exports", to: "photo_asset_exports#create"
+  resources :collections, path: "marketing/collections" do
+    resources :shares, only: %i[create destroy]
+  end
+  # Public, login-free shared collection galleries.
+  get "share/:token",          to: "public/shared_collections#show",     as: :shared_collection
+  get "share/:token/download", to: "public/shared_collections#download", as: :shared_collection_download
   get "marketing", to: redirect("/marketing/photos")
   resources :receipt_line_items, only: %i[edit update]
   resources :normalization_reviews, only: %i[index] do

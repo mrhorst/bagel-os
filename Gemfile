@@ -14,7 +14,12 @@ gem "pg", "~> 1.5"
 gem "puma", ">= 5.0"
 # Generate Active Storage image variants for task completion photos.
 gem "image_processing", "~> 2.0"
+# Image variant backends: ruby-vips (preferred, matches production's libvips)
+# with mini_magick as a fallback for hosts without libvips.
+gem "ruby-vips"
 gem "mini_magick"
+# Bundle marketing photo assets into ZIP downloads.
+gem "rubyzip", "~> 3.0", require: "zip"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"

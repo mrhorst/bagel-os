@@ -48,6 +48,34 @@ _Avoid_: category column, enum
 The automated first pass that suggests tags from the vocabulary for a photo, always confirmed by staff before they count.
 _Avoid_: final say, auto-publish
 
+**Collection**:
+A named album or campaign grouping of photo assets, orthogonal to tags — a photo can belong to several collections at once.
+_Avoid_: tag, folder-only hierarchy, single-parent album
+
+**Collection Membership**:
+The link placing one photo asset in one collection, recording who added it and its order within the collection.
+_Avoid_: tag, foreign key on the photo
+
+**Favorite Photo**:
+A photo asset starred as a team "hero" shot so the best assets surface quickly, independent of the tagging lifecycle.
+_Avoid_: approval state, publish flag, rating scale
+
+**Share Link**:
+A public, token-addressed URL to one collection that lets someone without an app login view and download its photos until it is revoked or expires.
+_Avoid_: per-photo public link, permanent CDN URL, account invite
+
+**ZIP Download**:
+The in-app bundling of a selection, a collection, or the current library filter into a ZIP (images plus a manifest.json) for use outside the app.
+_Avoid_: per-photo only download, CLI-only export
+
+**Social Crop**:
+A download of one photo centre-cropped to a platform frame — square (1:1), story (9:16), or wide (16:9) — generated on demand from the original.
+_Avoid_: stored derivative, manual crop tool, fixed single size
+
+**AI Photo Description**:
+AI-drafted marketing copy for a photo — a suggested caption, hashtags, and alt text — written to suggestion fields that staff apply or edit, never overwriting a human caption.
+_Avoid_: auto-published caption, final say, overwriting edits
+
 **Staff Member**:
 A person credited with completing restaurant operating work.
 _Avoid_: user, login, employee record

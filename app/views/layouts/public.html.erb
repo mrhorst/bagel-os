@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || app_branding.app_name %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#F8F6F2">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag Rails.env.test? ? "application" : "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen bg-surface text-ink antialiased">
+    <div class="public-shell">
+      <header class="public-header">
+        <span class="brand-mark">IO</span>
+        <strong><%= app_branding.app_name %></strong>
+      </header>
+
+      <main class="public-main">
+        <%= yield %>
+      </main>
+
+      <footer class="public-footer muted small">
+        Shared from <%= app_branding.app_name %>.
+      </footer>
+    </div>
+  </body>
+</html>

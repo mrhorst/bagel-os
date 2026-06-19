@@ -14,11 +14,15 @@ class PhotoAsset < ApplicationRecord
   has_many :confirmed_taggings, -> { confirmed }, class_name: "Tagging", inverse_of: :photo_asset
   has_many :confirmed_tags, through: :confirmed_taggings, source: :tag
 
+  has_many :collection_memberships, dependent: :destroy
+  has_many :collections, through: :collection_memberships
+
   validates :status, inclusion: { in: STATUSES }
   validate :photo_must_be_an_attached_image
 
   scope :recent_first, -> { order(created_at: :desc, id: :desc) }
   scope :with_status, ->(status) { where(status: status) }
+  scope :favorites, -> { where(favorite: true) }
 
   # Photos carrying a confirmed instance of the given tag slug.
   scope :tagged_with, ->(slug) {
@@ -32,6 +36,16 @@ class PhotoAsset < ApplicationRecord
       .where("LOWER(photo_assets.caption) LIKE :q OR LOWER(photo_assets.notes) LIKE :q OR LOWER(tags.name) LIKE :q", q: term)
       .distinct
   }
+
+  # The library filter shared by the index view and the ZIP export, so both
+  # always resolve the same set for a given status / tag / search / favorites.
+  def self.library(status: nil, tag_slug: nil, query: nil, favorites: false)
+    relation = status.present? ? with_status(status) : all
+    relation = relation.favorites if favorites
+    relation = relation.tagged_with(tag_slug) if tag_slug.present?
+    relation = relation.search(query) if query.present?
+    relation
+  end
 
   after_create_commit :enqueue_ai_tagging
 

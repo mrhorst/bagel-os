@@ -1,0 +1,10 @@
+summer:
+  name: Summer Menu
+  slug: summer-menu
+  description: Shots from the summer menu shoot.
+  position: 1
+
+instagram:
+  name: Instagram Ready
+  slug: instagram-ready
+  position: 2
