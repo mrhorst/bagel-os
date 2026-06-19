@@ -111,6 +111,9 @@ Rails.application.routes.draw do
     resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
   end
   resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy] do
+    collection do
+      post :bulk, to: "photo_asset_bulk_actions#create", as: :bulk_actions
+    end
     member do
       patch :toggle_favorite
     end

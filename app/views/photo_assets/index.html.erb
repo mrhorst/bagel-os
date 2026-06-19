@@ -47,9 +47,34 @@
 <% end %>
 
 <% if @assets.any? %>
-  <ul class="photo-grid" aria-label="Photo assets">
-    <%= render partial: "photo_card", collection: @assets, as: :asset %>
-  </ul>
+  <%= form_with url: bulk_actions_photo_assets_path, method: :post, data: { controller: "photo-select" } do %>
+    <div class="bulk-bar" data-photo-select-target="bar" role="region" aria-label="Bulk actions">
+      <span class="bulk-bar-count tnum" data-photo-select-target="count">0 selected</span>
+      <div class="bulk-bar-actions">
+        <button type="submit" name="bulk_action" value="favorite" class="button small">★ Favorite</button>
+        <button type="submit" name="bulk_action" value="unfavorite" class="button small">Unfavorite</button>
+        <% if @tags.any? %>
+          <span class="bulk-bar-combo">
+            <%= select_tag :tag_id, options_from_collection_for_select(@tags, :id, :name), prompt: "Tag…", "aria-label": "Tag to apply" %>
+            <button type="submit" name="bulk_action" value="add_tag" class="button small">Apply</button>
+          </span>
+        <% end %>
+        <% if @collections.any? %>
+          <span class="bulk-bar-combo">
+            <%= select_tag :collection_id, options_from_collection_for_select(@collections, :id, :name), prompt: "Add to…", "aria-label": "Collection to add to" %>
+            <button type="submit" name="bulk_action" value="add_to_collection" class="button small">Add</button>
+          </span>
+        <% end %>
+        <button type="submit" name="bulk_action" value="delete" class="button small bulk-bar-delete"
+                data-turbo-confirm="Delete the selected photos permanently?">Delete</button>
+        <button type="button" class="button small" data-action="photo-select#clear">Clear</button>
+      </div>
+    </div>
+
+    <ul class="photo-grid" aria-label="Photo assets">
+      <%= render partial: "photo_card", collection: @assets, as: :asset, locals: { selectable: true } %>
+    </ul>
+  <% end %>
 <% else %>
   <p class="empty-state">
     <% if @scope == "all" && @active_tag.nil? && @query.blank? && !@favorites_only %>

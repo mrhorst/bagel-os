@@ -2754,6 +2754,66 @@
     font-weight: 600;
   }
 
+  /* ── Bulk multi-select ────────────────────────────────────────────── */
+  /* The bar stays hidden until the photo-select controller marks the form
+     as having a selection. */
+  .bulk-bar {
+    display: none;
+  }
+  .has-selection .bulk-bar {
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    position: sticky;
+    top: 8px;
+    z-index: 5;
+  }
+  .bulk-bar-count {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .bulk-bar-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .bulk-bar-combo {
+    align-items: center;
+    display: inline-flex;
+    gap: 4px;
+  }
+  .bulk-bar-delete {
+    color: var(--danger-fg);
+  }
+
+  /* Selection checkbox pinned to a card; the cell rings when checked. */
+  .photo-cell {
+    position: relative;
+  }
+  .photo-select-check {
+    left: 8px;
+    position: absolute;
+    top: 8px;
+    z-index: 2;
+  }
+  .photo-select-check input {
+    cursor: pointer;
+    height: 20px;
+    width: 20px;
+  }
+  .photo-cell.selected .photo-card {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
   /* ── Chart styling ────────────────────────────────────────────────── */
   .price-chart {
     background: var(--surface-3);

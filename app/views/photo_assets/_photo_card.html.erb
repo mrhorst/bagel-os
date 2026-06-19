@@ -1,4 +1,11 @@
-<li>
+<% selectable = local_assigns.fetch(:selectable, false) %>
+<li class="<%= "photo-cell" if selectable %>">
+  <% if selectable %>
+    <label class="photo-select-check" aria-label="Select photo <%= asset.id %>">
+      <%= check_box_tag "photo_asset_ids[]", asset.id, false,
+            data: { photo_select_target: "checkbox", action: "change->photo-select#refresh" } %>
+    </label>
+  <% end %>
   <%= link_to photo_asset_path(asset), class: "photo-card" do %>
     <%= photo_asset_image asset, { resize_to_fill: [ 480, 360 ] },
           alt: asset.caption.presence || "Photo ##{asset.id}", loading: "lazy" %>
