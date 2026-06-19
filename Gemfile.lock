@@ -114,9 +114,6 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
-    ffi (1.17.4-aarch64-linux-gnu)
-    ffi (1.17.4-arm64-darwin)
-    ffi (1.17.4-x86_64-linux-gnu)
     foreman (0.90.0)
       thor (~> 1.4)
     fugit (1.12.1)
@@ -126,9 +123,7 @@ GEM
       activesupport (>= 6.1)
     i18n (1.14.8)
       concurrent-ruby (~> 1.0)
-    image_processing (1.14.0)
-      mini_magick (>= 4.9.5, < 6)
-      ruby-vips (>= 2.0.17, < 3)
+    image_processing (2.0.2)
     importmap-rails (2.2.3)
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
@@ -171,7 +166,7 @@ GEM
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
-    net-imap (0.6.4)
+    net-imap (0.6.4.1)
       date
       net-protocol
     net-pop (0.1.2)
@@ -298,9 +293,6 @@ GEM
       rubocop-performance (>= 1.24)
       rubocop-rails (>= 2.30)
     ruby-progressbar (1.13.0)
-    ruby-vips (2.3.0)
-      ffi (~> 1.12)
-      logger
     rubyzip (3.3.1)
     securerandom (0.4.1)
     selenium-webdriver (4.44.0)
@@ -384,9 +376,10 @@ DEPENDENCIES
   csv
   debug
   foreman (~> 0.90.0)
-  image_processing (~> 1.2)
+  image_processing (~> 2.0)
   importmap-rails (~> 2.2)
   kamal (~> 2.10)
+  mini_magick
   paper_trail (~> 17.0)
   pg (~> 1.5)
   propshaft
