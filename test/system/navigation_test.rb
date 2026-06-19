@@ -15,8 +15,9 @@ class NavigationTest < ApplicationSystemTestCase
   test "navigating to the account page works through Turbo" do
     find(".sidebar-account").click
 
-    # Content unique to the account page confirms the Turbo navigation landed.
-    assert_selector "h2", text: "Change password"
+    # assert_current_path waits for Turbo Drive to finish navigating before
+    # checking content — prevents a timing failure on slow CI runners.
     assert_current_path account_path
+    assert_selector "h2", text: "Change password"
   end
 end
