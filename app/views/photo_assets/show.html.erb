@@ -25,6 +25,20 @@
   <article class="panel">
     <%= photo_asset_image @asset, { resize_to_limit: [ 1600, 1600 ] },
           alt: @asset.caption.presence || "Photo ##{@asset.id}", class: "photo-detail-img" %>
+
+    <% if @asset.photo.variable? %>
+      <div class="crop-downloads">
+        <h3 class="muted small">Post-ready crops</h3>
+        <p class="muted small">Centre-cropped and ready to post — no editing needed.</p>
+        <div class="crop-download-row">
+          <% PhotoAssetCropsController::FORMATS.each do |style, config| %>
+            <%= link_to "#{config[:label]} #{config[:dimensions].join("×")}",
+                  crop_photo_asset_path(@asset, style: style),
+                  class: "button small", data: { turbo: false } %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </article>
 
   <article class="panel">
@@ -111,11 +125,48 @@
       <% end %>
     </div>
 
+    <div class="tag-applied ai-copy-section">
+      <div class="ai-copy-header">
+        <h3 class="muted small">AI marketing copy</h3>
+        <% if PhotoAssets::AiDescriber.configured? %>
+          <%= button_to(@asset.described_at ? "Regenerate" : "Generate", describe_photo_asset_path(@asset),
+                method: :post, class: "button small") %>
+        <% end %>
+      </div>
+
+      <% if @asset.described_at %>
+        <% if @asset.suggested_caption.present? %>
+          <div class="suggested-copy">
+            <p class="suggested-caption"><%= @asset.suggested_caption %></p>
+            <%= button_to "Use as caption", photo_asset_path(@asset), method: :patch,
+                  params: { photo_asset: { caption: @asset.suggested_caption } }, class: "button small primary" %>
+          </div>
+        <% end %>
+        <% if @asset.hashtags.present? %>
+          <p class="muted small"><%= @asset.hashtags %></p>
+        <% end %>
+      <% elsif PhotoAssets::AiDescriber.configured? %>
+        <p class="muted small">Generate a caption, hashtags, and alt text straight from the photo.</p>
+      <% else %>
+        <p class="muted small">AI copy isn't set up for this install.</p>
+      <% end %>
+    </div>
+
     <%= form_with url: photo_asset_path(@asset), method: :patch, class: "stack" do |form| %>
       <div class="field">
         <%= form.label :photo_asset_caption, "Caption" %>
         <%= text_field_tag "photo_asset[caption]", @asset.caption, id: "photo_asset_caption",
               placeholder: "What this shows, where it could run" %>
+      </div>
+      <div class="field">
+        <%= form.label :photo_asset_alt_text, "Alt text" %>
+        <%= text_field_tag "photo_asset[alt_text]", @asset.alt_text, id: "photo_asset_alt_text",
+              placeholder: "Describe the photo for screen readers and SEO" %>
+      </div>
+      <div class="field">
+        <%= form.label :photo_asset_hashtags, "Hashtags" %>
+        <%= text_field_tag "photo_asset[hashtags]", @asset.hashtags, id: "photo_asset_hashtags",
+              placeholder: "#bagel #brunch" %>
       </div>
       <div class="field">
         <%= form.label :photo_asset_notes, "Notes" %>

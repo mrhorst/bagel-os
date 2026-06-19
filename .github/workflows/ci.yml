@@ -65,6 +65,11 @@ jobs:
         with:
           bundler-cache: true
 
+      # Active Storage renders image variants (e.g. marketing social crops) with
+      # libvips, which production installs but the runner does not ship.
+      - name: Install libvips
+        run: sudo apt-get update && sudo apt-get install -y libvips42
+
       - name: Run tests
         env:
           RAILS_ENV: test
@@ -81,6 +86,10 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+
+      # Active Storage renders image variants with libvips (see test job).
+      - name: Install libvips
+        run: sudo apt-get update && sudo apt-get install -y libvips42
 
       # End-to-end browser tests run separately from the unit/integration suite
       # (the default `bin/rails test` excludes them). ubuntu-latest ships Chrome;

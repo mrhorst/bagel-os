@@ -68,6 +68,14 @@ _Avoid_: per-photo public link, permanent CDN URL, account invite
 The in-app bundling of a selection, a collection, or the current library filter into a ZIP (images plus a manifest.json) for use outside the app.
 _Avoid_: per-photo only download, CLI-only export
 
+**Social Crop**:
+A download of one photo centre-cropped to a platform frame — square (1:1), story (9:16), or wide (16:9) — generated on demand from the original.
+_Avoid_: stored derivative, manual crop tool, fixed single size
+
+**AI Photo Description**:
+AI-drafted marketing copy for a photo — a suggested caption, hashtags, and alt text — written to suggestion fields that staff apply or edit, never overwriting a human caption.
+_Avoid_: auto-published caption, final say, overwriting edits
+
 **Staff Member**:
 A person credited with completing restaurant operating work.
 _Avoid_: user, login, employee record
