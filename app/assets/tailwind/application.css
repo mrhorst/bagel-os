@@ -2961,6 +2961,38 @@
     margin: 0 0 8px;
   }
 
+  /* Toolbar above the grid: the "Select" toggle, plus a hint that only shows
+     once select mode is on. */
+  .photo-select-toolbar {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+  .photo-select-hint {
+    display: none;
+    margin-right: auto;
+  }
+  .select-mode .photo-select-hint {
+    display: inline;
+  }
+  /* The toggle reads as "on" while select mode is active. */
+  .photo-select-toolbar .button[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  /* In select mode the whole card is a select target: signal that a tap picks
+     rather than opens, and grow the checkboxes to a comfortable touch size. */
+  .select-mode .photo-card {
+    cursor: pointer;
+  }
+  .select-mode .photo-select-check input {
+    height: 24px;
+    width: 24px;
+  }
+
   /* ── Chart styling ────────────────────────────────────────────────── */
   .price-chart {
     background: var(--surface-3);
