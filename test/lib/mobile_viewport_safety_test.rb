@@ -73,4 +73,22 @@ class MobileViewportSafetyTest < ActiveSupport::TestCase
     assert_match(/max-width:\s*100%/, combined_body)
     assert_match(/width:\s*100%/, combined_body)
   end
+
+  test "non-production env banner reserves its height instead of overlaying chrome" do
+    css = File.read(CSS_PATH)
+
+    # The ribbon must be sticky, not a fixed overlay — fixed would cover the
+    # sidebar brand and the mobile header instead of reserving space for them.
+    banner = css[/\.env-banner\s*\{[^}]*\}/m]
+    refute_nil banner, "could not locate the .env-banner rule"
+    assert_match(/position:\s*sticky/, banner,
+      ".env-banner must be sticky so it reserves height in flow rather than overlaying top chrome")
+
+    # The top-pinned chrome must be offset by the banner height while it's on
+    # the page, keyed off a --env-banner-h measure.
+    offsets = css.scan(/body:has\(\.env-banner\)[^{]*\{([^}]*)\}/m).map(&:first).join("\n")
+    refute_empty offsets, "expected body:has(.env-banner) rules to offset top-pinned chrome for the banner"
+    assert_match(/--env-banner-h/, offsets,
+      "expected the env-banner offsets to key off a --env-banner-h measure")
+  end
 end

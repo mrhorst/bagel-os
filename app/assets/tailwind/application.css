@@ -1548,11 +1548,16 @@
   }
 
   /* ── Environment ribbon (staging / non-production) ────────────────────
-     Slim, fixed banner so a deployed non-prod install is never mistaken for
-     production. Neutral ink chrome — not a status colour, never the accent.
-     pointer-events:none so it never intercepts a click. */
+     Slim sticky strip so a deployed non-prod install is never mistaken for
+     production. Sticky (not fixed) so it reserves its own height in normal
+     flow — a fixed overlay would sit on top of the sidebar brand and the
+     mobile header, hiding them. The body:has() offsets below keep the other
+     top-pinned chrome clear of it, and the ribbon owns the top safe-area inset
+     so it clears the notch on installed PWAs. Neutral ink chrome — not a
+     status colour, never the accent. pointer-events:none so it never
+     intercepts a click. */
   .env-banner {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
@@ -1565,8 +1570,25 @@
     letter-spacing: 0.08em;
     text-align: center;
     text-transform: uppercase;
-    padding: 3px 8px;
+    box-sizing: border-box;
+    min-height: var(--env-banner-h, 1.375rem);
+    padding: calc(env(safe-area-inset-top, 0px) + 3px) 8px 3px;
     box-shadow: var(--shadow-e1);
+  }
+
+  /* Layout offsets that apply only while the env ribbon is on the page.
+     --env-banner-total is the ribbon's full rendered height including the top
+     safe-area inset (0 on desktop), used to inset the top-pinned chrome. */
+  body:has(.env-banner) {
+    --env-banner-h: 1.375rem;
+    --env-banner-total: calc(var(--env-banner-h) + env(safe-area-inset-top, 0px));
+  }
+  body:has(.env-banner) .app-shell {
+    min-height: calc(100vh - var(--env-banner-total));
+  }
+  body:has(.env-banner) .app-sidebar {
+    top: var(--env-banner-total);
+    height: calc(100vh - var(--env-banner-total));
   }
 
   /* ── Hero panel (legacy — calmed down) ────────────────────────────── */
@@ -4969,6 +4991,13 @@
       top: 0;
       width: 100%;
       z-index: 30;
+    }
+    /* With the env ribbon present it owns the top safe-area inset and sits
+       above the header, so drop the header's own inset and pin it just below
+       the ribbon. */
+    body:has(.env-banner) .mobile-screen-header {
+      top: var(--env-banner-total);
+      padding-top: 6px;
     }
     .mobile-header-left,
     .mobile-header-right {
