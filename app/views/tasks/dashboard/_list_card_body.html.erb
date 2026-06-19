@@ -7,14 +7,14 @@
 <div class="tasks-list-picker-card-counts">
   <% if past %>
     <% if summary[:missed].positive? %>
-      <span class="badge badge-warn tnum"><%= summary[:missed] %> missed</span>
+      <span class="badge badge-warning tnum"><%= summary[:missed] %> missed</span>
     <% end %>
     <% if summary[:completed].positive? %>
       <span class="badge badge-ok tnum"><%= summary[:completed] %> done</span>
     <% end %>
   <% else %>
     <% if summary[:late].positive? %>
-      <span class="badge badge-warn tnum"><%= summary[:late] %> late</span>
+      <span class="badge badge-warning tnum"><%= summary[:late] %> late</span>
     <% end %>
     <% if summary[:open].positive? %>
       <span class="badge tnum"><%= summary[:open] %> open</span>
