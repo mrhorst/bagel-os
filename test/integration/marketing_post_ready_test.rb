@@ -31,6 +31,21 @@ class MarketingPostReadyTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "download links open in a new context so the standalone PWA can't trap the user" do
+    sign_in_as(users(:one))
+    asset = create_asset(real: true)
+
+    get photo_asset_path(asset)
+    assert_response :success
+
+    # Without target=_blank, a same-window navigation to these attachment
+    # downloads strands the standalone PWA on a chrome-less Quick Look page.
+    %w[square story wide].each do |style|
+      assert_select %(a[href="#{crop_photo_asset_path(asset, style: style)}"][target="_blank"]), count: 1
+    end
+    assert_select %(a[href="#{rails_blob_path(asset.photo, disposition: "attachment")}"][target="_blank"]), count: 1
+  end
+
   test "an unknown crop style 404s" do
     sign_in_as(users(:one))
     asset = create_asset(real: true)
