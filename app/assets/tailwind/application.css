@@ -2066,7 +2066,7 @@
     box-shadow: inset 2px 0 0 var(--warn);
   }
   .task-row-late .task-checkbox {
-    border-color: var(--accent);
+    border-color: var(--warn);
   }
   .task-row-completed {
     background: color-mix(in oklch, var(--ok-soft) 50%, var(--surface-2));
@@ -2604,7 +2604,7 @@
   }
   .needs-review-row {
     background: var(--surface-2);
-    box-shadow: inset 2px 0 0 var(--accent);
+    box-shadow: inset 2px 0 0 var(--warn);
   }
   tr:target {
     background: var(--info-soft);
@@ -3296,13 +3296,13 @@
   }
   .home-surface-card-urgent {
     box-shadow:
-      inset 2px 0 0 var(--accent),
+      inset 2px 0 0 var(--danger),
       var(--shadow-e1);
   }
   .home-surface-card-urgent .home-surface-card-count {
-    background: var(--accent-soft);
-    border-color: color-mix(in oklch, var(--accent) 35%, transparent);
-    color: oklch(0.4 0.15 42);
+    background: var(--danger-soft);
+    border-color: color-mix(in oklch, var(--danger) 35%, transparent);
+    color: var(--danger-fg);
   }
   .home-surface-card-active .home-surface-card-count {
     background: var(--warn-soft);
@@ -3430,11 +3430,11 @@
     overflow: auto;
     padding: 16px;
   }
-  /* Urgent: 2px left rule in accent, not a painted background */
+  /* Urgent: 2px left rule in danger, not a painted background */
   .dashboard-block-urgent {
     border-color: var(--line);
     box-shadow:
-      inset 2px 0 0 var(--accent),
+      inset 2px 0 0 var(--danger),
       var(--shadow-e1);
   }
   .dashboard-block-span-third {
