@@ -13,6 +13,10 @@
   </div>
   <div class="hero-actions">
     <%= link_to "Back to library", photo_assets_path, class: "button" %>
+    <%= button_to toggle_favorite_photo_asset_path(@asset), method: :patch,
+          class: [ "button", ("primary" if @asset.favorite?) ] do %>
+      <%= @asset.favorite? ? "★ Favorited" : "☆ Favorite" %>
+    <% end %>
     <%= link_to "Download original", rails_blob_path(@asset.photo, disposition: "attachment"), class: "button" %>
   </div>
 </section>
@@ -77,6 +81,35 @@
         <% if Current.user.admin? %><%= link_to "Add some", admin_tags_path %>.<% end %>
       </p>
     <% end %>
+
+    <div class="tag-applied collections-section">
+      <h3 class="muted small">In collections</h3>
+      <% if @memberships.any? %>
+        <ul class="tag-chip-list">
+          <% @memberships.each do |membership| %>
+            <li>
+              <%= link_to membership.collection.name, collection_path(membership.collection), class: "tag-chip" %>
+              <%= button_to "×", photo_asset_collection_membership_path(@asset, membership), method: :delete,
+                    class: "tag-remove", aria: { label: "Remove from #{membership.collection.name}" } %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="muted small">Not in any collection yet.</p>
+      <% end %>
+
+      <% if @available_collections.any? %>
+        <%= form_with url: photo_asset_collection_memberships_path(@asset), method: :post, class: "tag-add" do %>
+          <%= select_tag :collection_id, options_from_collection_for_select(@available_collections, :id, :name),
+                prompt: "Add to collection…" %>
+          <%= submit_tag "Add", class: "button small" %>
+        <% end %>
+      <% else %>
+        <p class="muted small">
+          <%= link_to "Create a collection", new_collection_path %> to group photos.
+        </p>
+      <% end %>
+    </div>
 
     <%= form_with url: photo_asset_path(@asset), method: :patch, class: "stack" do |form| %>
       <div class="field">

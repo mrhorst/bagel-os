@@ -1,0 +1,26 @@
+<li>
+  <%= link_to photo_asset_path(asset), class: "photo-card" do %>
+    <%= photo_asset_image asset, { resize_to_fill: [ 480, 360 ] },
+          alt: asset.caption.presence || "Photo ##{asset.id}", loading: "lazy" %>
+    <% if asset.favorite? %>
+      <span class="photo-card-fav" aria-label="Favorite" title="Favorite">★</span>
+    <% end %>
+    <% if asset.status == "needs_review" %>
+      <span class="photo-card-status"><%= photo_status_badge(asset) %></span>
+    <% end %>
+    <% if asset.caption.present? || asset.confirmed_tags.any? %>
+      <div class="photo-card-meta">
+        <% if asset.caption.present? %>
+          <span class="photo-card-caption"><%= asset.caption %></span>
+        <% end %>
+        <% if asset.confirmed_tags.any? %>
+          <span class="pill-list">
+            <% asset.confirmed_tags.sort_by(&:name).first(3).each do |tag| %>
+              <%= tag_pill(tag.name) %>
+            <% end %>
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</li>

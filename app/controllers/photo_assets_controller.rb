@@ -5,16 +5,18 @@ class PhotoAssetsController < ApplicationController
   SCOPES = %w[all needs_review tagged untagged].freeze
   SCOPE_STATUS = { "needs_review" => "needs_review", "tagged" => "tagged", "untagged" => "pending" }.freeze
 
-  before_action :load_asset, only: %i[show update destroy]
+  before_action :load_asset, only: %i[show update destroy toggle_favorite]
 
   def index
     @scope = SCOPES.include?(params[:scope]) ? params[:scope] : "all"
     @query = params[:q].to_s.strip
+    @favorites_only = params[:favorites].present?
     @tags = Tag.active.ordered
     @active_tag = @tags.find { |tag| tag.slug == params[:tag] }
     @counts = status_counts
 
     assets = SCOPE_STATUS.key?(@scope) ? PhotoAsset.with_status(SCOPE_STATUS[@scope]) : PhotoAsset.all
+    assets = assets.favorites if @favorites_only
     assets = assets.tagged_with(@active_tag.slug) if @active_tag
     assets = assets.search(@query) if @query.present?
     @assets = assets.with_attached_photo.includes(:confirmed_tags).recent_first
@@ -47,6 +49,8 @@ class PhotoAssetsController < ApplicationController
     @applied = @asset.taggings.confirmed.includes(:tag).sort_by { |t| t.tag.name }
     @available_tags = Tag.active.ordered.where.not(id: @asset.tag_ids)
     @tags_vocabulary_empty = !Tag.active.exists?
+    @memberships = @asset.collection_memberships.includes(:collection).sort_by { |m| m.collection.name }
+    @available_collections = Collection.ordered.where.not(id: @asset.collection_ids)
   end
 
   def update
@@ -60,6 +64,13 @@ class PhotoAssetsController < ApplicationController
   def destroy
     @asset.destroy!
     redirect_to photo_assets_path, notice: "Photo deleted."
+  end
+
+  # Star / unstar a photo as a team favorite ("hero" shot).
+  def toggle_favorite
+    @asset.update_column(:favorite, !@asset.favorite)
+    redirect_back fallback_location: photo_asset_path(@asset),
+      notice: @asset.favorite? ? "Added to favorites." : "Removed from favorites."
   end
 
   private

@@ -2681,6 +2681,79 @@
     margin-bottom: 16px;
   }
 
+  /* The favorites filter chip uses the accent to read as "the good ones". */
+  .tag-chip-fav.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* Star marker pinned to a favorited card. */
+  .photo-card-fav {
+    color: var(--accent);
+    font-size: 1.1rem;
+    line-height: 1;
+    position: absolute;
+    right: 8px;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+    top: 8px;
+  }
+
+  .collections-section {
+    border-top: 1px solid var(--line);
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+
+  /* ── Collections (albums / campaigns) ─────────────────────────────── */
+  .collection-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .collection-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    display: block;
+    overflow: hidden;
+    text-decoration: none;
+  }
+  .collection-card:hover {
+    box-shadow: var(--shadow-e2);
+  }
+  .collection-cover {
+    align-items: center;
+    aspect-ratio: 4 / 3;
+    background: var(--surface-3);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .collection-cover img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+  .collection-cover-empty {
+    font-size: 2rem;
+    opacity: 0.5;
+  }
+  .collection-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px 10px;
+  }
+  .collection-card-name {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
   /* ── Chart styling ────────────────────────────────────────────────── */
   .price-chart {
     background: var(--surface-3);

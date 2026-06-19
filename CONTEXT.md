@@ -48,6 +48,18 @@ _Avoid_: category column, enum
 The automated first pass that suggests tags from the vocabulary for a photo, always confirmed by staff before they count.
 _Avoid_: final say, auto-publish
 
+**Collection**:
+A named album or campaign grouping of photo assets, orthogonal to tags — a photo can belong to several collections at once.
+_Avoid_: tag, folder-only hierarchy, single-parent album
+
+**Collection Membership**:
+The link placing one photo asset in one collection, recording who added it and its order within the collection.
+_Avoid_: tag, foreign key on the photo
+
+**Favorite Photo**:
+A photo asset starred as a team "hero" shot so the best assets surface quickly, independent of the tagging lifecycle.
+_Avoid_: approval state, publish flag, rating scale
+
 **Staff Member**:
 A person credited with completing restaurant operating work.
 _Avoid_: user, login, employee record

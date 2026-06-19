@@ -1,0 +1,38 @@
+<% content_for :title, "Collections" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Collections</h1>
+    <p>Group photos into campaigns or albums — a seasonal shoot, an Instagram set, the new menu. A photo can live in several at once.</p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to "Back to library", photo_assets_path, class: "button" %>
+    <%= link_to "New collection", new_collection_path, class: "button primary" %>
+  </div>
+</section>
+
+<% if @collections.any? %>
+  <ul class="collection-grid" aria-label="Collections">
+    <% @collections.each do |collection| %>
+      <li>
+        <%= link_to collection_path(collection), class: "collection-card" do %>
+          <div class="collection-cover">
+            <% if (cover = collection.cover_asset) %>
+              <%= photo_asset_image cover, { resize_to_fill: [ 480, 360 ] }, alt: collection.name, loading: "lazy" %>
+            <% else %>
+              <span class="collection-cover-empty" aria-hidden="true">📷</span>
+            <% end %>
+          </div>
+          <div class="collection-card-meta">
+            <span class="collection-card-name"><%= collection.name %></span>
+            <span class="muted small tnum"><%= pluralize(@counts.fetch(collection.id, 0), "photo") %></span>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="empty-state">No collections yet. Create one to group a campaign or shoot.</p>
+<% end %>
+
+<%= mobile_fab_button new_collection_path, label: "New collection" %>

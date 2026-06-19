@@ -14,11 +14,15 @@ class PhotoAsset < ApplicationRecord
   has_many :confirmed_taggings, -> { confirmed }, class_name: "Tagging", inverse_of: :photo_asset
   has_many :confirmed_tags, through: :confirmed_taggings, source: :tag
 
+  has_many :collection_memberships, dependent: :destroy
+  has_many :collections, through: :collection_memberships
+
   validates :status, inclusion: { in: STATUSES }
   validate :photo_must_be_an_attached_image
 
   scope :recent_first, -> { order(created_at: :desc, id: :desc) }
   scope :with_status, ->(status) { where(status: status) }
+  scope :favorites, -> { where(favorite: true) }
 
   # Photos carrying a confirmed instance of the given tag slug.
   scope :tagged_with, ->(slug) {

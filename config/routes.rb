@@ -111,12 +111,17 @@ Rails.application.routes.draw do
     resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
   end
   resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy] do
+    member do
+      patch :toggle_favorite
+    end
     resources :taggings, only: %i[create destroy], controller: "photo_asset_taggings" do
       member do
         patch :confirm
       end
     end
+    resources :collection_memberships, only: %i[create destroy]
   end
+  resources :collections, path: "marketing/collections"
   get "marketing", to: redirect("/marketing/photos")
   resources :receipt_line_items, only: %i[edit update]
   resources :normalization_reviews, only: %i[index] do
