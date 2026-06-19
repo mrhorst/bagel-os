@@ -14,6 +14,7 @@ gem "pg", "~> 1.5"
 gem "puma", ">= 5.0"
 # Generate Active Storage image variants for task completion photos.
 gem "image_processing", "~> 2.0"
+gem "mini_magick"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
