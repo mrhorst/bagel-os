@@ -1408,6 +1408,18 @@
     cursor: default;
     opacity: 0.45;
   }
+  /* Real disabled controls, not just the .disabled class: a genuine
+     <button disabled>, <input type="submit" disabled>, or [aria-disabled]
+     must read (and behave) as disabled, not as a live primary action. */
+  .button:disabled,
+  button:disabled,
+  input[type='submit']:disabled,
+  .button[aria-disabled='true'],
+  button[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.45;
+    pointer-events: none;
+  }
 
   /* "Active" segment style — used by tab-like links */
   .button.active {
