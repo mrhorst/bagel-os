@@ -135,6 +135,18 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
     assert_select "a.photo-card[data-action=?]", "photo-select#card"
   end
 
+  test "library ZIP downloads open in a new context so the standalone PWA can't trap the user" do
+    sign_in_as(users(:one))
+    create_asset
+
+    get photo_assets_path
+    assert_response :success
+    # A same-window nav to the attachment response strands the standalone PWA
+    # on a chrome-less Quick Look page; target=_blank hands it an escapable view.
+    assert_select 'a[href^=?][target="_blank"]', photo_asset_exports_path, count: 1
+    assert_select 'button[formaction=?][formtarget="_blank"]', photo_asset_exports_path, count: 1
+  end
+
   test "filtering the library by tag shows only matching photos" do
     sign_in_as(users(:one))
     tagged = create_asset

@@ -40,6 +40,17 @@ class MarketingCollectionsTest < ActionDispatch::IntegrationTest
     assert_select "a.photo-card", 1
   end
 
+  test "the collection ZIP download opens in a new context so the standalone PWA can't trap the user" do
+    asset = create_asset
+    collections(:summer).collection_memberships.create!(photo_asset: asset)
+
+    get collection_path(collections(:summer))
+    assert_response :success
+    # Same-window nav to the attachment strands the standalone PWA on a
+    # back-button-less download view; target=_blank gives it an escapable one.
+    assert_select %(a[href="#{photo_asset_exports_path(collection_id: collections(:summer).id)}"][target="_blank"]), count: 1
+  end
+
   test "toggling favorite stars and unstars a photo" do
     asset = create_asset
     assert_not asset.favorite?

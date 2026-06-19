@@ -12,7 +12,9 @@
   <div class="hero-actions">
     <%= link_to "All collections", collections_path, class: "button" %>
     <% if @assets.any? %>
-      <%= link_to "Download ZIP", photo_asset_exports_path(collection_id: @collection.id), class: "button", data: { turbo: false } %>
+      <%# target=_blank so the ZIP opens in an escapable in-app Safari view —
+          a same-window nav to an attachment traps the standalone PWA. %>
+      <%= link_to "Download ZIP", photo_asset_exports_path(collection_id: @collection.id), class: "button", target: "_blank", rel: "noopener", data: { turbo: false } %>
     <% end %>
     <%= link_to "Edit", edit_collection_path(@collection), class: "button" %>
   </div>

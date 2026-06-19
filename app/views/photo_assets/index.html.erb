@@ -45,8 +45,11 @@
     <%= link_to "Clear", photo_assets_path(scope: @scope, tag: params[:tag], favorites: params[:favorites]), class: "button small" %>
   <% end %>
   <% if @assets.any? %>
+    <%# target=_blank so the ZIP opens in an in-app Safari view with a Done
+        button — a same-window nav to an attachment traps the standalone PWA
+        on a chrome-less Quick Look page (see the photo show view). %>
     <%= link_to "Download results", photo_asset_exports_path(scope: @scope, tag: params[:tag], favorites: params[:favorites], q: @query.presence),
-          class: "button small", data: { turbo: false } %>
+          class: "button small", target: "_blank", rel: "noopener", data: { turbo: false } %>
   <% end %>
 <% end %>
 
@@ -75,8 +78,10 @@
             <button type="submit" name="bulk_action" value="add_to_collection" class="button small">Add</button>
           </span>
         <% end %>
+        <%# formtarget=_blank opens the ZIP in a new browser context, so the
+            standalone PWA isn't stranded on a back-button-less download view. %>
         <button type="submit" formaction="<%= photo_asset_exports_path %>" formmethod="post"
-                class="button small" data-turbo="false">Download ZIP</button>
+                formtarget="_blank" class="button small" data-turbo="false">Download ZIP</button>
         <button type="submit" name="bulk_action" value="delete" class="button small bulk-bar-delete"
                 data-turbo-confirm="Delete the selected photos permanently?">Delete</button>
         <button type="button" class="button small" data-action="photo-select#clear">Clear</button>
