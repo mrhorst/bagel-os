@@ -122,6 +122,19 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
     assert_equal "pending", asset.reload.status
   end
 
+  test "the library wires up select mode on every card" do
+    sign_in_as(users(:one))
+    create_asset
+
+    get photo_assets_path
+    assert_response :success
+    # The select-mode toggle and the per-card tap handler are what let a tap
+    # select instead of opening, so a stray tap can't wipe a built-up selection.
+    assert_select "button[data-photo-select-target=toggle]", text: "Select"
+    assert_select "form[data-action=?]", "turbo:submit-start->photo-select#reset"
+    assert_select "a.photo-card[data-action=?]", "photo-select#card"
+  end
+
   test "filtering the library by tag shows only matching photos" do
     sign_in_as(users(:one))
     tagged = create_asset

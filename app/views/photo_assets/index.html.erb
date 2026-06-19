@@ -47,7 +47,13 @@
 <% end %>
 
 <% if @assets.any? %>
-  <%= form_with url: bulk_actions_photo_assets_path, method: :post, data: { controller: "photo-select" } do %>
+  <%= form_with url: bulk_actions_photo_assets_path, method: :post,
+        data: { controller: "photo-select", action: "turbo:submit-start->photo-select#reset" } do %>
+    <div class="photo-select-toolbar">
+      <span class="photo-select-hint muted small">Tap a photo to select it.</span>
+      <button type="button" class="button small" data-photo-select-target="toggle"
+              data-action="photo-select#toggleMode" aria-pressed="false">Select</button>
+    </div>
     <div class="bulk-bar" data-photo-select-target="bar" role="region" aria-label="Bulk actions">
       <span class="bulk-bar-count tnum" data-photo-select-target="count">0 selected</span>
       <div class="bulk-bar-actions">
