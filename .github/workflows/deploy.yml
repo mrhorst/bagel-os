@@ -9,6 +9,13 @@ name: Deploy
 # Staging deploys with `-d staging` (config/deploy.yml + config/deploy.staging.yml).
 # Production deploys with no destination (config/deploy.yml only), preserving its
 # existing container / proxy identity.
+#
+# Staging-only maintenance commands (refused against production):
+#   * seed_demo    -> seeds demo data (SEED_DEMO_DATA=true bin/rails db:seed)
+#   * create_admin -> bin/rails admin:create, reading EMAIL/NAME from the
+#                     admin_email/admin_name inputs and PASSWORD from the
+#                     STAGING_ADMIN_PASSWORD secret (so it's never logged).
+# Both run via `app exec --reuse`, so staging must already be deployed.
 
 on:
   workflow_run:
@@ -33,6 +40,18 @@ on:
         options:
           - deploy
           - setup
+          - seed_demo
+          - create_admin
+      admin_email:
+        description: "create_admin only: email for the admin/owner user"
+        required: false
+        type: string
+        default: ""
+      admin_name:
+        description: "create_admin only: display name for the admin user"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   staging:
@@ -113,12 +132,38 @@ jobs:
             "true"
 
       - name: Deploy staging with Kamal
+        env:
+          ADMIN_EMAIL: ${{ inputs.admin_email }}
+          ADMIN_NAME: ${{ inputs.admin_name }}
+          ADMIN_PASSWORD: ${{ secrets.STAGING_ADMIN_PASSWORD }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            bin/kamal "${{ inputs.kamal_command }}" -d staging -c config/deploy.yml
-          else
+          # Auto-deploy on green CI; manual dispatch picks the kamal command.
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
             bin/kamal deploy -d staging -c config/deploy.yml
+            exit 0
           fi
+
+          case "${{ inputs.kamal_command }}" in
+            create_admin)
+              # Not the create_admin alias: that one is --interactive (no TTY in
+              # CI) and passes no args. Drive admin:create directly instead.
+              if [ -z "$ADMIN_EMAIL" ]; then
+                echo "::error::create_admin requires the admin_email input." >&2
+                exit 1
+              fi
+              if [ -z "$ADMIN_PASSWORD" ]; then
+                echo "::error::create_admin requires the STAGING_ADMIN_PASSWORD secret." >&2
+                exit 1
+              fi
+              # ADMIN_PASSWORD is a registered secret, so GitHub masks it even if
+              # Kamal echoes the command it runs.
+              bin/kamal app exec --reuse -d staging -c config/deploy.yml \
+                "bin/rails admin:create EMAIL='$ADMIN_EMAIL' NAME='$ADMIN_NAME' PASSWORD='$ADMIN_PASSWORD'"
+              ;;
+            *)
+              bin/kamal "${{ inputs.kamal_command }}" -d staging -c config/deploy.yml
+              ;;
+          esac
 
   production:
     name: Deploy to production
@@ -189,4 +234,11 @@ jobs:
             "true"
 
       - name: Deploy production with Kamal
-        run: bin/kamal "${{ inputs.kamal_command }}" -c config/deploy.yml
+        run: |
+          case "${{ inputs.kamal_command }}" in
+            seed_demo|create_admin)
+              echo "::error::'${{ inputs.kamal_command }}' is a staging-only maintenance command and must not run against production." >&2
+              exit 1
+              ;;
+          esac
+          bin/kamal "${{ inputs.kamal_command }}" -c config/deploy.yml
