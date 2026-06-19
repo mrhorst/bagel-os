@@ -60,6 +60,14 @@ _Avoid_: tag, foreign key on the photo
 A photo asset starred as a team "hero" shot so the best assets surface quickly, independent of the tagging lifecycle.
 _Avoid_: approval state, publish flag, rating scale
 
+**Share Link**:
+A public, token-addressed URL to one collection that lets someone without an app login view and download its photos until it is revoked or expires.
+_Avoid_: per-photo public link, permanent CDN URL, account invite
+
+**ZIP Download**:
+The in-app bundling of a selection, a collection, or the current library filter into a ZIP (images plus a manifest.json) for use outside the app.
+_Avoid_: per-photo only download, CLI-only export
+
 **Staff Member**:
 A person credited with completing restaurant operating work.
 _Avoid_: user, login, employee record

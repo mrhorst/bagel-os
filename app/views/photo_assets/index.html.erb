@@ -44,6 +44,10 @@
   <% if @query.present? %>
     <%= link_to "Clear", photo_assets_path(scope: @scope, tag: params[:tag], favorites: params[:favorites]), class: "button small" %>
   <% end %>
+  <% if @assets.any? %>
+    <%= link_to "Download results", photo_asset_exports_path(scope: @scope, tag: params[:tag], favorites: params[:favorites], q: @query.presence),
+          class: "button small", data: { turbo: false } %>
+  <% end %>
 <% end %>
 
 <% if @assets.any? %>
@@ -65,6 +69,8 @@
             <button type="submit" name="bulk_action" value="add_to_collection" class="button small">Add</button>
           </span>
         <% end %>
+        <button type="submit" formaction="<%= photo_asset_exports_path %>" formmethod="post"
+                class="button small" data-turbo="false">Download ZIP</button>
         <button type="submit" name="bulk_action" value="delete" class="button small bulk-bar-delete"
                 data-turbo-confirm="Delete the selected photos permanently?">Delete</button>
         <button type="button" class="button small" data-action="photo-select#clear">Clear</button>

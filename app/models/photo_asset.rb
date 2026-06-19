@@ -37,6 +37,16 @@ class PhotoAsset < ApplicationRecord
       .distinct
   }
 
+  # The library filter shared by the index view and the ZIP export, so both
+  # always resolve the same set for a given status / tag / search / favorites.
+  def self.library(status: nil, tag_slug: nil, query: nil, favorites: false)
+    relation = status.present? ? with_status(status) : all
+    relation = relation.favorites if favorites
+    relation = relation.tagged_with(tag_slug) if tag_slug.present?
+    relation = relation.search(query) if query.present?
+    relation
+  end
+
   after_create_commit :enqueue_ai_tagging
 
   def status_label
