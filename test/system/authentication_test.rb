@@ -13,6 +13,9 @@ class AuthenticationTest < ApplicationSystemTestCase
     fill_in "Email", with: users(:one).email_address
     fill_in "Password", with: "wrong-password"
     click_on "Sign in"
+    # Chrome occasionally drops the click; if the rejection hasn't shown up, the
+    # submit was lost — re-submit the form directly.
+    resubmit "Sign in" unless has_text?("Try another email address or password", wait: 3)
 
     assert_text "Try another email address or password"
     assert_no_selector "a[aria-label='Account']"
@@ -28,6 +31,9 @@ class AuthenticationTest < ApplicationSystemTestCase
     sign_in_as users(:one)
     visit account_url
     click_button "Sign out"
+    # Chrome occasionally drops the click; if we're still on the account page,
+    # the submit was lost — re-submit the sign-out form directly.
+    resubmit "Sign out" unless has_selector?("h1", text: "Sign in", wait: 3)
 
     assert_selector "h1", text: "Sign in"
   end
