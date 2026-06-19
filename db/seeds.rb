@@ -37,7 +37,10 @@ end
   end
 end
 
-if Rails.env.development?
+# Generic, non-private demo data for hands-on environments: local development
+# and the deployed staging install (which runs RAILS_ENV=production, so it opts
+# in via SEED_DEMO_DATA=true — see the `seed_demo` alias in config/deploy.yml).
+if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
   demo_guides = [
     [ "Daily", 1 ],
     [ "Weekly", 2 ],

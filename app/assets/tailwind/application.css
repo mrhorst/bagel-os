@@ -1547,6 +1547,28 @@
     color: var(--danger-fg);
   }
 
+  /* ── Environment ribbon (staging / non-production) ────────────────────
+     Slim, fixed banner so a deployed non-prod install is never mistaken for
+     production. Neutral ink chrome — not a status colour, never the accent.
+     pointer-events:none so it never intercepts a click. */
+  .env-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 70;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--surface);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    box-shadow: var(--shadow-e1);
+  }
+
   /* ── Hero panel (legacy — calmed down) ────────────────────────────── */
   .hero-panel {
     align-items: end;

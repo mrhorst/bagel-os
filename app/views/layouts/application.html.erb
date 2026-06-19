@@ -39,6 +39,9 @@
   </head>
 
   <body class="min-h-screen bg-surface text-ink antialiased" data-controller="pull-to-refresh">
+    <% if environment_banner_label %>
+      <div class="env-banner" role="status"><%= environment_banner_label %> · not production</div>
+    <% end %>
     <div class="app-shell">
       <aside class="app-sidebar">
         <div class="sidebar-brand">

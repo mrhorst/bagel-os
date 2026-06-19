@@ -3,34 +3,68 @@
 This repo uses two separate GitHub Actions workflows:
 
 - `CI` checks pull requests and pushes to `main`.
-- `Deploy` runs Kamal only after `CI` succeeds on `main`, or when manually started.
+- `Deploy` runs Kamal. A successful `CI` run on `main` **auto-deploys to
+  staging**; **production is a manual, gated promotion**.
 
-That keeps production deploys behind the same quality gate as pull requests.
+That keeps every change behind the same quality gate as pull requests, and gives
+you a deployed staging copy to click through before promoting to production.
+
+## Two environments, one VPS
+
+Both installs run on the same server, fully isolated from each other:
+
+| | Production | Staging |
+| --- | --- | --- |
+| Kamal target | default (no `-d`) | `-d staging` |
+| Config | `config/deploy.yml` | `config/deploy.yml` + `config/deploy.staging.yml` |
+| Service / containers | `restaurant-inventory-os` | `restaurant-inventory-os-staging` |
+| Postgres container | `restaurant-inventory-os-postgres` | `restaurant-inventory-os-staging-postgres` |
+| Postgres host bind | `127.0.0.1:5432` | `127.0.0.1:5433` |
+| Database | `restaurant_inventory_os_production` | `restaurant_inventory_os_staging` |
+| Data dirs | `/var/lib/restaurant-inventory-os/{postgres,storage}` | `/var/lib/restaurant-inventory-os-staging/{postgres,storage}` |
+| Image repo | `KAMAL_IMAGE` | `KAMAL_STAGING_IMAGE` |
+| Host | `KAMAL_APP_HOST` | `KAMAL_STAGING_APP_HOST` |
+| Deploy trigger | manual `workflow_dispatch` | auto on green `main` CI |
 
 ## Expected Flow
 
-1. Open a feature branch.
-2. Open a pull request.
-3. GitHub Actions runs `CI`.
-4. Merge to protected `main` after CI passes.
-5. `CI` runs again on `main`.
-6. `Deploy` runs after that successful `main` CI run.
+1. Open a feature branch, open a pull request.
+2. GitHub Actions runs `CI`.
+3. Merge to protected `main` after CI passes.
+4. `CI` runs again on `main`.
+5. `Deploy` runs the **staging** job automatically after that successful run.
+6. Click through staging. When happy, **promote to production**: start the
+   `Deploy` workflow manually with `destination = production`.
 
 ## GitHub Secrets
 
-Create these repository or environment secrets in GitHub:
+Shared by both environments:
 
 ```text
-KAMAL_APP_HOST
-KAMAL_IMAGE
 KAMAL_REGISTRY_PASSWORD
 KAMAL_REGISTRY_USERNAME
 KAMAL_SERVER_IP
 KAMAL_SSH_PRIVATE_KEY
 KAMAL_SSH_USER
-POSTGRES_PASSWORD
+KAMAL_SSH_KNOWN_HOSTS
 RAILS_MASTER_KEY
 TASK_BRIEFING_AGENT_GATEWAY_TOKEN
+```
+
+Production only:
+
+```text
+KAMAL_APP_HOST
+KAMAL_IMAGE
+POSTGRES_PASSWORD
+```
+
+Staging only:
+
+```text
+KAMAL_STAGING_APP_HOST
+KAMAL_STAGING_IMAGE
+STAGING_POSTGRES_PASSWORD
 ```
 
 Use a dedicated non-interactive deploy SSH key for `KAMAL_SSH_PRIVATE_KEY`.
@@ -38,45 +72,77 @@ Do not reuse a personal laptop or Termius key.
 
 ## Secret Meanings
 
-- `KAMAL_APP_HOST`: public app host, for example `inventory.example.com`.
-- `KAMAL_IMAGE`: full container image name, for example `ghcr.io/OWNER/restaurant-inventory-os`.
-- `KAMAL_REGISTRY_USERNAME`: container registry username.
-- `KAMAL_REGISTRY_PASSWORD`: container registry password or token.
-- `KAMAL_SERVER_IP`: Hetzner server IP address.
-- `KAMAL_SSH_PRIVATE_KEY`: private half of the dedicated deploy key.
-- `KAMAL_SSH_USER`: server SSH user, usually `root` for the pilot.
-- `POSTGRES_PASSWORD`: production Postgres password.
-- `RAILS_MASTER_KEY`: contents of `config/master.key`.
-- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: bearer token for the task briefing agent gateway.
+- `KAMAL_APP_HOST` / `KAMAL_STAGING_APP_HOST`: public host for each install,
+  for example `app.example.com` and `staging.app.example.com`.
+- `KAMAL_IMAGE` / `KAMAL_STAGING_IMAGE`: full container image name per install.
+  Use a **separate image repo** for staging (same registry, different name) so
+  the two never share image labels — for example
+  `ghcr.io/OWNER/restaurant-inventory-os` and
+  `ghcr.io/OWNER/restaurant-inventory-os-staging`.
+- `KAMAL_REGISTRY_USERNAME` / `KAMAL_REGISTRY_PASSWORD`: registry credentials
+  (shared — one account, two repos).
+- `KAMAL_SERVER_IP`: VPS IP address (shared — both installs live here).
+- `KAMAL_SSH_PRIVATE_KEY` / `KAMAL_SSH_USER` / `KAMAL_SSH_KNOWN_HOSTS`: the
+  pinned deploy SSH key, user, and known-hosts entry.
+- `POSTGRES_PASSWORD` / `STAGING_POSTGRES_PASSWORD`: Postgres password for each
+  install. **These must differ** — staging runs its own Postgres container.
+- `RAILS_MASTER_KEY`: contents of `config/master.key` (shared — same encrypted
+  credentials).
+- `TASK_BRIEFING_AGENT_GATEWAY_TOKEN`: bearer token for the task briefing agent
+  gateway (shared).
 
-The GitHub deploy config uses `.kamal/secrets.github`, which reads these values
-from the workflow environment. Local manual deploys keep using `.kamal/secrets`,
-where `RAILS_MASTER_KEY` can still come from `config/master.key`.
+### How secrets resolve
 
-## First Production Run
+Kamal reads `.kamal/secrets-common` plus a per-target file:
 
-After secrets are configured, start the `Deploy` workflow manually and choose:
+- Production (no destination) → `.kamal/secrets-common` + `.kamal/secrets`
+- Staging (`-d staging`) → `.kamal/secrets-common` + `.kamal/secrets.staging`
+
+`RAILS_MASTER_KEY` lives in `.kamal/secrets-common` and works both locally
+(reads `config/master.key`) and in CI (falls back to the `RAILS_MASTER_KEY` env
+var, since the key is not in the checkout). None of these files hold literal
+secret values.
+
+## First Staging Run
+
+After secrets and DNS are in place, start the `Deploy` workflow manually with:
 
 ```text
+destination   = staging
 kamal_command = setup
 ```
 
-After the first setup succeeds, normal merges to `main` should use:
+`setup` installs Docker when needed, boots the staging Postgres accessory, and
+deploys the app. After it succeeds, every green `main` CI run redeploys staging
+automatically. Then seed demo data and create an admin (see the Hetzner doc).
+
+## Promote To Production
+
+Production never deploys automatically. To ship the current `main` to prod:
+
+1. `Deploy` workflow → **Run workflow** → `destination = production`,
+   `kamal_command = deploy` (use `setup` only for the very first prod boot).
+2. If the `production` environment has required reviewers, approve the run.
+
+The deploy command per target:
 
 ```text
-kamal_command = deploy
+staging     bin/kamal deploy -d staging -c config/deploy.yml
+production  bin/kamal deploy -c config/deploy.yml
 ```
 
-The automatic deploy path always runs `bin/kamal deploy -c config/deploy.github.yml`.
-
-## Branch Protection
+## Branch Protection & Environments
 
 Protect `main` in GitHub:
 
 - require pull requests before merging
 - require the `CI` workflow to pass
 - block direct pushes to `main`
-- optionally require the `production` environment approval before deploy
+
+Under **Settings → Environments**:
+
+- `production`: add **required reviewers** so prod promotion needs an approval.
+- `staging`: no protection needed (auto-deploy is the point).
 
 The deploy workflow is intentionally separate from CI. If CI fails, deploy does
 not run.
