@@ -28,3 +28,7 @@ production:
     class: Notifications::PendingReviewsJob
     queue: background
     schedule: every day at 9am
+  sweep_untagged_marketing_photos:
+    class: PhotoAssets::AiTaggingSweepJob
+    queue: background
+    schedule: every hour at minute 35

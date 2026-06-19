@@ -1,0 +1,20 @@
+food:
+  name: Food
+  slug: food
+  instruction: Plated dishes, ingredients, and drinks — anything edible.
+  position: 1
+  active: true
+
+product:
+  name: Product
+  slug: product
+  instruction: Packaged retail products and merch.
+  position: 2
+  active: true
+
+inactive_promo:
+  name: Promo
+  slug: promo
+  instruction: Seasonal promotional shots.
+  position: 3
+  active: false

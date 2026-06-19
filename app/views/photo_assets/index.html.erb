@@ -1,0 +1,83 @@
+<% content_for :title, "Marketing" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Photo library</h1>
+    <p>One place for the team's food and product photos — upload or snap them here so anyone with marketing access can find them.</p>
+  </div>
+  <div class="hero-actions">
+    <% if Current.user.admin? %>
+      <%= link_to "Manage tags", admin_tags_path, class: "button" %>
+    <% end %>
+    <%= link_to "Add photos", new_photo_asset_path, class: "button primary" %>
+  </div>
+</section>
+
+<nav class="segmented photo-library-filters" aria-label="Filter by tagging status">
+  <% PhotoAssetsController::SCOPES.each do |scope| %>
+    <%= link_to photo_assets_path(scope: scope, tag: params[:tag], q: @query.presence), class: ("active" if @scope == scope) do %>
+      <%= scope == "all" ? "All" : scope.humanize %> <span class="tnum">(<%= @counts.fetch(scope, 0) %>)</span>
+    <% end %>
+  <% end %>
+</nav>
+
+<% if @tags.any? %>
+  <nav class="tag-filter pill-list" aria-label="Filter by tag">
+    <%= link_to "All tags", photo_assets_path(scope: @scope, q: @query.presence),
+          class: [ "tag-chip", ("active" unless @active_tag) ] %>
+    <% @tags.each do |tag| %>
+      <%= link_to tag.name, photo_assets_path(scope: @scope, tag: tag.slug, q: @query.presence),
+            class: [ "tag-chip", ("active" if @active_tag == tag) ] %>
+    <% end %>
+  </nav>
+<% end %>
+
+<%= form_with url: photo_assets_path, method: :get, class: "photo-search" do %>
+  <%= hidden_field_tag :scope, @scope %>
+  <%= hidden_field_tag :tag, params[:tag] %>
+  <%= search_field_tag :q, @query, placeholder: "Search captions, notes, tags" %>
+  <%= submit_tag "Search", class: "button small" %>
+  <% if @query.present? %>
+    <%= link_to "Clear", photo_assets_path(scope: @scope, tag: params[:tag]), class: "button small" %>
+  <% end %>
+<% end %>
+
+<% if @assets.any? %>
+  <ul class="photo-grid" aria-label="Photo assets">
+    <% @assets.each do |asset| %>
+      <li>
+        <%= link_to photo_asset_path(asset), class: "photo-card" do %>
+          <%= photo_asset_image asset, { resize_to_fill: [ 480, 360 ] },
+                alt: asset.caption.presence || "Photo ##{asset.id}", loading: "lazy" %>
+          <% if asset.status == "needs_review" %>
+            <span class="photo-card-status"><%= photo_status_badge(asset) %></span>
+          <% end %>
+          <% if asset.caption.present? || asset.confirmed_tags.any? %>
+            <div class="photo-card-meta">
+              <% if asset.caption.present? %>
+                <span class="photo-card-caption"><%= asset.caption %></span>
+              <% end %>
+              <% if asset.confirmed_tags.any? %>
+                <span class="pill-list">
+                  <% asset.confirmed_tags.sort_by(&:name).first(3).each do |tag| %>
+                    <%= tag_pill(tag.name) %>
+                  <% end %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="empty-state">
+    <% if @scope == "all" && @active_tag.nil? && @query.blank? %>
+      No photos yet. Add the first batch from your phone or library.
+    <% else %>
+      No photos match these filters.
+    <% end %>
+  </p>
+<% end %>
+
+<%= mobile_fab_button new_photo_asset_path, label: "Add photos" %>

@@ -1,0 +1,105 @@
+<% content_for :title, "Photo ##{@asset.id}" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Photo <span class="tnum">#<%= @asset.id %></span></h1>
+    <p>
+      <%= photo_status_badge(@asset) %>
+      · added <%= @asset.created_at.strftime("%b %-d, %Y") %>
+      <% if @asset.uploaded_by %>
+        by <%= user_display_name(@asset.uploaded_by) %>
+      <% end %>
+    </p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to "Back to library", photo_assets_path, class: "button" %>
+    <%= link_to "Download original", rails_blob_path(@asset.photo, disposition: "attachment"), class: "button" %>
+  </div>
+</section>
+
+<div class="grid two">
+  <article class="panel">
+    <%= photo_asset_image @asset, { resize_to_limit: [ 1600, 1600 ] },
+          alt: @asset.caption.presence || "Photo ##{@asset.id}", class: "photo-detail-img" %>
+  </article>
+
+  <article class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Tags</h2>
+        <p>How this photo is filed in the library. Confirm AI suggestions or add your own.</p>
+      </div>
+    </div>
+
+    <% if @suggestions.any? %>
+      <div class="tag-suggestions">
+        <h3 class="muted small">Suggested by AI — confirm the ones that fit</h3>
+        <% @suggestions.each do |tagging| %>
+          <div class="suggestion-row">
+            <%= tag_pill(tagging.tag.name, pending: true) %>
+            <span class="suggestion-actions">
+              <%= button_to "Confirm", confirm_photo_asset_tagging_path(@asset, tagging), method: :patch,
+                    class: "button small primary" %>
+              <%= button_to "Dismiss", photo_asset_tagging_path(@asset, tagging), method: :delete,
+                    class: "button small" %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="tag-applied">
+      <h3 class="muted small">On this photo</h3>
+      <% if @applied.any? %>
+        <ul class="tag-chip-list">
+          <% @applied.each do |tagging| %>
+            <li>
+              <%= tag_pill(tagging.tag.name) %>
+              <%= button_to "×", photo_asset_tagging_path(@asset, tagging), method: :delete,
+                    class: "tag-remove", aria: { label: "Remove #{tagging.tag.name}" } %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="muted small">No confirmed tags yet.</p>
+      <% end %>
+    </div>
+
+    <% if @available_tags.any? %>
+      <%= form_with url: photo_asset_taggings_path(@asset), method: :post, class: "tag-add" do %>
+        <%= select_tag :tag_id, options_from_collection_for_select(@available_tags, :id, :name),
+              prompt: "Add a tag…" %>
+        <%= submit_tag "Add", class: "button small" %>
+      <% end %>
+    <% elsif @tags_vocabulary_empty %>
+      <p class="muted small">
+        No tags defined yet.
+        <% if Current.user.admin? %><%= link_to "Add some", admin_tags_path %>.<% end %>
+      </p>
+    <% end %>
+
+    <%= form_with url: photo_asset_path(@asset), method: :patch, class: "stack" do |form| %>
+      <div class="field">
+        <%= form.label :photo_asset_caption, "Caption" %>
+        <%= text_field_tag "photo_asset[caption]", @asset.caption, id: "photo_asset_caption",
+              placeholder: "What this shows, where it could run" %>
+      </div>
+      <div class="field">
+        <%= form.label :photo_asset_notes, "Notes" %>
+        <%= text_area_tag "photo_asset[notes]", @asset.notes, id: "photo_asset_notes", rows: 3,
+              placeholder: "Anything worth knowing — shoot date, who's in it, usage notes" %>
+      </div>
+      <%= form.submit "Save details", class: "button small" %>
+    <% end %>
+
+    <dl class="details">
+      <dt>File</dt>
+      <dd><%= @asset.photo.filename %></dd>
+      <dt>Size</dt>
+      <dd class="tnum"><%= number_to_human_size(@asset.photo.byte_size) %></dd>
+    </dl>
+
+    <%= button_to "Delete photo", photo_asset_path(@asset), method: :delete,
+          class: "button small", form: { data: { turbo_confirm: "Delete this photo permanently?" } } %>
+  </article>
+</div>
