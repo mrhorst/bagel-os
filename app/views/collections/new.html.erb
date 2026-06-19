@@ -1,0 +1,12 @@
+<% content_for :title, "New collection" %>
+
+<section class="page-heading">
+  <div>
+    <h1>New collection</h1>
+    <p>Name a group of photos — you'll add photos to it from the library.</p>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= render "form", collection: @collection %>
+</article>

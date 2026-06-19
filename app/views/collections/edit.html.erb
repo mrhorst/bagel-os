@@ -1,0 +1,11 @@
+<% content_for :title, "Edit #{@collection.name}" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Edit collection</h1>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= render "form", collection: @collection %>
+</article>
