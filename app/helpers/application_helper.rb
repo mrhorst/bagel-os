@@ -31,6 +31,13 @@ module ApplicationHelper
     @app_branding ||= AppBranding.current
   end
 
+  # Non-production environment ribbon label (e.g. "staging"), driven by the
+  # APP_ENV_LABEL env var so a deployed staging install is never mistaken for
+  # production. Returns nil where the var is unset (production, test, local).
+  def environment_banner_label
+    ENV["APP_ENV_LABEL"].to_s.strip.presence
+  end
+
   def current_user
     Current.user
   end

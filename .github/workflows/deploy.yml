@@ -1,5 +1,15 @@
 name: Deploy
 
+# Flow:
+#   * Every successful CI run on main auto-deploys to STAGING.
+#   * PRODUCTION is a deliberate, gated promotion: run this workflow manually
+#     (Run workflow -> destination: production). Protect the `production`
+#     GitHub Environment with required reviewers to require an approval.
+#
+# Staging deploys with `-d staging` (config/deploy.yml + config/deploy.staging.yml).
+# Production deploys with no destination (config/deploy.yml only), preserving its
+# existing container / proxy identity.
+
 on:
   workflow_run:
     workflows: [ CI ]
@@ -7,6 +17,14 @@ on:
     branches: [ main ]
   workflow_dispatch:
     inputs:
+      destination:
+        description: "Where to deploy"
+        required: true
+        type: choice
+        default: staging
+        options:
+          - staging
+          - production
       kamal_command:
         description: "Kamal command to run"
         required: true
@@ -16,21 +34,31 @@ on:
           - deploy
           - setup
 
-concurrency:
-  group: production-deploy
-  cancel-in-progress: false
-
 jobs:
-  deploy:
-    name: Deploy to production
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+  staging:
+    name: Deploy to staging
+    # Auto on green CI for main, or a manual staging dispatch.
+    if: >
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.destination == 'staging')
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
+    concurrency:
+      group: staging-deploy
+      cancel-in-progress: false
     permissions:
       contents: read
     env:
-      KAMAL_APP_HOST: ${{ secrets.KAMAL_APP_HOST }}
-      KAMAL_IMAGE: ${{ secrets.KAMAL_IMAGE }}
+      # Staging overrides (config/deploy.staging.yml).
+      KAMAL_STAGING_APP_HOST: ${{ secrets.KAMAL_STAGING_APP_HOST }}
+      KAMAL_STAGING_IMAGE: ${{ secrets.KAMAL_STAGING_IMAGE }}
+      STAGING_POSTGRES_PASSWORD: ${{ secrets.STAGING_POSTGRES_PASSWORD }}
+      # Base config (config/deploy.yml) still renders these via ERB before the
+      # staging overrides are merged, so they must be present even though the
+      # staging file replaces the host and image.
+      KAMAL_APP_HOST: ${{ secrets.KAMAL_STAGING_APP_HOST }}
+      KAMAL_IMAGE: ${{ secrets.KAMAL_STAGING_IMAGE }}
+      # Shared with production.
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
       KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
       KAMAL_SERVER_IP: ${{ secrets.KAMAL_SERVER_IP }}
@@ -39,7 +67,6 @@ jobs:
       KAMAL_SSH_KNOWN_HOSTS: ${{ secrets.KAMAL_SSH_KNOWN_HOSTS }}
       KAMAL_SSH_KNOWN_HOSTS_PATH: /home/runner/.ssh/kamal_known_hosts
       KAMAL_SSH_USER: ${{ secrets.KAMAL_SSH_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
       TASK_BRIEFING_AGENT_GATEWAY_TOKEN: ${{ secrets.TASK_BRIEFING_AGENT_GATEWAY_TOKEN }}
 
@@ -85,10 +112,81 @@ jobs:
             "$KAMAL_SSH_USER@$KAMAL_SERVER_IP" \
             "true"
 
-      - name: Deploy with Kamal
+      - name: Deploy staging with Kamal
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            bin/kamal "${{ inputs.kamal_command }}" -c config/deploy.github.yml
+            bin/kamal "${{ inputs.kamal_command }}" -d staging -c config/deploy.yml
           else
-            bin/kamal deploy -c config/deploy.github.yml
+            bin/kamal deploy -d staging -c config/deploy.yml
           fi
+
+  production:
+    name: Deploy to production
+    # Manual, gated promotion only.
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.destination == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    env:
+      KAMAL_APP_HOST: ${{ secrets.KAMAL_APP_HOST }}
+      KAMAL_IMAGE: ${{ secrets.KAMAL_IMAGE }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+      KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
+      KAMAL_SERVER_IP: ${{ secrets.KAMAL_SERVER_IP }}
+      KAMAL_SSH_CONFIG_PATH: /home/runner/.ssh/kamal_ssh_config
+      KAMAL_SSH_KEY_PATH: /home/runner/.ssh/kamal_deploy_key
+      KAMAL_SSH_KNOWN_HOSTS: ${{ secrets.KAMAL_SSH_KNOWN_HOSTS }}
+      KAMAL_SSH_KNOWN_HOSTS_PATH: /home/runner/.ssh/kamal_known_hosts
+      KAMAL_SSH_USER: ${{ secrets.KAMAL_SSH_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+      TASK_BRIEFING_AGENT_GATEWAY_TOKEN: ${{ secrets.TASK_BRIEFING_AGENT_GATEWAY_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.KAMAL_SSH_PRIVATE_KEY }}" > "$KAMAL_SSH_KEY_PATH"
+          chmod 600 "$KAMAL_SSH_KEY_PATH"
+          if [ -z "$KAMAL_SSH_KNOWN_HOSTS" ]; then
+            echo "KAMAL_SSH_KNOWN_HOSTS is required for pinned deploy host verification." >&2
+            exit 1
+          fi
+          printf '%s\n' "$KAMAL_SSH_KNOWN_HOSTS" > "$KAMAL_SSH_KNOWN_HOSTS_PATH"
+          chmod 600 "$KAMAL_SSH_KNOWN_HOSTS_PATH"
+          cp "$KAMAL_SSH_KNOWN_HOSTS_PATH" ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+          {
+            echo "Host *"
+            echo "  UserKnownHostsFile $KAMAL_SSH_KNOWN_HOSTS_PATH"
+            echo "  StrictHostKeyChecking yes"
+            echo "  IdentitiesOnly yes"
+          } > "$KAMAL_SSH_CONFIG_PATH"
+          chmod 600 "$KAMAL_SSH_CONFIG_PATH"
+
+      - name: Verify SSH access
+        run: |
+          ssh -F "$KAMAL_SSH_CONFIG_PATH" \
+            -i "$KAMAL_SSH_KEY_PATH" \
+            -o BatchMode=yes \
+            "$KAMAL_SSH_USER@$KAMAL_SERVER_IP" \
+            "true"
+
+      - name: Deploy production with Kamal
+        run: bin/kamal "${{ inputs.kamal_command }}" -c config/deploy.yml
