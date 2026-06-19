@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_19_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_000005) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -373,11 +373,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_000004) do
 
   create_table "photo_assets", force: :cascade do |t|
     t.datetime "ai_tagged_at"
+    t.string "alt_text"
     t.string "caption"
     t.datetime "created_at", null: false
+    t.datetime "described_at"
     t.boolean "favorite", default: false, null: false
+    t.text "hashtags"
     t.text "notes"
     t.string "status", default: "pending", null: false
+    t.text "suggested_caption"
     t.datetime "updated_at", null: false
     t.integer "uploaded_by_id"
     t.index ["favorite"], name: "index_photo_assets_on_favorite"

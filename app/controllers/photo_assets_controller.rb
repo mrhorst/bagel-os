@@ -53,7 +53,7 @@ class PhotoAssetsController < ApplicationController
   end
 
   def update
-    if @asset.update(params.require(:photo_asset).permit(:caption, :notes))
+    if @asset.update(params.require(:photo_asset).permit(:caption, :notes, :alt_text, :hashtags))
       redirect_to photo_asset_path(@asset), notice: "Photo updated."
     else
       redirect_to photo_asset_path(@asset), alert: @asset.errors.full_messages.to_sentence

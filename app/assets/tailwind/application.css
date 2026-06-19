@@ -2850,6 +2850,48 @@
     padding-top: 16px;
   }
 
+  /* ── Post-ready outputs: crops + AI copy ──────────────────────────── */
+  .crop-downloads {
+    border-top: 1px solid var(--line);
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .crop-downloads h3,
+  .crop-downloads p {
+    margin: 0 0 8px;
+  }
+  .crop-download-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ai-copy-section {
+    border-top: 1px solid var(--line);
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+  .ai-copy-header {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .ai-copy-header h3 {
+    margin: 0;
+  }
+  .suggested-copy {
+    background: var(--surface-2);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+    padding: 10px 12px;
+  }
+  .suggested-caption {
+    margin: 0 0 8px;
+  }
+
   /* ── Chart styling ────────────────────────────────────────────────── */
   .price-chart {
     background: var(--surface-3);

@@ -116,6 +116,8 @@ Rails.application.routes.draw do
     end
     member do
       patch :toggle_favorite
+      get "crop/:style", to: "photo_asset_crops#show", as: :crop
+      post :describe, to: "photo_asset_descriptions#create"
     end
     resources :taggings, only: %i[create destroy], controller: "photo_asset_taggings" do
       member do
