@@ -872,6 +872,59 @@
     line-height: 1;
     margin-top: -2px;
   }
+
+  /* Pull-to-refresh chip — a floating indicator that slides down from the top
+     while the user pulls, then spins while the fresh page is fetched. The
+     transform/opacity are driven inline by the pull-to-refresh controller
+     during the drag; `.is-animating` adds easing for the release/settle. */
+  .ptr {
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e2);
+    color: var(--ink-muted);
+    display: grid;
+    height: 36px;
+    justify-items: center;
+    left: 50%;
+    margin-left: -18px;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    transform: translateY(-48px);
+    width: 36px;
+    z-index: 60;
+  }
+  .ptr.is-animating {
+    transition:
+      transform 0.24s ease,
+      opacity 0.24s ease;
+  }
+  .ptr.is-armed,
+  .ptr.is-refreshing {
+    color: var(--accent);
+  }
+  .ptr-spinner {
+    display: grid;
+    line-height: 0;
+    place-items: center;
+  }
+  .ptr.is-refreshing .ptr-spinner {
+    animation: ptr-spin 0.7s linear infinite;
+  }
+  @keyframes ptr-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ptr.is-refreshing .ptr-spinner {
+      animation-duration: 1.4s;
+    }
+  }
+
   .topbar-kicker {
     color: var(--ink-muted);
     font-size: 0.72rem;
