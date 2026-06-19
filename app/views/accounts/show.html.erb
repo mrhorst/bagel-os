@@ -43,6 +43,19 @@
   <% end %>
 </section>
 
+<% if WebPushConfig.configured? %>
+  <section class="panel narrow"
+           data-controller="push-subscriptions"
+           data-push-subscriptions-public-key-value="<%= WebPushConfig.public_key %>">
+    <h2>Notifications</h2>
+    <p class="muted small">Get push alerts on this device when tasks run late, a follow-up is assigned to you, or imported lines need review. Turn them off any time — this only affects the device you're using now.</p>
+    <button type="button"
+            class="button"
+            data-push-subscriptions-target="button"
+            data-action="push-subscriptions#toggle">Enable notifications</button>
+  </section>
+<% end %>
+
 <section class="panel narrow">
   <h2>Change password</h2>
   <%= form_with model: @user, url: account_password_path, method: :patch, class: "stacked-form" do |form| %>

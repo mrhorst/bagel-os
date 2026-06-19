@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_secure_password
   has_many :sessions, dependent: :destroy
   has_many :user_module_permissions, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
 
   enum :role, { employee: 0, admin: 1 }
 

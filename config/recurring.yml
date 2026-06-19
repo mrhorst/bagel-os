@@ -19,6 +19,15 @@ production:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12
 
+  notify_late_tasks:
+    class: Notifications::LateTasksJob
+    queue: background
+    schedule: every 30 minutes
+
+  notify_pending_reviews:
+    class: Notifications::PendingReviewsJob
+    queue: background
+    schedule: every day at 9am
   sweep_untagged_marketing_photos:
     class: PhotoAssets::AiTaggingSweepJob
     queue: background
