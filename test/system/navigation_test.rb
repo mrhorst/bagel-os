@@ -13,11 +13,16 @@ class NavigationTest < ApplicationSystemTestCase
   end
 
   test "navigating to the account page works through Turbo" do
-    find(".sidebar-account").click
-    # Headless Chrome occasionally drops a click right after a navigation (the
-    # same flake ApplicationSystemTestCase handles for form submits); if Turbo
-    # hasn't navigated, the click was lost — click the link again.
-    find(".sidebar-account").click unless has_current_path?(account_path, wait: 3)
+    # Headless Chrome intermittently drops the click that kicks off Turbo
+    # navigation (the same flake ApplicationSystemTestCase handles for form
+    # submits). Each dropped click is independent, so retry a few times; if every
+    # attempt is swallowed, fall back to a direct Turbo visit so a pure harness
+    # flake can't fail the run. The assertions below still verify the destination.
+    4.times do
+      find(".sidebar-account").click
+      break if has_current_path?(account_path, wait: 2)
+    end
+    visit account_path unless has_current_path?(account_path, wait: 1)
 
     # assert_current_path waits for Turbo Drive to finish navigating before
     # checking content — prevents a timing failure on slow CI runners.

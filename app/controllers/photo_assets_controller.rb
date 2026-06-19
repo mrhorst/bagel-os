@@ -13,6 +13,7 @@ class PhotoAssetsController < ApplicationController
     @favorites_only = params[:favorites].present?
     @tags = Tag.active.ordered
     @active_tag = @tags.find { |tag| tag.slug == params[:tag] }
+    @collections = Collection.ordered
     @counts = status_counts
 
     assets = SCOPE_STATUS.key?(@scope) ? PhotoAsset.with_status(SCOPE_STATUS[@scope]) : PhotoAsset.all
