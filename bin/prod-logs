@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Tail production logs from the running container, over Kamal/SSH.
+#
+# Usage:
+#   bin/prod-logs                 # follow live logs
+#   bin/prod-logs -n 500          # last 500 lines, then follow
+#   bin/prod-logs --grep Error    # only lines matching a pattern
+#   bin/prod-logs --once -n 200   # dump the last 200 lines and exit (no follow)
+#
+# Note: container logs are ephemeral — they rotate and are lost on redeploy.
+# For durable, searchable, alertable errors use the error tracker (GlitchTip);
+# see docs/deployment/observability.md.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+CONFIG="config/deploy.github.yml"
+[ -f config/deploy.yml ] && [ ! -f .kamal/secrets.github ] && CONFIG="config/deploy.yml"
+
+lines=100
+grep_pattern=""
+follow="--follow"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -n|--lines) lines="$2"; shift 2 ;;
+    --grep)     grep_pattern="$2"; shift 2 ;;
+    --once)     follow=""; shift ;;
+    -c|--config) CONFIG="$2"; shift 2 ;;
+    -h|--help)  sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
+
+args=(app logs -c "$CONFIG" --lines "$lines")
+[ -n "$follow" ] && args+=("$follow")
+[ -n "$grep_pattern" ] && args+=(--grep "$grep_pattern")
+
+exec bin/kamal "${args[@]}"

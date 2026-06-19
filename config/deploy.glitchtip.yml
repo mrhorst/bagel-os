@@ -1,0 +1,111 @@
+# Kamal config for the self-hosted GlitchTip error tracker — the structured
+# error signal that the autonomous error-triage routine consumes.
+#
+# This file is intentionally SEPARATE from config/deploy.yml and
+# config/deploy.github.yml so booting or updating GlitchTip can never interfere
+# with a `kamal deploy` of the Rails app. The app deploy never reads it.
+#
+# >>> TEMPLATE: validate on first boot. <<< The accessory wiring below is a
+# known-good starting shape, but GlitchTip image tags and env keys move over
+# time — confirm against https://glitchtip.com/documentation/install before the
+# first real boot, and pin GLITCHTIP_IMAGE to a release tag.
+#
+# First-time bring-up (from a host with the deploy SSH key + env exported):
+#   bin/kamal accessory boot all -c config/deploy.glitchtip.yml
+#   bin/kamal accessory exec web "./manage.py migrate" -c config/deploy.glitchtip.yml
+#   bin/kamal accessory exec web "./manage.py createsuperuser" -c config/deploy.glitchtip.yml
+# Then create an Organization + Project in the UI to get the DSN, and an
+# org auth token (Settings → Auth Tokens) for the error-triage routine. See
+# docs/deployment/observability.md for the full secret list.
+#
+# Everyday use:
+#   bin/kamal accessory logs web -c config/deploy.glitchtip.yml
+#   bin/kamal accessory reboot web -c config/deploy.glitchtip.yml
+#
+# All install-specific values come from the environment so nothing identifiable
+# is tracked.
+
+service: glitchtip
+
+# Top-level image is unused (we only manage accessories), but Kamal requires it
+# to parse the config. Point it at the GlitchTip image for clarity.
+image: <%= ENV.fetch("GLITCHTIP_IMAGE", "glitchtip/glitchtip:latest") %>
+
+# The web role is never booted from this file; Kamal just needs the section.
+servers:
+  web:
+    - <%= ENV.fetch("KAMAL_SERVER_IP") %>
+
+registry:
+  username: <%= ENV.fetch("KAMAL_REGISTRY_USERNAME") %>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+proxy:
+  ssl: false
+  app_port: 8080
+
+ssh:
+  user: <%= ENV.fetch("KAMAL_SSH_USER", "root") %>
+  keys:
+    - <%= ENV.fetch("KAMAL_SSH_KEY_PATH", "~/.ssh/kamal_deploy_key") %>
+  keys_only: true
+  config: <%= ENV.fetch("KAMAL_SSH_CONFIG_PATH") %>
+
+# Accessory containers are named "<service>-<accessory>", so the web/worker
+# containers reach the datastores at host "glitchtip-postgres" / "glitchtip-redis"
+# over the shared kamal docker network.
+accessories:
+  postgres:
+    image: postgres:17
+    host: <%= ENV.fetch("KAMAL_SERVER_IP") %>
+    port: "127.0.0.1:5433:5432"
+    env:
+      clear:
+        POSTGRES_DB: glitchtip
+        POSTGRES_USER: glitchtip
+      secret:
+        - GLITCHTIP_POSTGRES_PASSWORD
+    directories:
+      - /var/lib/glitchtip/postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    host: <%= ENV.fetch("KAMAL_SERVER_IP") %>
+    port: "127.0.0.1:6380:6379"
+    directories:
+      - /var/lib/glitchtip/redis:/data
+
+  web:
+    image: <%= ENV.fetch("GLITCHTIP_IMAGE", "glitchtip/glitchtip:latest") %>
+    host: <%= ENV.fetch("KAMAL_SERVER_IP") %>
+    # Bind to localhost only; expose the UI via an SSH tunnel or a reverse proxy.
+    port: "127.0.0.1:8080:8080"
+    env:
+      clear:
+        PORT: "8080"
+        GLITCHTIP_DOMAIN: <%= ENV.fetch("GLITCHTIP_DOMAIN", "http://localhost:8080") %>
+        DEFAULT_FROM_EMAIL: <%= ENV.fetch("GLITCHTIP_FROM_EMAIL", "errors@example.com") %>
+        REDIS_URL: redis://glitchtip-redis:6379/0
+        CELERY_BROKER_URL: redis://glitchtip-redis:6379/0
+        # Lock the instance down to seeded users only — no open sign-ups.
+        ENABLE_USER_REGISTRATION: "false"
+        ENABLE_OPEN_USER_REGISTRATION: "false"
+      secret:
+        # Full postgres:// URL incl. password; built in .kamal/secrets.glitchtip.
+        - DATABASE_URL
+        - SECRET_KEY
+    directories:
+      - /var/lib/glitchtip/uploads:/code/uploads
+
+  worker:
+    image: <%= ENV.fetch("GLITCHTIP_IMAGE", "glitchtip/glitchtip:latest") %>
+    host: <%= ENV.fetch("KAMAL_SERVER_IP") %>
+    cmd: ./bin/run-celery-with-beat.sh
+    env:
+      clear:
+        REDIS_URL: redis://glitchtip-redis:6379/0
+        CELERY_BROKER_URL: redis://glitchtip-redis:6379/0
+      secret:
+        - DATABASE_URL
+        - SECRET_KEY

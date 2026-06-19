@@ -1,0 +1,39 @@
+# Staging destination overrides — deep-merged over config/deploy.yml when you
+# run `bin/kamal deploy -d staging`.
+#
+# Staging shares the production VPS, so every override here exists to keep the
+# two installs from colliding:
+#   * distinct service name      -> separate app + Postgres container names,
+#                                   image labels, and on-server directories
+#   * distinct Postgres host bind (5433) and data directory
+#   * separate database + storage volume
+#   * its own subdomain + image repo (both from env)
+#
+# Arrays (volumes, directories) REPLACE the base value on merge; hashes
+# (env.clear) are merged key-by-key, so only the changed keys appear below.
+
+service: restaurant-inventory-os-staging
+
+image: <%= ENV.fetch("KAMAL_STAGING_IMAGE") %>
+
+proxy:
+  host: <%= ENV.fetch("KAMAL_STAGING_APP_HOST") %>
+
+env:
+  clear:
+    APP_HOST: <%= ENV.fetch("KAMAL_STAGING_APP_HOST") %>
+    APP_ENV_LABEL: staging
+    POSTGRES_HOST: restaurant-inventory-os-staging-postgres
+    POSTGRES_DB: restaurant_inventory_os_staging
+
+volumes:
+  - /var/lib/restaurant-inventory-os-staging/storage:/rails/storage
+
+accessories:
+  postgres:
+    port: "127.0.0.1:5433:5432"
+    env:
+      clear:
+        POSTGRES_DB: restaurant_inventory_os_staging
+    directories:
+      - /var/lib/restaurant-inventory-os-staging/postgres:/var/lib/postgresql/data

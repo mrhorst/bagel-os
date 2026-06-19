@@ -1,32 +1,53 @@
-# Kamal deploy configuration for the small single-server Hetzner pilot.
+# Kamal base config — the default (production) destination.
 #
-# Before first deploy, replace YOUR_SERVER_IP, inventory.example.com, and the
-# registry username/image with real values. Keep secrets in .kamal/secrets.
+# Install-specific values (server IP, domain, registry, image) are read from
+# environment variables so nothing identifiable lands in git. GitHub Actions
+# supplies them from repo secrets; for local `kamal` ops, export the same vars.
+#
+# Deploy targets:
+#   production (default) -> bin/kamal deploy             (this file only)
+#   staging              -> bin/kamal deploy -d staging  (this file + deploy.staging.yml)
+#
+# Secrets resolve from .kamal/secrets-common plus .kamal/secrets (production)
+# or .kamal/secrets.staging (staging). See deploy.staging.yml for the overrides
+# that keep staging fully isolated from production on the same host.
 
 service: restaurant-inventory-os
 
-image: your-registry-user/restaurant-inventory-os
+image: <%= ENV.fetch("KAMAL_IMAGE") %>
 
 servers:
   web:
-    - YOUR_SERVER_IP
+    - <%= ENV.fetch("KAMAL_SERVER_IP") %>
+
+ssh:
+  user: <%= ENV.fetch("KAMAL_SSH_USER", "root") %>
+  keys:
+    - <%= ENV.fetch("KAMAL_SSH_KEY_PATH", "~/.ssh/kamal_deploy_key") %>
+  keys_only: true
+<%- if ENV["KAMAL_SSH_CONFIG_PATH"].to_s.strip.present? -%>
+  config: <%= ENV["KAMAL_SSH_CONFIG_PATH"] %>
+<%- end -%>
 
 proxy:
   ssl: true
-  host: inventory.example.com
+  host: <%= ENV.fetch("KAMAL_APP_HOST") %>
   app_port: 3000
 
 registry:
-  username: your-registry-user
+  username: <%= ENV.fetch("KAMAL_REGISTRY_USERNAME") %>
   password:
     - KAMAL_REGISTRY_PASSWORD
 
 builder:
   arch: amd64
+  driver: docker
+  provenance: false
+  sbom: false
 
 env:
   clear:
-    APP_HOST: inventory.example.com
+    APP_HOST: <%= ENV.fetch("KAMAL_APP_HOST") %>
     APP_PROTOCOL: https
     POSTGRES_HOST: restaurant-inventory-os-postgres
     POSTGRES_PORT: 5432
@@ -35,9 +56,18 @@ env:
     RAILS_LOG_LEVEL: info
     RAILS_MAX_THREADS: 3
     SOLID_QUEUE_IN_PUMA: true
+    # Error reporting to the self-hosted GlitchTip. Empty by default, which keeps
+    # Sentry inert (see config/initializers/sentry.rb). Set SENTRY_DSN in the
+    # deploy environment once GlitchTip is booted, pointing at the internal
+    # GlitchTip web container (e.g. http://<key>@glitchtip-web:8080/<project_id>)
+    # so events never leave the box. See config/deploy.glitchtip.yml and
+    # docs/deployment/observability.md.
+    SENTRY_DSN: <%= ENV.fetch("SENTRY_DSN", "") %>
+    SENTRY_TRACES_SAMPLE_RATE: <%= ENV.fetch("SENTRY_TRACES_SAMPLE_RATE", "0.1") %>
   secret:
     - RAILS_MASTER_KEY
     - POSTGRES_PASSWORD
+    - TASK_BRIEFING_AGENT_GATEWAY_TOKEN
 
 volumes:
   - /var/lib/restaurant-inventory-os/storage:/rails/storage
@@ -47,11 +77,12 @@ aliases:
   shell: app exec --interactive --reuse "bash"
   logs: app logs
   create_admin: app exec --interactive --reuse "bin/rails admin:create"
+  seed_demo: app exec --reuse "env SEED_DEMO_DATA=true bin/rails db:seed"
 
 accessories:
   postgres:
     image: postgres:17
-    host: YOUR_SERVER_IP
+    host: <%= ENV.fetch("KAMAL_SERVER_IP") %>
     port: "127.0.0.1:5432:5432"
     env:
       clear:
