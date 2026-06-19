@@ -10,10 +10,10 @@
 
 <article class="panel">
   <%= form_with url: products_path, method: :get, class: "filters", data: { controller: "auto-submit-form", action: "submit->auto-submit-form#submit", auto_submit_form: true, async_frame: "products", auto_submit_form_async_frame_value: "products" } do |form| %>
-    <%= form.search_field :q, value: params[:q], placeholder: "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
-    <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, data: { action: "change->auto-submit-form#queueChange" } %>
-    <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] }, data: { action: "change->auto-submit-form#queueChange" } %>
-    <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] }, data: { action: "change->auto-submit-form#queueChange" } %>
+    <%= form.search_field :q, value: params[:q], placeholder: "Search products", "aria-label": "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
+    <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, { "aria-label": "Filter by category", data: { action: "change->auto-submit-form#queueChange" } } %>
+    <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] }, { "aria-label": "Filter by supplier", data: { action: "change->auto-submit-form#queueChange" } } %>
+    <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] }, { "aria-label": "Sort products", data: { action: "change->auto-submit-form#queueChange" } } %>
     <label>
       Per page
       <%= form.select :per_page, [[25, 25], [50, 50], [100, 100]], { selected: @per_page }, data: { action: "change->auto-submit-form#queueChange" } %>
@@ -61,19 +61,20 @@
     <% end %>
   </div>
 
+  <% if @products.any? %>
   <table class="responsive-table">
     <thead>
       <tr>
-        <th>Product</th>
-        <th>Category</th>
-        <th class="hide-on-mobile">SKU</th>
-        <th class="numeric">Latest</th>
-        <th class="numeric hide-on-mobile">Avg</th>
-        <th class="numeric hide-on-mobile">Low</th>
-        <th class="numeric hide-on-mobile">High</th>
-        <th class="numeric hide-on-mobile">Times</th>
-        <th class="numeric">Spend</th>
-        <th>Review</th>
+        <th scope="col">Product</th>
+        <th scope="col">Category</th>
+        <th scope="col" class="hide-on-mobile">SKU</th>
+        <th scope="col" class="numeric">Latest</th>
+        <th scope="col" class="numeric hide-on-mobile">Avg</th>
+        <th scope="col" class="numeric hide-on-mobile">Low</th>
+        <th scope="col" class="numeric hide-on-mobile">High</th>
+        <th scope="col" class="numeric hide-on-mobile">Times</th>
+        <th scope="col" class="numeric">Spend</th>
+        <th scope="col">Review</th>
       </tr>
     </thead>
     <tbody>
@@ -94,4 +95,9 @@
       <% end %>
     </tbody>
   </table>
+  <% else %>
+    <%= render "dashboard/empty_state",
+      title: "No products to show",
+      message: "Try clearing the filters above, or import receipt CSVs to populate your product list." %>
+  <% end %>
 </article>
