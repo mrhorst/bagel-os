@@ -1,8 +1,23 @@
-const VERSION = "v1";
+const VERSION = "v2";
 const ASSET_CACHE = `assets-${VERSION}`;
+const SHELL_CACHE = `shell-${VERSION}`;
+const CURRENT_CACHES = [ASSET_CACHE, SHELL_CACHE];
+
+// The offline fallback is precached so a navigation can always resolve to a
+// branded "you're offline" screen instead of the browser error page. We don't
+// precache app pages: Bagel OS shouldn't serve stale inventory/price/task data
+// offline (acting on yesterday's numbers is worse than knowing you're offline).
+const OFFLINE_URL = "/offline.html";
+const SHELL_ASSETS = [OFFLINE_URL, "/icon.png"];
 
 self.addEventListener("install", (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      await cache.addAll(SHELL_ASSETS);
+      self.skipWaiting();
+    })()
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -10,7 +25,7 @@ self.addEventListener("activate", (event) => {
     (async () => {
       const keys = await caches.keys();
       await Promise.all(
-        keys.filter((k) => k !== ASSET_CACHE).map((k) => caches.delete(k))
+        keys.filter((k) => !CURRENT_CACHES.includes(k)).map((k) => caches.delete(k))
       );
       await self.clients.claim();
     })()
@@ -23,6 +38,22 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // App pages: always try the network so data is fresh; if the network is
+  // gone, show the offline fallback rather than the browser error page.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      (async () => {
+        try {
+          return await fetch(request);
+        } catch (_error) {
+          const cache = await caches.open(SHELL_CACHE);
+          return (await cache.match(OFFLINE_URL)) || Response.error();
+        }
+      })()
+    );
+    return;
+  }
 
   const isAsset =
     url.pathname.startsWith("/assets/") ||
