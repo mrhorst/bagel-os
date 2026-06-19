@@ -13,7 +13,8 @@ gem "pg", "~> 1.5"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Generate Active Storage image variants for task completion photos.
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.0"
+gem "mini_magick"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
@@ -62,4 +63,4 @@ gem "kamal", "~> 2.10", group: :development, require: false
 gem "chartkick", "~> 5.2"
 
 # Audit trail — versions every change with the acting user as whodunnit.
-gem "paper_trail", "~> 16.0"
+gem "paper_trail", "~> 17.0"
