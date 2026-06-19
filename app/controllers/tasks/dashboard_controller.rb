@@ -79,7 +79,7 @@ module Tasks
     end
 
     def visible_work_surface_occurrences(daily, monthly, operating_day)
-      visible_list_ids = TaskList.active.select { |list| list.visible_at?(operating_day.now) }.map(&:id)
+      visible_list_ids = TaskList.visible_ids_at(operating_day.now)
       [
         daily.select { |occurrence| visible_list_ids.include?(occurrence.task_list_id) },
         monthly.select { |occurrence| visible_list_ids.include?(occurrence.task_list_id) }

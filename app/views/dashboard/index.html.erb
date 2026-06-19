@@ -8,6 +8,7 @@
 <% end %>
 
 <%
+  tasks_upcoming_suffix = @tasks_upcoming_today.positive? ? " · #{@tasks_upcoming_today} upcoming" : ""
   surfaces = [
     {
       label: "Tasks",
@@ -17,9 +18,11 @@
       tone: @tasks_late_today.positive? ? "urgent" : (@tasks_open_today.positive? ? "active" : "ok"),
       summary:
         if @tasks_late_today.positive?
-          "#{@tasks_late_today} late, #{@tasks_open_today} open today"
+          "#{@tasks_late_today} late, #{@tasks_open_today} open today#{tasks_upcoming_suffix}"
         elsif @tasks_open_today.positive?
-          "#{@tasks_open_today} open today"
+          "#{@tasks_open_today} open today#{tasks_upcoming_suffix}"
+        elsif @tasks_upcoming_today.positive?
+          "All clear now · #{@tasks_upcoming_today} upcoming"
         else
           "All clear today"
         end,
