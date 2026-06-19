@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_18_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_000001) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -248,6 +248,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_000000) do
     t.index ["product_id"], name: "index_normalization_reviews_on_product_id"
     t.index ["receipt_line_item_id"], name: "index_normalization_reviews_on_receipt_line_item_id"
     t.index ["status"], name: "index_normalization_reviews_on_status"
+  end
+
+  create_table "notification_dispatches", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.integer "last_count", default: 0, null: false
+    t.string "last_marker"
+    t.datetime "last_sent_at"
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_notification_dispatches_on_kind", unique: true
   end
 
   create_table "order_guide_imports", force: :cascade do |t|
@@ -602,6 +612,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_000000) do
     t.datetime "completion_window_ends_at"
     t.datetime "created_at", null: false
     t.datetime "due_at"
+    t.datetime "late_notified_at"
     t.date "period_ends_on", null: false
     t.string "period_kind", null: false
     t.date "period_starts_on", null: false
@@ -615,6 +626,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_000000) do
     t.datetime "updated_at", null: false
     t.index ["completion_window_ends_at"], name: "index_task_occurrences_on_completion_window_ends_at"
     t.index ["due_at"], name: "index_task_occurrences_on_due_at"
+    t.index ["late_notified_at"], name: "index_task_occurrences_on_late_notified_at"
     t.index ["period_kind", "period_starts_on", "period_ends_on"], name: "idx_task_occurrences_period"
     t.index ["task_id", "period_kind", "period_starts_on"], name: "idx_task_occurrences_unique_period", unique: true
     t.index ["task_id"], name: "index_task_occurrences_on_task_id"

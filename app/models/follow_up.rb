@@ -26,6 +26,11 @@ class FollowUp < ApplicationRecord
     order(Arel.sql("CASE urgency WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END"), opened_at: :desc)
   }
 
+  # Push the assignee when a follow-up is handed to them (but not when it's
+  # unassigned). Edge-triggered on the assignment change; delivery runs in a
+  # background job so a slow push service never blocks the request.
+  after_update_commit :notify_new_assignee, if: :saved_change_to_assigned_to_id?
+
   def open?;     status == "open";     end
   def resolved?; status == "resolved"; end
 
@@ -49,5 +54,13 @@ class FollowUp < ApplicationRecord
     )
     # opened_by stays as the original opener; we don't overwrite history.
     update!(opened_by: opened_by || user)
+  end
+
+  private
+
+  def notify_new_assignee
+    return if assigned_to_id.blank?
+
+    Notifications::NewFollowUpAssignmentJob.perform_later(id)
   end
 end
