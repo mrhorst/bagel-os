@@ -72,3 +72,11 @@ gem "chartkick", "~> 5.2"
 
 # Audit trail — versions every change with the acting user as whodunnit.
 gem "paper_trail", "~> 17.0"
+
+# Production error and performance monitoring. Events are reported to a
+# self-hosted, Sentry-API-compatible GlitchTip instance and are the trigger
+# signal for the autonomous error-triage agent. Inert unless SENTRY_DSN is set,
+# so development and test never phone home. See config/initializers/sentry.rb
+# and docs/deployment/observability.md.
+gem "sentry-ruby"
+gem "sentry-rails"

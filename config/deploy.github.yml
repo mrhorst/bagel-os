@@ -47,6 +47,12 @@ env:
     RAILS_LOG_LEVEL: info
     RAILS_MAX_THREADS: 3
     SOLID_QUEUE_IN_PUMA: true
+    # Error reporting to the self-hosted GlitchTip. Empty by default, which keeps
+    # Sentry inert (see config/initializers/sentry.rb). Point it at the internal
+    # GlitchTip web container, e.g. http://<key>@glitchtip-web:8080/<project_id>,
+    # so events never leave the box.
+    SENTRY_DSN: <%= ENV.fetch("SENTRY_DSN", "") %>
+    SENTRY_TRACES_SAMPLE_RATE: <%= ENV.fetch("SENTRY_TRACES_SAMPLE_RATE", "0.1") %>
   secret:
     - RAILS_MASTER_KEY
     - POSTGRES_PASSWORD
