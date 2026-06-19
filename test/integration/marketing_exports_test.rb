@@ -38,6 +38,22 @@ class MarketingExportsTest < ActionDispatch::IntegrationTest
     assert_equal "application/zip", response.media_type
   end
 
+  test "the library's ZIP download is driven by the share-sheet controller" do
+    sign_in_as(users(:one))
+    create_asset
+
+    get photo_assets_path
+    assert_response :success
+
+    # The selection form carries the download controller pointed at the export
+    # POST endpoint. It fetches with the page CSRF token rather than submitting
+    # the form, so the old cross-endpoint formaction (which 422'd on the
+    # per-form token) is gone.
+    assert_select %(form[data-controller~="download"][data-download-url-value="#{photo_asset_exports_path}"][data-download-method-value="post"]), count: 1
+    assert_select %(button[type="button"][data-action~="download#save"]), count: 1
+    assert_select "button[formaction]", count: 0
+  end
+
   test "an empty selection is rejected" do
     sign_in_as(users(:one))
     post photo_asset_exports_path, params: { photo_asset_ids: [] }

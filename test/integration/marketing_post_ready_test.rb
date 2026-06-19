@@ -31,19 +31,22 @@ class MarketingPostReadyTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "download links open in a new context so the standalone PWA can't trap the user" do
+  test "photo downloads are wired to the share-sheet controller, not a bare navigation" do
     sign_in_as(users(:one))
     asset = create_asset(real: true)
 
     get photo_asset_path(asset)
     assert_response :success
 
-    # Without target=_blank, a same-window navigation to these attachment
-    # downloads strands the standalone PWA on a chrome-less Quick Look page.
+    # download_controller.js intercepts the tap, fetches the file and offers it
+    # to the native share sheet — a bare same-window nav strands the chrome-less
+    # standalone PWA. target=_blank is only the no-JS fallback.
     %w[square story wide].each do |style|
-      assert_select %(a[href="#{crop_photo_asset_path(asset, style: style)}"][target="_blank"]), count: 1
+      href = crop_photo_asset_path(asset, style: style)
+      assert_select %(a[href="#{href}"][data-controller~="download"][data-action~="download#save"][target="_blank"]), count: 1
     end
-    assert_select %(a[href="#{rails_blob_path(asset.photo, disposition: "attachment")}"][target="_blank"]), count: 1
+    original = rails_blob_path(asset.photo, disposition: "attachment")
+    assert_select %(a[href="#{original}"][data-controller~="download"][data-action~="download#save"]), count: 1
   end
 
   test "an unknown crop style 404s" do
