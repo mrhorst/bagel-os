@@ -69,6 +69,15 @@
       tone: @products_needing_review_count.positive? ? "active" : "ok",
       summary: @products_needing_review_count.positive? ? "#{@products_needing_review_count} records to clean up" : "Records look complete",
       description: "The master catalog of everything purchased."
+    },
+    {
+      label: "Marketing",
+      module_name: "marketing",
+      path: photo_assets_path,
+      count: @marketing_unreviewed_count,
+      tone: @marketing_unreviewed_count.positive? ? "active" : "ok",
+      summary: @marketing_unreviewed_count.positive? ? "#{@marketing_unreviewed_count} photos to review" : "Library is reviewed",
+      description: "Photo library for menus, social, and the site."
     }
   ].select { |surface| current_user&.can_access?(surface[:module_name]) }
 %>

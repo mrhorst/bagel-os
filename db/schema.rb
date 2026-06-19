@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_18_000003) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -346,6 +346,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
     t.index ["key"], name: "index_order_guides_on_key", unique: true
   end
 
+  create_table "photo_assets", force: :cascade do |t|
+    t.datetime "ai_tagged_at"
+    t.string "caption"
+    t.datetime "created_at", null: false
+    t.text "notes"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "uploaded_by_id"
+    t.index ["status"], name: "index_photo_assets_on_status"
+    t.index ["uploaded_by_id"], name: "index_photo_assets_on_uploaded_by_id"
+  end
+
   create_table "price_observations", force: :cascade do |t|
     t.integer "case_pack_id"
     t.decimal "case_quantity", precision: 12, scale: 4
@@ -537,6 +549,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
     t.index ["name"], name: "index_suppliers_on_name", unique: true
   end
 
+  create_table "taggings", force: :cascade do |t|
+    t.datetime "confirmed_at"
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.integer "photo_asset_id", null: false
+    t.string "source", default: "manual", null: false
+    t.integer "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_taggings_on_created_by_id"
+    t.index ["photo_asset_id", "tag_id"], name: "index_taggings_on_photo_asset_id_and_tag_id", unique: true
+    t.index ["photo_asset_id"], name: "index_taggings_on_photo_asset_id"
+    t.index ["tag_id"], name: "index_taggings_on_tag_id"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.text "instruction"
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_tags_on_active"
+    t.index ["slug"], name: "index_tags_on_slug", unique: true
+  end
+
   create_table "task_briefings", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "generated_at", null: false
@@ -694,6 +732,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
   add_foreign_key "order_guide_memberships", "order_guides"
   add_foreign_key "order_guide_memberships", "suppliers", column: "preferred_supplier_id"
   add_foreign_key "order_guide_sections", "order_guides"
+  add_foreign_key "photo_assets", "users", column: "uploaded_by_id"
   add_foreign_key "price_observations", "products"
   add_foreign_key "price_observations", "receipt_line_items"
   add_foreign_key "price_observations", "supplier_product_packs", column: "case_pack_id"
@@ -711,6 +750,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_000000) do
   add_foreign_key "sessions", "users"
   add_foreign_key "supplier_product_packs", "products"
   add_foreign_key "supplier_product_packs", "suppliers"
+  add_foreign_key "taggings", "photo_assets"
+  add_foreign_key "taggings", "tags"
   add_foreign_key "task_completions", "task_occurrences"
   add_foreign_key "task_completions", "users"
   add_foreign_key "task_completions", "users", column: "undone_by_user_id"

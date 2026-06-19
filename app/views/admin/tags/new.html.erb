@@ -1,0 +1,15 @@
+<% content_for :title, "New tag" %>
+
+<section class="page-heading">
+  <div>
+    <h1>New tag</h1>
+    <p>Add a tag to the marketing vocabulary.</p>
+  </div>
+  <div class="actions">
+    <%= link_to "Back to tags", admin_tags_path, class: "button small" %>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <%= render "form", tag: @tag %>
+</section>

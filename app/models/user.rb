@@ -9,6 +9,7 @@ class User < ApplicationRecord
     normalization_reviews
     import_batches
     reports
+    marketing
   ].freeze
 
   has_paper_trail ignore: %i[updated_at]

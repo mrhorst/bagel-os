@@ -1698,6 +1698,9 @@
   .field input[type='time'] {
     max-width: 200px;
   }
+  .field input[type='time'] {
+    min-width: 0;
+  }
 
   .details {
     display: grid;
@@ -2538,6 +2541,160 @@
     background: var(--ink);
     border-color: var(--ink);
     color: #fff;
+  }
+
+  /* ── Marketing photo library ──────────────────────────────────────── */
+  .badge-danger {
+    background: var(--danger-soft);
+    color: var(--danger-fg);
+  }
+
+  .photo-library-filters {
+    margin-bottom: 16px;
+  }
+
+  .photo-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .photo-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-e1);
+    display: block;
+    overflow: hidden;
+    position: relative;
+  }
+  .photo-card:hover {
+    box-shadow: var(--shadow-e2);
+  }
+  .photo-card img {
+    aspect-ratio: 4 / 3;
+    display: block;
+    height: auto;
+    object-fit: cover;
+    width: 100%;
+  }
+  .photo-card-status {
+    left: 8px;
+    position: absolute;
+    top: 8px;
+  }
+  .photo-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px 10px;
+  }
+  .photo-card-caption {
+    color: var(--ink-2);
+    font-size: 0.84rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .photo-detail-img {
+    border-radius: var(--radius-md);
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+
+  /* ── Tags: filter chips, pills, and the review controls ───────────── */
+  .photo-search {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .photo-search input[type="search"] {
+    flex: 1 1 220px;
+  }
+
+  .tag-filter {
+    margin-bottom: 16px;
+  }
+  .tag-chip {
+    background: var(--surface-2);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-pill);
+    color: var(--ink-2);
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    text-decoration: none;
+  }
+  .tag-chip:hover {
+    background: var(--surface-3);
+  }
+  .tag-chip.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  .tag-pill-pending {
+    background: transparent;
+    border: 1px dashed var(--line-2);
+    color: var(--ink-muted);
+  }
+
+  .tag-suggestions,
+  .tag-applied {
+    margin-bottom: 16px;
+  }
+  .tag-suggestions h3,
+  .tag-applied h3 {
+    margin: 0 0 8px;
+  }
+  .suggestion-row {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  .suggestion-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .tag-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .tag-chip-list li {
+    align-items: center;
+    display: inline-flex;
+    gap: 2px;
+  }
+  .tag-remove {
+    background: none;
+    border: 0;
+    color: var(--ink-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .tag-remove:hover {
+    color: var(--danger-fg);
+  }
+  .tag-add {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
   }
 
   /* ── Chart styling ────────────────────────────────────────────────── */
@@ -3910,6 +4067,17 @@
     }
     .task-wizard-panel {
       padding: 14px;
+    }
+    .task-wizard,
+    .task-wizard-panel,
+    .task-wizard-panel .form-grid,
+    .task-wizard-panel .field,
+    .task-wizard-panel input[type='time'] {
+      min-width: 0;
+    }
+    .task-wizard-panel input[type='time'] {
+      max-width: 100%;
+      width: 100%;
     }
     .task-wizard-actions {
       display: grid;
