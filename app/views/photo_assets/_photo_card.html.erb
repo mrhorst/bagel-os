@@ -6,7 +6,8 @@
             data: { photo_select_target: "checkbox", action: "change->photo-select#refresh" } %>
     </label>
   <% end %>
-  <%= link_to photo_asset_path(asset), class: "photo-card" do %>
+  <%= link_to photo_asset_path(asset), class: "photo-card",
+        data: (selectable ? { action: "photo-select#card" } : {}) do %>
     <%= photo_asset_image asset, { resize_to_fill: [ 480, 360 ] },
           alt: asset.caption.presence || "Photo ##{asset.id}", loading: "lazy" %>
     <% if asset.favorite? %>
