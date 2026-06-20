@@ -1721,6 +1721,15 @@
     top: var(--env-banner-total);
     height: calc(100vh - var(--env-banner-total));
   }
+  /* The desktop topbar (sticky) and the pull-to-refresh chip (fixed) are both
+     pinned to top: 0, so they ride up over the ribbon unless they're inset by
+     it too — the same offset the sidebar and mobile header already take. */
+  body:has(.env-banner) .topbar {
+    top: var(--env-banner-total);
+  }
+  body:has(.env-banner) .ptr {
+    top: var(--env-banner-total);
+  }
 
   /* ── Hero panel (legacy — calmed down) ────────────────────────────── */
   .hero-panel {

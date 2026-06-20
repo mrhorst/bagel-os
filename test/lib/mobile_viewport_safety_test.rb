@@ -90,5 +90,17 @@ class MobileViewportSafetyTest < ActiveSupport::TestCase
     refute_empty offsets, "expected body:has(.env-banner) rules to offset top-pinned chrome for the banner"
     assert_match(/--env-banner-h/, offsets,
       "expected the env-banner offsets to key off a --env-banner-h measure")
+
+    # Every element pinned to top: 0 must be inset by the banner. The sidebar
+    # and mobile header were covered when the ribbon first shipped; the desktop
+    # topbar (sticky) and the pull-to-refresh chip (fixed) were missed and rode
+    # up over the ribbon, so lock their offsets down here too.
+    %w[.app-sidebar .topbar .ptr .mobile-screen-header].each do |selector|
+      rule = css[/body:has\(\.env-banner\)\s+#{Regexp.escape(selector)}\s*\{([^}]*)\}/m, 1]
+      refute_nil rule,
+        "expected a body:has(.env-banner) #{selector} rule to inset it below the banner"
+      assert_match(/top:\s*var\(--env-banner-total\)/, rule,
+        "#{selector} must be offset by var(--env-banner-total) while the env banner is on the page")
+    end
   end
 end
