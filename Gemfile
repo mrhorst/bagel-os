@@ -60,7 +60,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "tailwindcss-rails", "~> 4.4"
+gem "tailwindcss-rails", "~> 4.6"
 gem "stimulus-rails", "~> 1.3"
 gem "turbo-rails", "~> 2.0"
 gem "importmap-rails", "~> 2.2"
