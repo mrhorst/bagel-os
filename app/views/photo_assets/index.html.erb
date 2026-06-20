@@ -46,13 +46,24 @@
   <% end %>
   <% if @assets.any? %>
     <%= link_to "Download results", photo_asset_exports_path(scope: @scope, tag: params[:tag], favorites: params[:favorites], q: @query.presence),
-          class: "button small", data: { turbo: false } %>
+          class: "button small", target: "_blank", rel: "noopener",
+          data: { controller: "download", action: "download#save",
+                  download_filename_value: "photo-library.zip" } %>
   <% end %>
 <% end %>
 
 <% if @assets.any? %>
+  <%# "download" drives the ZIP button: it fetches the selection as a blob and
+      offers it to the share sheet, so the standalone PWA never navigates to the
+      download. It also POSTs with the page CSRF token, sidestepping the per-form
+      token that made the old formaction submit 422. %>
   <%= form_with url: bulk_actions_photo_assets_path, method: :post,
-        data: { controller: "photo-select", action: "turbo:submit-start->photo-select#reset" } do %>
+        data: { controller: "photo-select download",
+                action: "turbo:submit-start->photo-select#reset",
+                download_url_value: photo_asset_exports_path,
+                download_method_value: "post",
+                download_filename_value: "photo-selection.zip",
+                download_ids_value: "input[name='photo_asset_ids[]']" } do %>
     <div class="photo-select-toolbar">
       <span class="photo-select-hint muted small">Tap a photo to select it.</span>
       <button type="button" class="button small" data-photo-select-target="toggle"
@@ -75,8 +86,7 @@
             <button type="submit" name="bulk_action" value="add_to_collection" class="button small">Add</button>
           </span>
         <% end %>
-        <button type="submit" formaction="<%= photo_asset_exports_path %>" formmethod="post"
-                class="button small" data-turbo="false">Download ZIP</button>
+        <button type="button" class="button small" data-action="download#save">Download ZIP</button>
         <button type="submit" name="bulk_action" value="delete" class="button small bulk-bar-delete"
                 data-turbo-confirm="Delete the selected photos permanently?">Delete</button>
         <button type="button" class="button small" data-action="photo-select#clear">Clear</button>
