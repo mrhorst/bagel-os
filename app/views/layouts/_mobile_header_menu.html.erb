@@ -1,0 +1,26 @@
+<%# Default trailing menu for the mobile header. Pages that need their own
+    overflow actions set :mobile_right_action instead; this is the fallback so
+    every screen has a proper menu in the top-right (account + sign out). %>
+<div class="module-overflow" data-controller="popover">
+  <button type="button"
+          class="mobile-header-action"
+          data-action="popover#toggle"
+          data-popover-target="trigger"
+          aria-label="Menu"
+          aria-haspopup="true"
+          aria-expanded="false">
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+      <circle cx="4" cy="10" r="1.6" fill="currentColor"/>
+      <circle cx="10" cy="10" r="1.6" fill="currentColor"/>
+      <circle cx="16" cy="10" r="1.6" fill="currentColor"/>
+    </svg>
+  </button>
+  <div class="popover-panel popover-panel-menu" hidden data-popover-target="panel" role="menu">
+    <% if current_user %>
+      <%= link_to user_display_name(current_user), account_path, role: "menuitem", class: "popover-item" %>
+      <%= button_to "Sign out", session_path, method: :delete, role: "menuitem", class: "popover-item popover-item-button" %>
+    <% else %>
+      <%= link_to "Sign in", new_session_path, role: "menuitem", class: "popover-item" %>
+    <% end %>
+  </div>
+</div>

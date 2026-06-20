@@ -93,26 +93,34 @@
         </header>
 
         <header class="mobile-screen-header">
-          <div class="mobile-header-left">
-            <% if content_for?(:mobile_left_action) %>
-              <%= yield :mobile_left_action %>
-            <% elsif on_module_page? && current_hub_def %>
-              <%# Auto back-chevron to the module's parent hub. %>
-              <%= link_to send(current_hub_def[:path_helper]), class: "mobile-header-back", aria: { label: "Back to #{current_hub_def[:label]}" } do %>
-                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-                  <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </svg>
-                <span><%= current_hub_def[:label] %></span>
+          <%# iOS-style large-title nav: a compact bar (back + menu) over a
+              big, left-aligned screen title. %>
+          <div class="mobile-header-bar">
+            <div class="mobile-header-left">
+              <% if content_for?(:mobile_left_action) %>
+                <%= yield :mobile_left_action %>
+              <% elsif on_module_page? && current_hub_def %>
+                <%# Auto back-chevron to the module's parent hub. %>
+                <%= link_to send(current_hub_def[:path_helper]), class: "mobile-header-back", aria: { label: "Back to #{current_hub_def[:label]}" } do %>
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                    <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  </svg>
+                  <span><%= current_hub_def[:label] %></span>
+                <% end %>
               <% end %>
-            <% end %>
+            </div>
+            <div class="mobile-header-right">
+              <%# Pages opt in to their own overflow via :mobile_right_action;
+                  otherwise every screen still gets a proper account/sign-out
+                  menu in the trailing slot. %>
+              <% if content_for?(:mobile_right_action) %>
+                <%= yield :mobile_right_action %>
+              <% else %>
+                <%= render "layouts/mobile_header_menu" %>
+              <% end %>
+            </div>
           </div>
           <h1 class="mobile-header-title"><%= mobile_screen_title %></h1>
-          <div class="mobile-header-right">
-            <%# Pages opt in to a right-side action via :mobile_right_action.
-                The Account avatar lives only on the Dashboard — no need to
-                expose profile/settings on every screen. %>
-            <%= yield :mobile_right_action if content_for?(:mobile_right_action) %>
-          </div>
         </header>
 
         <main class="app-main">
