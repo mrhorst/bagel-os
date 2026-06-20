@@ -33,6 +33,7 @@
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
   --color-ok-fg: var(--ok-fg);
@@ -48,59 +49,158 @@
   --color-sidebar: var(--sidebar);
   --color-sidebar-2: var(--sidebar-2);
 
-  --radius-sm: 6px;
-  --radius-md: 10px; /* primary radius */
-  --radius-lg: 14px;
+  --radius-sm: 7px;
+  --radius-md: 12px; /* primary radius — iOS-rounded */
+  --radius-lg: 16px;
+  --radius-xl: 22px; /* sheets, large glass surfaces, FAB-adjacent */
   --radius-pill: 999px;
 
-  --shadow-e1: 0 1px 0 0 rgb(17 24 32 / 0.04), 0 1px 2px 0 rgb(17 24 32 / 0.04);
-  --shadow-e2:
-    0 2px 4px -1px rgb(17 24 32 / 0.06), 0 6px 16px -4px rgb(17 24 32 / 0.06);
+  /* Motion — iOS easing. Strong exponential deceleration gives the lively,
+     "settling" feel without literal overshoot (no bounce/elastic). */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Liquid Glass — blur/saturation constants. The color/opacity parts are
+     adaptive and live in :root + the dark block. */
+  --glass-blur: 22px;
+  --glass-blur-lg: 30px;
+  --glass-saturate: 175%;
+
+  --shadow-e1: var(--shadow-e1-color);
+  --shadow-e2: var(--shadow-e2-color);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Bagel OS · Design System v2 — "Liquid Glass"
+   iOS-neutral, adaptive (light + dark). Glass lives on the floating chrome
+   layer (sidebar, top/tab bars, menus, sheets); content surfaces stay opaque
+   and legible. Brand orange becomes the iOS "tint": primary actions, selected
+   state, link/icon accents. Palette tuned against WCAG numerically.
+   ───────────────────────────────────────────────────────────────────────── */
+
 :root {
-  /* Surfaces — warm paper family, rationalized */
-  --surface: oklch(0.972 0.008 80);
-  --surface-2: oklch(0.995 0.003 80);
-  --surface-3: oklch(0.945 0.01 80);
+  color-scheme: light dark;
 
-  /* Ink — cooler slate */
-  --ink: oklch(0.22 0.02 230);
-  --ink-2: oklch(0.32 0.02 230);
-  --ink-muted: oklch(0.5 0.015 230);
-  --ink-subtle: oklch(0.66 0.012 230);
+  /* ── Surfaces — cool iOS-neutral grays. Body is a soft systemGray6; content
+     cards sit a touch brighter; surface-3 is the inset/hover step. */
+  --surface: oklch(0.965 0.005 265);
+  --surface-2: oklch(0.995 0.001 265);
+  --surface-3: oklch(0.93 0.006 265);
 
-  /* Lines */
-  --line: oklch(0.9 0.008 80);
-  --line-2: oklch(0.85 0.01 80);
+  /* ── Ink — cool near-black → gray ramp */
+  --ink: oklch(0.21 0.01 265);
+  --ink-2: oklch(0.34 0.012 265);
+  --ink-muted: oklch(0.52 0.012 265);
+  --ink-subtle: oklch(0.64 0.01 265);
 
-  /* Accent — ONE meaning (primary action / brand affirmative).
-     L tuned to 0.55 so white-on-accent button labels clear WCAG AA (5.0:1)
-     and accent-as-text links clear 4.5:1 on the paper surface. */
-  --accent: oklch(0.55 0.155 42);
-  --accent-fg: oklch(0.99 0.002 80);
-  --accent-soft: oklch(0.95 0.03 50);
+  /* ── Hairlines */
+  --line: oklch(0.9 0.004 265);
+  --line-2: oklch(0.85 0.006 265);
 
-  /* Status — distinct hues, intentionally NOT orange */
-  --ok: oklch(0.55 0.11 150);
+  /* ── Accent — brand orange as the iOS tint. Fill L tuned so white labels
+     clear WCAG AA (4.54:1); accent-text is deeper for links/selected text on
+     light surfaces (5.07:1). */
+  --accent: oklch(0.57 0.17 50);
+  --accent-fg: oklch(0.99 0.002 60);
+  --accent-text: oklch(0.55 0.16 50);
+  --accent-soft: oklch(0.95 0.04 55);
+
+  /* ── Status — iOS system hues (green/amber/red/blue), intentionally NOT orange */
+  --ok: oklch(0.62 0.14 150);
   --ok-soft: oklch(0.95 0.04 150);
-  --ok-fg: oklch(0.3 0.08 150);
+  --ok-fg: oklch(0.42 0.1 152);
 
-  --warn: oklch(0.72 0.125 82);
+  --warn: oklch(0.76 0.13 80);
   --warn-soft: oklch(0.96 0.06 88);
-  --warn-fg: oklch(0.4 0.1 75);
+  --warn-fg: oklch(0.48 0.1 70);
 
-  --danger: oklch(0.55 0.18 22);
-  --danger-soft: oklch(0.95 0.04 22);
-  --danger-fg: oklch(0.4 0.15 22);
+  --danger: oklch(0.58 0.2 25);
+  --danger-soft: oklch(0.95 0.04 25);
+  --danger-fg: oklch(0.5 0.18 25);
 
-  --info: oklch(0.5 0.075 220);
-  --info-soft: oklch(0.95 0.02 220);
-  --info-fg: oklch(0.32 0.06 220);
+  --info: oklch(0.56 0.16 255);
+  --info-soft: oklch(0.95 0.03 255);
+  --info-fg: oklch(0.48 0.14 258);
 
-  /* Sidebar */
-  --sidebar: oklch(0.22 0.022 230);
-  --sidebar-2: oklch(0.28 0.022 230);
+  /* ── Neutral dark chip (numbered badges, counters). Stays dark in both modes
+     because the glyphs printed on it are white. */
+  --sidebar: oklch(0.28 0.012 265);
+  --sidebar-2: oklch(0.34 0.012 265);
+
+  /* ── Elevation (consumed by @theme --shadow-e1/e2) */
+  --shadow-e1-color:
+    0 1px 2px 0 oklch(0.2 0.03 265 / 0.06), 0 1px 1px 0 oklch(0.2 0.03 265 / 0.04);
+  --shadow-e2-color:
+    0 2px 6px -1px oklch(0.2 0.03 265 / 0.1), 0 12px 28px -8px oklch(0.2 0.03 265 / 0.12);
+
+  /* ── Liquid Glass material — light. Translucent near-white with a bright
+     specular rim; the `tint` gradient adds the top sheen, `edge` the crisp
+     1px highlight, `shadow` the float. saturate() (in @theme) boosts the
+     colour of whatever content scrolls beneath. */
+  --glass-bg: oklch(0.99 0.003 265 / 0.6);
+  --glass-bg-strong: oklch(0.98 0.003 265 / 0.78);
+  --glass-tint: linear-gradient(180deg, oklch(1 0 0 / 0.5), oklch(1 0 0 / 0) 42%);
+  --glass-border: oklch(1 0 0 / 0.55);
+  --glass-edge: oklch(1 0 0 / 0.7);
+  --glass-shadow:
+    inset 0 1px 0 0 var(--glass-edge),
+    0 8px 24px -10px oklch(0.2 0.03 265 / 0.25),
+    0 2px 8px -4px oklch(0.2 0.03 265 / 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: oklch(0.18 0.006 265);
+    --surface-2: oklch(0.23 0.007 265);
+    --surface-3: oklch(0.28 0.008 265);
+
+    --ink: oklch(0.97 0.003 265);
+    --ink-2: oklch(0.85 0.005 265);
+    --ink-muted: oklch(0.68 0.01 265);
+    --ink-subtle: oklch(0.55 0.008 265);
+
+    --line: oklch(0.34 0.008 265);
+    --line-2: oklch(0.4 0.01 265);
+
+    /* Fill stays L0.57 so white labels keep their AA margin; the tint brightens
+       for links/selected text against dark surfaces (8:1). */
+    --accent-text: oklch(0.78 0.16 58);
+    --accent-soft: oklch(0.4 0.09 50 / 0.4);
+
+    --ok: oklch(0.72 0.15 152);
+    --ok-soft: oklch(0.45 0.09 152 / 0.38);
+    --ok-fg: oklch(0.84 0.13 152);
+
+    --warn: oklch(0.82 0.13 85);
+    --warn-soft: oklch(0.5 0.09 80 / 0.38);
+    --warn-fg: oklch(0.86 0.12 88);
+
+    --danger: oklch(0.66 0.2 25);
+    --danger-soft: oklch(0.45 0.11 25 / 0.42);
+    --danger-fg: oklch(0.82 0.14 25);
+
+    --info: oklch(0.68 0.16 255);
+    --info-soft: oklch(0.45 0.1 255 / 0.38);
+    --info-fg: oklch(0.82 0.12 256);
+
+    --sidebar: oklch(0.34 0.012 265);
+    --sidebar-2: oklch(0.42 0.012 265);
+
+    --shadow-e1-color:
+      0 1px 2px 0 oklch(0 0 0 / 0.4), 0 1px 1px 0 oklch(0 0 0 / 0.3);
+    --shadow-e2-color:
+      0 2px 6px -1px oklch(0 0 0 / 0.5), 0 12px 30px -8px oklch(0 0 0 / 0.55);
+
+    --glass-bg: oklch(0.26 0.008 265 / 0.52);
+    --glass-bg-strong: oklch(0.24 0.008 265 / 0.72);
+    --glass-tint: linear-gradient(180deg, oklch(1 0 0 / 0.08), oklch(1 0 0 / 0) 42%);
+    --glass-border: oklch(1 0 0 / 0.12);
+    --glass-edge: oklch(1 0 0 / 0.16);
+    --glass-shadow:
+      inset 0 1px 0 0 var(--glass-edge),
+      0 8px 28px -10px oklch(0 0 0 / 0.6),
+      0 2px 10px -4px oklch(0 0 0 / 0.5);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -360,9 +460,15 @@
     min-height: 100vh;
   }
 
+  /* Adaptive glass rail. Translucent over the app substrate with a hairline
+     right edge; ink text so it reads in both light and dark. */
   .app-sidebar {
-    background: var(--sidebar);
-    color: rgba(255, 255, 255, 0.85);
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border-right: 1px solid var(--line);
+    box-shadow: inset -1px 0 0 0 var(--glass-edge);
+    color: var(--ink-2);
     display: flex;
     flex-direction: column;
     gap: 18px;
@@ -385,23 +491,27 @@
     display: block;
   }
   .brand-lockup strong {
-    color: #fff;
+    color: var(--ink);
     font-size: 0.95rem;
     font-weight: 600;
     letter-spacing: -0.005em;
   }
   .brand-lockup small {
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--ink-muted);
     font-size: 0.7rem;
     font-weight: 500;
     letter-spacing: 0.06em;
     margin-top: 2px;
     text-transform: uppercase;
   }
+  /* App-icon chip — accent fill with a soft glass highlight + tint glow. */
   .brand-mark {
     align-items: center;
     background: var(--accent);
     border-radius: var(--radius-md);
+    box-shadow:
+      inset 0 1px 0 0 oklch(1 0 0 / 0.35),
+      0 4px 12px -4px color-mix(in oklch, var(--accent) 60%, transparent);
     color: var(--accent-fg);
     display: inline-flex;
     font-size: 0.78rem;
@@ -418,7 +528,7 @@
   .nav-link {
     align-items: center;
     border-radius: var(--radius-md);
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--ink-2);
     display: flex;
     font-size: 0.875rem;
     font-weight: 500;
@@ -426,28 +536,33 @@
     min-height: 36px;
     padding: 8px 10px;
     transition:
-      background 100ms ease,
-      color 100ms ease;
+      background 140ms var(--ease-out-quint),
+      color 140ms var(--ease-out-quint);
   }
   .nav-link:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: color-mix(in oklch, var(--ink) 7%, transparent);
+    color: var(--ink);
     text-decoration: none;
   }
+  /* iOS-tinted selection — soft accent wash, accent-coloured label + icon. */
   .nav-link.active {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    font-weight: 600;
   }
   .nav-icon {
     flex: 0 0 auto;
     height: 18px;
     width: 18px;
-    opacity: 0.9;
+    opacity: 0.85;
+  }
+  .nav-link.active .nav-icon {
+    opacity: 1;
   }
 
   .sidebar-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.65);
+    border-top: 1px solid var(--line);
+    color: var(--ink-muted);
     font-size: 0.78rem;
     line-height: 1.4;
     margin-top: auto;
@@ -458,15 +573,15 @@
     display: block;
   }
   .sidebar-footer strong {
-    color: #fff;
-    font-weight: 500;
+    color: var(--ink-2);
+    font-weight: 600;
     margin-bottom: 2px;
   }
 
   a.sidebar-account {
     align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.65);
+    border-top: 1px solid var(--line);
+    color: var(--ink-muted);
     display: flex;
     font-size: 0.78rem;
     gap: 10px;
@@ -475,19 +590,20 @@
     padding: 12px 8px;
     text-decoration: none;
     transition:
-      background-color 0.15s ease,
-      color 0.15s ease;
+      background-color 0.15s var(--ease-out-quint),
+      color 0.15s var(--ease-out-quint);
   }
   a.sidebar-account:hover,
   a.sidebar-account.active {
-    background: rgba(255, 255, 255, 0.06);
-    color: #fff;
+    background: color-mix(in oklch, var(--ink) 6%, transparent);
+    color: var(--ink);
   }
   .sidebar-account-avatar {
     align-items: center;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--surface-3);
+    border: 1px solid var(--line);
     border-radius: 999px;
-    color: #fff;
+    color: var(--ink);
     display: inline-flex;
     flex: 0 0 auto;
     font-size: 0.78rem;
@@ -500,6 +616,7 @@
     min-width: 0;
   }
   .sidebar-account-text strong {
+    color: var(--ink-2);
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -559,11 +676,16 @@
   }
 
   /* Calmer topbar — no shouty all-caps kicker */
+  /* Glass top bar — floats over the scrolling content beneath it. */
   .topbar {
     align-items: center;
-    background: color-mix(in oklch, var(--surface) 90%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line);
+    background:
+      var(--glass-tint),
+      var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 0 var(--glass-edge);
     display: flex;
     gap: 16px;
     justify-content: space-between;
@@ -843,7 +965,8 @@
   }
 
 
-  /* Floating action button — bottom-right above the mobile tab bar. */
+  /* Floating action button — tinted glass puck above the mobile tab bar.
+     Specular top highlight + accent glow so it reads as a lit control. */
   .mobile-fab {
     align-items: center;
     background: var(--accent);
@@ -851,8 +974,9 @@
     border-radius: 999px;
     bottom: calc(72px + env(safe-area-inset-bottom, 0px));
     box-shadow:
-      0 8px 20px -6px color-mix(in oklch, var(--accent) 60%, transparent),
-      0 4px 8px -4px rgb(0 0 0 / 0.15);
+      inset 0 1px 0 0 oklch(1 0 0 / 0.4),
+      0 8px 20px -6px color-mix(in oklch, var(--accent) 55%, transparent),
+      0 4px 10px -4px oklch(0 0 0 / 0.25);
     color: var(--accent-fg);
     display: none; /* shown only at mobile widths */
     height: 56px;
@@ -1426,9 +1550,10 @@
     min-height: 36px;
     padding: 7px 12px;
     transition:
-      background 100ms ease,
-      border-color 100ms ease,
-      color 100ms ease;
+      background 140ms var(--ease-out-quint),
+      border-color 140ms var(--ease-out-quint),
+      box-shadow 140ms var(--ease-out-quint),
+      color 140ms var(--ease-out-quint);
   }
   .button:hover,
   button:hover,
@@ -1437,19 +1562,25 @@
     border-color: color-mix(in oklch, var(--ink) 25%, var(--line-2));
   }
 
+  /* Primary = the accent "tint" as a lit control: specular top highlight and
+     a soft accent glow lift it off the surface. */
   .button.primary,
   input[type='submit'].primary,
   button.primary {
     background: var(--accent);
-    border-color: var(--accent);
+    border-color: transparent;
+    box-shadow:
+      inset 0 1px 0 0 oklch(1 0 0 / 0.3),
+      0 1px 2px 0 color-mix(in oklch, var(--accent) 45%, transparent),
+      0 6px 16px -8px color-mix(in oklch, var(--accent) 55%, transparent);
     color: var(--accent-fg);
-    font-weight: 500;
+    font-weight: 600;
   }
   .button.primary:hover,
   input[type='submit'].primary:hover,
   button.primary:hover {
-    background: color-mix(in oklch, var(--accent) 88%, black);
-    border-color: color-mix(in oklch, var(--accent) 88%, black);
+    background: color-mix(in oklch, var(--accent) 90%, black);
+    border-color: transparent;
   }
 
   .button.small {
@@ -1478,7 +1609,7 @@
   .button.active {
     background: var(--ink);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--surface);
     cursor: default;
   }
 
@@ -2369,7 +2500,7 @@
   input[type='submit'].primary.button-success {
     background: var(--ok);
     border-color: var(--ok);
-    color: #fff;
+    color: var(--surface);
   }
   .button-success:hover,
   .button.primary.button-success:hover,
@@ -2410,7 +2541,7 @@
   .day-toggle input:checked + span {
     background: var(--ink);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--surface);
   }
 
   .manage-task-row {
@@ -2615,7 +2746,7 @@
   .segmented a.active {
     background: var(--ink);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--surface);
   }
 
   /* ── Marketing photo library ──────────────────────────────────────── */
@@ -2712,7 +2843,7 @@
   .tag-chip.active {
     background: var(--ink);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--surface);
   }
 
   .tag-pill-pending {
@@ -3003,7 +3134,7 @@
   .photo-select-toolbar .button[aria-pressed="true"] {
     background: var(--ink);
     border-color: var(--ink);
-    color: #fff;
+    color: var(--surface);
   }
   /* In select mode the whole card is a select target: signal that a tap picks
      rather than opens, and grow the checkboxes to a comfortable touch size. */
@@ -4117,11 +4248,16 @@
     color: var(--ink);
   }
 
+  /* Glass menu — floats above content with the chrome material. */
   .popover-panel {
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-e2);
+    background:
+      var(--glass-tint),
+      var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -4804,7 +4940,8 @@
       display: none;
     }
     .nav-link.active {
-      background: rgba(255, 255, 255, 0.18);
+      background: var(--accent-soft);
+      color: var(--accent-text);
     }
     .sidebar-footer {
       display: none;
@@ -4954,12 +5091,17 @@
       display: none;
     }
 
-    /* Per-screen mobile header — large title, optional left/right actions. */
+    /* Per-screen mobile header — large title, optional left/right actions.
+       Glass over the scrolling content below the status bar. */
     .mobile-screen-header {
       align-items: center;
-      background: color-mix(in oklch, var(--surface) 92%, transparent);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
+      background:
+        var(--glass-tint),
+        var(--glass-bg);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 0 0 var(--glass-edge);
       display: grid;
       gap: 8px;
       grid-template-columns: minmax(38px, auto) 1fr minmax(38px, auto);
@@ -5016,14 +5158,20 @@
       grid-template-columns: 1fr;
     }
 
-    /* Mobile bottom tab bar */
+    /* Mobile bottom tab bar — the signature floating glass surface. Detached
+       from the screen edges so the glass reads as a pill hovering over content. */
     .mobile-tabs {
       align-items: stretch;
-      background: color-mix(in oklch, var(--surface-2) 92%, transparent);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--line);
+      background:
+        var(--glass-tint),
+        var(--glass-bg-strong);
+      -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
+      backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
+      border-top: 1px solid var(--glass-border);
       bottom: 0;
-      box-shadow: 0 -2px 8px -4px rgb(17 24 32 / 0.1);
+      box-shadow:
+        inset 0 1px 0 0 var(--glass-edge),
+        0 -8px 24px -12px oklch(0.2 0.03 265 / 0.22);
       box-sizing: border-box;
       display: grid;
       gap: 0;
