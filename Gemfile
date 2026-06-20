@@ -19,7 +19,7 @@ gem "image_processing", "~> 2.0"
 gem "ruby-vips"
 gem "mini_magick"
 # Bundle marketing photo assets into ZIP downloads.
-gem "rubyzip", "~> 3.0", require: "zip"
+gem "rubyzip", "~> 3.4", require: "zip"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
