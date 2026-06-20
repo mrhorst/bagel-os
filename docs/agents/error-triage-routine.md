@@ -2,7 +2,8 @@
 
 A scheduled routine that watches production for errors and turns the real,
 fixable ones into pull requests, then hands them to `pr-watcher` to review and
-merge. It is the orchestration half of the loop in
+merge. See [`pr-watcher-routine.md`](pr-watcher-routine.md) for the merge-side
+routine. This document is the orchestration half of the loop in
 [`docs/deployment/observability.md`](../deployment/observability.md).
 
 The routine **proposes**; `pr-watcher` **disposes**. Keeping investigation and
