@@ -98,13 +98,15 @@
     </ul>
   <% end %>
 <% else %>
-  <p class="empty-state">
+  <article class="panel empty-state">
     <% if @scope == "all" && @active_tag.nil? && @query.blank? && !@favorites_only %>
-      No photos yet. Add the first batch from your phone or library.
+      <strong>No photos yet.</strong>
+      <span>Add the first batch from your phone or library.</span>
     <% else %>
-      No photos match these filters.
+      <strong>No photos match these filters.</strong>
+      <span>Clear a filter or search term to see the rest of the library.</span>
     <% end %>
-  </p>
+  </article>
 <% end %>
 
 <%= mobile_fab_button new_photo_asset_path, label: "Add photos" %>
