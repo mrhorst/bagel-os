@@ -56,9 +56,11 @@ namespace :design do
     { slug: "admin-tags",           path: "/admin/tags",                label: "Admin: tags" }
   ].freeze
 
+  # 390x844 = the standard iPhone 14/15/16 logical viewport — the width most
+  # users actually have, so the watcher reviews that rather than an older Plus.
   VIEWPORTS = {
     "desktop" => [ 1280, 1400 ],
-    "mobile"  => [ 414, 896 ]
+    "mobile"  => [ 390, 844 ]
   }.freeze
 
   # The app is adaptive (light + dark via `@media (prefers-color-scheme)`), and
