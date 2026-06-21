@@ -159,6 +159,44 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on a new tag returns to the tags list" do
+    # The admin/tags controller isn't registered as a navigation module, so the
+    # layout's auto-chevron never renders on its sub-pages — below 640px the
+    # mobile header (which is authoritative; the in-page H1 is hidden) had no
+    # back affordance at all, unlike every other sub-page. The chevron should
+    # mirror the in-body "Back to tags" button and go to the tags list.
+    page.current_window.resize_to(414, 896)
+    visit new_admin_tag_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to tags", chevron["aria-label"]
+    assert_equal admin_tags_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path admin_tags_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on a tag edit returns to the tags list" do
+    # Same gap as the new-tag page: the admin/tags sub-pages set no
+    # mobile_left_action and admin/tags is not a navigation module, so below
+    # 640px the mobile header had no back chevron. It should mirror the in-body
+    # "Back to tags" button.
+    tag = Tag.create!(name: "QA Probe Tag", slug: "qa-probe-tag")
+    page.current_window.resize_to(414, 896)
+    visit edit_admin_tag_path(tag)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to tags", chevron["aria-label"]
+    assert_equal admin_tags_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path admin_tags_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form
