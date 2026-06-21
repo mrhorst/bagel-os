@@ -51,7 +51,7 @@
             <strong><%= guide.name %></strong>
             <span><%= pluralize(guide.active_item_count, "active row") %></span>
             <div class="button-row">
-              <%= link_to "Count", new_inventory_count_path(order_guide_id: guide.id), class: "button small primary" %>
+              <%= link_to "Count", new_inventory_count_path(order_guide_id: guide.id), class: "button small" %>
               <%= link_to "Buy list", inventory_shopping_list_path(order_guide_id: guide.id), class: "button small" %>
               <%= link_to "Setup", order_guide_path(guide), class: "button small" %>
             </div>
