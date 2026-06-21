@@ -1630,16 +1630,18 @@
   }
 
   /* ── Environment ribbon (staging / non-production) ────────────────────
-     Slim sticky strip so a deployed non-prod install is never mistaken for
-     production. Sticky (not fixed) so it reserves its own height in normal
-     flow — a fixed overlay would sit on top of the sidebar brand and the
-     mobile header, hiding them. The body:has() offsets below keep the other
-     top-pinned chrome clear of it, and the ribbon owns the top safe-area inset
-     so it clears the notch on installed PWAs. Neutral ink chrome — not a
-     status colour, never the accent. pointer-events:none so it never
-     intercepts a click. */
+     Slim fixed strip so a deployed non-prod install is never mistaken for
+     production. Fixed (not sticky): it overlays the very top and the body:has()
+     offsets below push every top-pinned chrome element (sidebar, topbar, PTR
+     chip, mobile header) and the content column down by --env-banner-total so
+     nothing is covered. A sticky ribbon instead *reserved* its height, which
+     double-counted against the mobile header's own --env-banner-total offset
+     and opened an empty band between the ribbon and the screen title. The
+     ribbon owns the top safe-area inset so it clears the notch on installed
+     PWAs. Neutral ink chrome — not a status colour, never the accent.
+     pointer-events:none so it never intercepts a click. */
   .env-banner {
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
