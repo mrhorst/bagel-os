@@ -8,7 +8,7 @@
 </section>
 
 <article class="panel">
-  <table>
+  <table class="responsive-table">
     <thead>
       <tr>
         <th>Report</th>
@@ -19,9 +19,9 @@
     <tbody>
       <% @reports.each do |report| %>
         <tr>
-          <td><%= report %>.csv</td>
-          <td><%= report.humanize %></td>
-          <td class="numeric"><%= link_to "Download", report_path(report), class: "button" %></td>
+          <td data-label="Report"><%= report %>.csv</td>
+          <td data-label="Description"><%= report.humanize %></td>
+          <td class="numeric" data-label=""><%= link_to "Download", report_path(report), class: "button" %></td>
         </tr>
       <% end %>
     </tbody>
