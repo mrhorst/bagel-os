@@ -61,6 +61,12 @@ namespace :design do
     "mobile"  => [ 414, 896 ]
   }.freeze
 
+  # The app is adaptive (light + dark via `@media (prefers-color-scheme)`), and
+  # dark is the live default on most phones — so both schemes get captured. We
+  # force the scheme deterministically through Chrome's emulated media (CDP)
+  # rather than hoping the headless default matches.
+  SCHEMES = %w[light dark].freeze
+
   SIGN_IN_EMAIL    = "design@example.com"
   SIGN_IN_PASSWORD = "password"
 
@@ -78,6 +84,9 @@ namespace :design do
 
     wanted_vps = ENV["VIEWPORTS"]&.split(",")&.map(&:strip)
     viewports = wanted_vps ? VIEWPORTS.slice(*wanted_vps) : VIEWPORTS
+
+    wanted_schemes = ENV["SCHEMES"]&.split(",")&.map(&:strip)
+    schemes = wanted_schemes || SCHEMES
 
     ensure_demo_data!
     user = ensure_sign_in_user!
@@ -102,21 +111,24 @@ namespace :design do
     sign_in(session, user)
 
     manifest = []
-    viewports.each do |vp_name, (w, h)|
-      session.current_window.resize_to(w, h)
-      screens.each do |screen|
-        path = File.join(out_dir, "#{screen[:slug]}-#{vp_name}.png")
-        begin
-          session.visit(screen[:path])
-          # Let Turbo finish swapping + fonts settle before the capture.
-          session.has_css?("body", wait: 3)
-          sleep 0.4
-          session.save_screenshot(path)
-          manifest << { slug: screen[:slug], viewport: vp_name, label: screen[:label], path: path, ok: true }
-          puts "  ✓ #{screen[:slug]} (#{vp_name}) → #{path}"
-        rescue => e
-          manifest << { slug: screen[:slug], viewport: vp_name, label: screen[:label], path: path, ok: false, error: e.message }
-          warn "  ✗ #{screen[:slug]} (#{vp_name}): #{e.class}: #{e.message}"
+    schemes.each do |scheme|
+      emulate_color_scheme(session, scheme)
+      viewports.each do |vp_name, (w, h)|
+        session.current_window.resize_to(w, h)
+        screens.each do |screen|
+          path = File.join(out_dir, "#{screen[:slug]}-#{vp_name}-#{scheme}.png")
+          begin
+            session.visit(screen[:path])
+            # Let Turbo finish swapping + fonts settle before the capture.
+            session.has_css?("body", wait: 3)
+            sleep 0.4
+            session.save_screenshot(path)
+            manifest << { slug: screen[:slug], viewport: vp_name, scheme: scheme, label: screen[:label], path: path, ok: true }
+            puts "  ✓ #{screen[:slug]} (#{vp_name}, #{scheme}) → #{path}"
+          rescue => e
+            manifest << { slug: screen[:slug], viewport: vp_name, scheme: scheme, label: screen[:label], path: path, ok: false, error: e.message }
+            warn "  ✗ #{screen[:slug]} (#{vp_name}, #{scheme}): #{e.class}: #{e.message}"
+          end
         end
       end
     end
@@ -128,6 +140,16 @@ namespace :design do
   end
 
   # ── helpers ────────────────────────────────────────────────────────────────
+
+  # Force `prefers-color-scheme` through Chrome DevTools' emulated media so the
+  # capture is deterministic instead of inheriting the headless host default.
+  def emulate_color_scheme(session, scheme)
+    session.driver.browser.execute_cdp(
+      "Emulation.setEmulatedMedia",
+      media: "screen",
+      features: [ { name: "prefers-color-scheme", value: scheme } ]
+    )
+  end
 
   def sign_in(session, user)
     session.visit("/session/new")
