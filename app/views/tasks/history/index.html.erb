@@ -37,7 +37,7 @@
   </div>
 
   <% if @occurrences.any? %>
-    <table class="history-table">
+    <table class="history-table responsive-table">
       <thead>
         <tr>
           <th>Status</th>
@@ -52,17 +52,17 @@
       <tbody>
         <% @occurrences.each do |occurrence| %>
           <tr>
-            <td><%= task_status_badge(occurrence) %></td>
-            <td>
+            <td data-label="Status"><%= task_status_badge(occurrence) %></td>
+            <td data-label="Task">
               <strong><%= occurrence.snapshot_title %></strong>
               <% if occurrence.requires_photo_evidence? %>
                 <small>Photo required</small>
               <% end %>
             </td>
-            <td><%= occurrence.snapshot_list_name %></td>
-            <td><%= task_period_label(occurrence) %></td>
-            <td><%= task_due_label(occurrence) %></td>
-            <td>
+            <td data-label="List"><%= occurrence.snapshot_list_name %></td>
+            <td data-label="Period"><%= task_period_label(occurrence) %></td>
+            <td data-label="Due"><%= task_due_label(occurrence) %></td>
+            <td data-label="Completion">
               <% if occurrence.active_completion.present? %>
                 <%= task_completion_summary(occurrence.active_completion) %>
               <% else %>
