@@ -1,5 +1,18 @@
 <% content_for :title, @product.canonical_name %>
 
+<%# On mobile the top-left chevron is the primary back affordance. Without this
+    override the layout's auto-chevron points at the module hub (Stock), skipping
+    the Products catalog this page was opened from — so it would overshoot the
+    parent by a level. Send it up exactly one level, to Products. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to products_path, class: "mobile-header-back", aria: { label: "Back to Products" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Products</span>
+  <% end %>
+<% end %>
+
 <%= render "shared/blocks/page_header",
   eyebrow: "Product workspace",
   title: @product.canonical_name,
