@@ -3961,11 +3961,11 @@
     border-color: color-mix(in oklch, var(--danger) 35%, transparent);
     color: var(--danger-fg);
   }
-  .home-surface-card-active .home-surface-card-count {
-    background: var(--warn-soft);
-    border-color: color-mix(in oklch, var(--warn) 30%, transparent);
-    color: var(--warn-fg);
-  }
+  /* The "active" tone is a neutral backlog count (records to clean up, photos
+     to review, links to verify) — work to do, not a caution state. It keeps
+     the default neutral chip so the amber --warn family stays reserved for
+     genuine warnings and red (--danger) remains the only attention color on
+     this grid. */
 
   /* ── Dashboard ────────────────────────────────────────────────────── */
   .dashboard-hero {
