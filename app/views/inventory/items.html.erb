@@ -15,7 +15,7 @@
   <section class="panel">
     <h2>Items Needing Receipt Link Review</h2>
     <p class="muted">These are on the guide but were not confidently matched to a receipt product.</p>
-    <table>
+    <table class="responsive-table">
       <thead>
         <tr>
           <th>Guide item</th>
@@ -26,9 +26,9 @@
       <tbody>
         <% @items_needing_review.first(20).each do |item| %>
           <tr>
-            <td><%= item.name %></td>
-            <td><%= item.inventory_section&.name || "Unsectioned" %></td>
-            <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
+            <td data-label="Guide item"><%= item.name %></td>
+            <td data-label="Section"><%= item.inventory_section&.name || "Unsectioned" %></td>
+            <td data-label="Pack / count note"><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
           </tr>
         <% end %>
       </tbody>
@@ -47,7 +47,7 @@
         <p class="muted"><%= pluralize(items.size, "active item") %></p>
       </div>
     </div>
-    <table>
+    <table class="responsive-table">
       <thead>
         <tr>
           <th>Item</th>
@@ -61,23 +61,23 @@
       <tbody>
         <% items.sort_by { |item| [item.position, item.name] }.each do |item| %>
           <tr>
-            <td><%= item.name %></td>
-            <td>
+            <td data-label="Item"><%= item.name %></td>
+            <td data-label="Guide">
               <%= render "inventory/primary_order_guide_form", item: item, order_guides: @order_guides %>
               <% if item.additional_order_guides.any? %>
                 <small class="muted">Also: <%= item.additional_order_guides.map(&:name).to_sentence %></small>
               <% end %>
             </td>
-            <td>
+            <td data-label="Receipt product">
               <% if item.product.present? %>
                 <%= link_to item.product.canonical_name, product_path(item.product) %>
               <% else %>
                 <span class="muted">Unlinked</span>
               <% end %>
             </td>
-            <td><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
-            <td class="numeric"><%= item.latest_price.present? ? number_to_currency(item.latest_price) : "n/a" %></td>
-            <td>
+            <td data-label="Pack / count note"><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
+            <td class="numeric" data-label="Latest price"><%= item.latest_price.present? ? number_to_currency(item.latest_price) : "n/a" %></td>
+            <td data-label="Status">
               <% if item.needs_review? %>
                 <span class="badge badge-warning">Review</span>
               <% else %>
@@ -94,12 +94,12 @@
 <% if @unsectioned_items.any? %>
   <section class="panel">
     <h2>Unsectioned Items</h2>
-    <table>
+    <table class="responsive-table">
       <tbody>
         <% @unsectioned_items.each do |item| %>
           <tr>
-            <td><%= item.name %></td>
-            <td><%= item.linked_product_name %></td>
+            <td data-label="Item"><%= item.name %></td>
+            <td data-label="Receipt product"><%= item.linked_product_name %></td>
           </tr>
         <% end %>
       </tbody>
