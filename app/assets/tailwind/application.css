@@ -1778,8 +1778,9 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     color: var(--ink);
-    display: block;
-    min-height: 108px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding: 14px;
     transition:
       border-color 120ms ease,
