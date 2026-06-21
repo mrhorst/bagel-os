@@ -104,6 +104,24 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on a new inventory count returns to the counts list, not the hub" do
+    # Same gap as the Log Book, Products, and Order Guide sub-pages: below 640px
+    # the layout's auto-chevron points at the module hub (Stock), overshooting
+    # the Inventory Counts list this page was opened from and contradicting the
+    # in-body "Count history" button. The chevron should go up exactly one level.
+    page.current_window.resize_to(414, 896)
+    visit new_inventory_count_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Inventory Counts", chevron["aria-label"]
+    assert_equal inventory_counts_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path inventory_counts_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form
