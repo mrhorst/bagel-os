@@ -270,6 +270,27 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on a follow-up returns to Follow-ups, not the hub" do
+    # Same gap as the Products and Order Guide sub-pages: follow_ups IS a
+    # navigation module, and its index and detail share one controller, so
+    # without a per-page override the layout's auto-chevron points at the module
+    # hub (Shift) on the detail page too — overshooting the Follow-ups list the
+    # user tapped in from. It should go up exactly one level, to that list.
+    follow_up = FollowUp.create!(title: "Walk-in fridge reading high",
+                                 urgency: "urgent", status: "open", opened_at: Time.current)
+    page.current_window.resize_to(414, 896)
+    visit follow_up_path(follow_up)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Follow-ups", chevron["aria-label"]
+    assert_equal follow_ups_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path follow_ups_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form

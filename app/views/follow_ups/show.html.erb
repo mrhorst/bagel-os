@@ -1,5 +1,14 @@
 <% content_for :title, @follow_up.title %>
 
+<% content_for :mobile_left_action do %>
+  <%= link_to follow_ups_path, class: "mobile-header-back", aria: { label: "Back to Follow-ups" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Follow-ups</span>
+  <% end %>
+<% end %>
+
 <article class="follow-up-detail">
   <header class="follow-up-detail-head">
     <span class="badge badge-warning"><%= @follow_up.urgency.humanize %></span>
