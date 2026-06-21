@@ -104,6 +104,7 @@ Rails.application.routes.draw do
   get "inventory/shopping-list", to: "inventory#shopping_list", as: :inventory_shopping_list
   get "inventory/counts", to: "inventory#counts", as: :inventory_counts
   get "inventory/counts/new", to: "inventory#new_count", as: :new_inventory_count
+  get "inventory/counts/:id", to: "inventory#count", as: :inventory_count, constraints: { id: /\d+/ }
   post "inventory/counts", to: "inventory#create_count"
   patch "inventory/items/:id/primary-order-guide", to: "inventory#update_primary_order_guide", as: :inventory_item_primary_order_guide
   resources :order_guides, only: %i[index show create update destroy] do

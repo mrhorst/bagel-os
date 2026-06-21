@@ -78,6 +78,43 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_equal 0, InventoryCount.count
   end
 
+  test "counts list links each row to the count detail page" do
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      counts: { @cream_membership.id => "4.5" }
+    }
+    count = InventoryCount.last
+
+    get inventory_counts_path
+
+    assert_response :success
+    assert_select "a[href='#{inventory_count_path(count)}']"
+  end
+
+  test "count detail page lists the recorded lines so a saved count is traceable" do
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      notes: "Sunday morning count",
+      counts: {
+        @cream_membership.id => "4.5",
+        @egg_membership.id => "2"
+      }
+    }
+    count = InventoryCount.last
+
+    get inventory_count_path(count)
+
+    assert_response :success
+    assert_select "h1", text: "Count: Weekly"
+    assert_match "Sunday morning count", response.body
+    # Each counted line is shown with its item, section, and quantity.
+    assert_match "Cream Cheese", response.body
+    assert_match "Walk-in", response.body
+    assert_match "4.5", response.body
+    assert_match "Eggs", response.body
+    assert_match "Freezer", response.body
+  end
+
   test "guide shopping list shows buy now setup not counted and order only sections" do
     post inventory_counts_path, params: {
       order_guide_id: @guide.id,

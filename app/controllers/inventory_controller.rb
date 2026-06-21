@@ -42,6 +42,14 @@ class InventoryController < ApplicationController
     @counts = InventoryCount.recent_first.includes(:inventory_section, :order_guide, :inventory_count_lines).limit(30)
   end
 
+  def count
+    @count = InventoryCount.includes(
+      :order_guide,
+      inventory_count_lines: [ :inventory_item, { order_guide_membership: :order_guide_section } ]
+    ).find(params[:id])
+    @lines = @count.inventory_count_lines.sort_by { |line| count_line_sort_key(line) }
+  end
+
   def new_count
     @order_guides = OrderGuide.active.ordered
     return if params[:order_guide_id].blank?
@@ -156,6 +164,15 @@ class InventoryController < ApplicationController
       .includes(:order_guide_section, inventory_item: :product)
       .to_a
       .sort_by { |membership| membership_sort_key(membership) }
+  end
+
+  def count_line_sort_key(line)
+    section = line.order_guide_membership&.order_guide_section
+    [
+      section&.position || 999_999,
+      section&.name.to_s,
+      line.inventory_item.name
+    ]
   end
 
   def membership_sort_key(membership)

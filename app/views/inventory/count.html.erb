@@ -1,0 +1,56 @@
+<% content_for :title, @count.order_guide ? "#{@count.order_guide.name} count" : "Inventory count" %>
+
+<%# On mobile the top-left chevron is the primary back affordance. Send it up
+    exactly one level, to the Inventory Counts list this detail was opened from,
+    matching the counts list and new-count screens. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to inventory_counts_path, class: "mobile-header-back", aria: { label: "Back to Inventory Counts" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Counts</span>
+  <% end %>
+<% end %>
+
+<div class="page-heading">
+  <div>
+    <h1><%= @count.order_guide ? "Count: #{@count.order_guide.name}" : "Legacy count" %></h1>
+    <p>Counted <%= @count.counted_at.to_fs(:long) %>.</p>
+  </div>
+  <%= link_to "Count history", inventory_counts_path, class: "button" %>
+</div>
+
+<section class="metric-grid">
+  <article class="metric"><span>Guide</span><strong><%= @count.order_guide&.name || "Legacy count" %></strong></article>
+  <article class="metric"><span>Status</span><strong><%= @count.status.humanize %></strong></article>
+  <article class="metric"><span>Lines counted</span><strong class="numeric"><%= @lines.size %></strong></article>
+  <article class="metric"><span>Notes</span><strong><%= @count.notes.presence || "n/a" %></strong></article>
+</section>
+
+<section class="panel">
+  <h2>Counted lines</h2>
+  <% if @lines.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Section</th>
+          <th class="numeric">Quantity</th>
+          <th>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @lines.each do |line| %>
+          <tr>
+            <td><%= line.inventory_item.name %></td>
+            <td><%= line.order_guide_membership&.order_guide_section&.name || "Unsectioned" %></td>
+            <td class="numeric"><%= compact_decimal(line.quantity_on_hand) %></td>
+            <td><%= line.unit.presence || "n/a" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">This count has no recorded lines.</p>
+  <% end %>
+</section>
