@@ -196,6 +196,42 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on the inventory items list returns to Inventory, not the hub" do
+    # Same gap as the inventory counts list: below 640px the layout's auto-chevron
+    # points at the module hub (Stock), overshooting the Inventory index this page
+    # is opened from (its "Master inventory" card). It should go up exactly one
+    # level, to Inventory.
+    page.current_window.resize_to(414, 896)
+    visit inventory_items_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Inventory", chevron["aria-label"]
+    assert_equal inventory_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path inventory_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on the shopping list returns to Inventory, not the hub" do
+    # Same gap as the inventory items and counts lists: below 640px the layout's
+    # auto-chevron points at the module hub (Stock), overshooting the Inventory
+    # index this page is opened from (its guide "Buy list" links). It should go up
+    # exactly one level, to Inventory.
+    page.current_window.resize_to(414, 896)
+    visit inventory_shopping_list_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Inventory", chevron["aria-label"]
+    assert_equal inventory_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path inventory_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "the mobile back chevron on a new tag returns to the tags list" do
     # The admin/tags controller isn't registered as a navigation module, so the
     # layout's auto-chevron never renders on its sub-pages — below 640px the
