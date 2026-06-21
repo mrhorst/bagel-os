@@ -1694,8 +1694,12 @@
     right: 0;
     z-index: 70;
     pointer-events: none;
-    background: var(--ink);
-    color: var(--surface);
+    /* Chrome-toned, NOT --ink/--surface: those tokens invert between colour
+       schemes, which flipped the ribbon to a glaring near-white bar in dark
+       mode. --sidebar is mid-dark in both schemes (0.28 light / 0.34 dark),
+       so it stays a legible dark strip against either page surface. */
+    background: var(--sidebar);
+    color: rgb(255 255 255 / 0.92);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.08em;
