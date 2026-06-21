@@ -5154,6 +5154,14 @@
       top: var(--env-banner-total);
       padding-top: 6px;
     }
+    /* The sticky header carries the env-ribbon inset (--env-banner-total) as its
+       sticky `top`, so its rendered box hangs that far below its flow box and
+       would cover the first run of content — the screen title clips behind the
+       header. Drop the content column by the same inset so it clears the header
+       in both schemes. Only engaged while the ribbon is on the page. */
+    body:has(.env-banner) .app-main {
+      margin-top: var(--env-banner-total);
+    }
     .mobile-header-left,
     .mobile-header-right {
       align-items: center;
