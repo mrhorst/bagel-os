@@ -48,11 +48,13 @@
     <% end %>
   </ul>
 <% else %>
-  <p class="empty-state">
+  <article class="panel empty-state">
     <% if @scope == "open" %>
-      No open follow-ups. Flag a Log Book note to create one.
+      <strong>No open follow-ups.</strong>
+      <span>Flag a Log Book note to create one. It will show up here for tracking.</span>
     <% else %>
-      No resolved follow-ups yet.
+      <strong>No resolved follow-ups yet.</strong>
+      <span>Follow-ups you close out will be listed here.</span>
     <% end %>
-  </p>
+  </article>
 <% end %>
