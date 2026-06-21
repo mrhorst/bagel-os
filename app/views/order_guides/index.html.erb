@@ -81,7 +81,8 @@
               </td>
               <td data-label="Archive">
                 <% if guide.active? %>
-                  <%= button_to "Archive", order_guide_path(guide), method: :delete, class: "button small" %>
+                  <%= button_to "Archive", order_guide_path(guide), method: :delete, class: "button small",
+                        data: { turbo_confirm: "Archive #{guide.name}? Its #{pluralize(guide.active_item_count, "item")} will be removed from the guide." } %>
                 <% else %>
                   <span class="muted">Archived</span>
                 <% end %>

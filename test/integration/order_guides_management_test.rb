@@ -48,6 +48,23 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_nil item.reload.primary_order_guide
   end
 
+  test "archive button on the guides index guards with a confirmation" do
+    guide = OrderGuide.create!(name: "Daily")
+    item = InventoryItem.create!(name: "Eggs", key: "eggs")
+    item.add_to_order_guide!(guide, tracking_mode: "counted")
+
+    get order_guides_path
+    assert_response :success
+
+    # The Archive control destroys (soft-archives) the guide AND cascades to
+    # deactivate every membership on it — the same convention as archiving a
+    # task list or task, both of which confirm first. It must not fire on a
+    # single mis-tap with no guard.
+    assert_select "form[action=?]", order_guide_path(guide) do
+      assert_select "button[data-turbo-confirm][type=submit]", text: "Archive"
+    end
+  end
+
   test "downloads csv example for order guide import shape" do
     get csv_example_order_guides_path
 
