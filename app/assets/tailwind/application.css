@@ -1633,7 +1633,7 @@
   /* ── Badges ───────────────────────────────────────────────────────── */
   .badge {
     background: var(--surface-3);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     color: var(--ink-2);
     display: inline-block;
     font-size: 0.72rem;
@@ -2890,6 +2890,12 @@
     color: var(--surface);
   }
 
+  /* Tags are the one place pills are allowed (alongside the bottom-tab badges),
+     so tag pills keep the fully-rounded shape even though the base .badge they
+     reuse is now a rounded-rect status chip. */
+  .tag-pill {
+    border-radius: var(--radius-pill);
+  }
   .tag-pill-pending {
     background: transparent;
     border: 1px dashed var(--line-2);
