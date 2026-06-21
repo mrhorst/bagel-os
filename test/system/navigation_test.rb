@@ -48,6 +48,43 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on a product returns to Products, not the hub" do
+    # Same gap as the Log Book sub-pages: below 640px the layout's auto-chevron
+    # points at the module hub (Stock), overshooting the Products catalog this
+    # page was opened from. The chevron should go up exactly one level.
+    product = build_product
+    page.current_window.resize_to(414, 896)
+    visit product_path(product)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Products", chevron["aria-label"]
+    assert_equal products_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path products_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on a product edit returns to the product, not the hub" do
+    # The deepest step of the products-edit flow. Without an override the
+    # auto-chevron points at the module hub (Stock), overshooting both the
+    # product and the catalog by two levels and contradicting the in-body
+    # "Back to product" button. It should land on the product it edits.
+    product = build_product
+    page.current_window.resize_to(414, 896)
+    visit edit_product_path(product)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to product", chevron["aria-label"]
+    assert_equal product_path(product), URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path product_path(product)
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form
@@ -64,5 +101,14 @@ class NavigationTest < ApplicationSystemTestCase
     # checking content — prevents a timing failure on slow CI runners.
     assert_current_path account_path
     assert_selector "h2", text: "Change password"
+  end
+
+  private
+
+  # A minimal product (plus the supplier it must belong to) so the show/edit
+  # pages render without seeding the whole demo catalog.
+  def build_product
+    supplier = Supplier.create!(name: "Primary Supplier")
+    Product.create!(canonical_name: "Test Product", supplier: supplier)
   end
 end

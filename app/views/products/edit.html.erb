@@ -1,5 +1,19 @@
 <% content_for :title, "Edit #{@product.canonical_name}" %>
 
+<%# On mobile the top-left chevron is the primary back affordance. Without this
+    override the layout's auto-chevron points at the module hub (Stock), skipping
+    both the product and the catalog — so it would overshoot by two levels and
+    contradict the "Back to product" button below. Send it up exactly one level,
+    to the product. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to @product, class: "mobile-header-back", aria: { label: "Back to product" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Product</span>
+  <% end %>
+<% end %>
+
 <section class="page-heading product-edit-heading">
   <div>
     <h1>Edit product</h1>
