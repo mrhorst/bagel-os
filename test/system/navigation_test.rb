@@ -48,6 +48,24 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on Log Book history returns to Log Book, not the hub" do
+    # Same gap as the Log Book settings and sections sub-pages: below 640px the
+    # layout's auto-chevron points at the module hub (Shift), overshooting Log
+    # Book — the page's own parent and what its in-body "Back to Log Book" button
+    # names. It should go up exactly one level, to Log Book.
+    page.current_window.resize_to(414, 896)
+    visit log_book_history_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Log Book", chevron["aria-label"]
+    assert_equal log_book_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path log_book_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "the mobile back chevron on a new log section returns to Log Sections, not the hub" do
     # A level deeper than the Log Sections list: the new/edit forms set no
     # override either, so below 640px the auto-chevron points at the module hub
