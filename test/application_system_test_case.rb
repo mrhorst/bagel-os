@@ -21,6 +21,14 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     options.add_preference("autofill.profile_enabled", false)
   end
 
+  # The first click-navigation after a cold Puma boot (notably the mobile-viewport
+  # back-chevron tests) can take longer than Capybara's 2s default to settle, so
+  # whichever of those tests ran first in a CI run would intermittently fail its
+  # `assert_current_path` while warm runs passed — a non-deterministic, seed-rotating
+  # flake. Raising the wait only lengthens how long an assertion is allowed to
+  # settle before failing; it can't turn a passing assertion into a failure.
+  Capybara.default_max_wait_time = 5
+
   # Headless Chrome intermittently drops the keystrokes Capybara sends to a
   # field — `fill_in` "succeeds" but the input ends up blank, which is what made
   # the sign-in/sign-out system tests flaky (~50%). Retrying the keypresses
