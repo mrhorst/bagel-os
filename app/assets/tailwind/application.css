@@ -2860,6 +2860,14 @@
   .photo-search input[type="search"] {
     flex: 1 1 220px;
   }
+  /* The Search submit is an <input type="submit">, so the global block-form
+     control rule forces it to width:100% — which drops it onto its own full
+     width row and makes it read like an input, not a button. Keep it sized to
+     its content so it trails the field inline, as the flex row intends. */
+  .photo-search input[type="submit"] {
+    flex: 0 0 auto;
+    width: auto;
+  }
 
   .tag-filter {
     margin-bottom: 16px;
