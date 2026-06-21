@@ -20,7 +20,12 @@ class NormalizationReviewsController < ApplicationController
 
   def assign_product
     review = NormalizationReview.find(params[:id])
-    product = Product.find(params[:product_id])
+    product = Product.find_by(id: params[:product_id])
+
+    unless product
+      redirect_back fallback_location: normalization_reviews_path, alert: "Choose a product to assign first."
+      return
+    end
 
     review_workflow.assign_existing_product(review: review, product: product)
     clear_skipped(review.id)
