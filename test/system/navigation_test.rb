@@ -48,6 +48,43 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on a new log section returns to Log Sections, not the hub" do
+    # A level deeper than the Log Sections list: the new/edit forms set no
+    # override either, so below 640px the auto-chevron points at the module hub
+    # (Shift), overshooting both Log Book and the Log Sections list this form was
+    # opened from — and contradicting the in-body "Cancel" button (and where
+    # Create redirects). It should go up exactly one level, to the sections list.
+    page.current_window.resize_to(414, 896)
+    visit new_log_book_section_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Log Sections", chevron["aria-label"]
+    assert_equal log_book_sections_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path log_book_sections_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on an edit log section returns to Log Sections, not the hub" do
+    # Same gap as the new-section form, on the edit route. The chevron should
+    # land on the Log Sections list, matching the in-body "Cancel" button and
+    # where Save redirects.
+    section = LogBookSection.create!(title: "Walk-in temp", section_type: "long_text")
+    page.current_window.resize_to(414, 896)
+    visit edit_log_book_section_path(section)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Log Sections", chevron["aria-label"]
+    assert_equal log_book_sections_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path log_book_sections_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "the mobile back chevron on a product returns to Products, not the hub" do
     # Same gap as the Log Book sub-pages: below 640px the layout's auto-chevron
     # points at the module hub (Stock), overshooting the Products catalog this
