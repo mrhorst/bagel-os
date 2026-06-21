@@ -21,7 +21,14 @@ class ImportBatchesController < ApplicationController
       source_filename: uploaded_file.original_filename
     )
 
-    redirect_to import_batches_path, notice: result[:message]
+    batch = result[:batch]
+    if batch&.status == "failed"
+      # A failed import isn't a success — report it as such and land on the
+      # batch, where the failure reason and a recovery link are shown.
+      redirect_to import_batch_path(batch), alert: result[:message]
+    else
+      redirect_to import_batches_path, notice: result[:message]
+    end
   end
 
   def show
