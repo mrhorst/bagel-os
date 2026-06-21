@@ -177,6 +177,25 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on the inventory counts list returns to Inventory, not the hub" do
+    # The sibling of the new-count page, one level shallower. The counts list is
+    # reached from the Inventory index "Count history" card, but without a
+    # per-page override the layout's auto-chevron points at the module hub
+    # (Stock), overshooting the Inventory index — its actual parent. It should go
+    # up exactly one level, to Inventory.
+    page.current_window.resize_to(414, 896)
+    visit inventory_counts_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Inventory", chevron["aria-label"]
+    assert_equal inventory_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path inventory_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "the mobile back chevron on the inventory items list returns to Inventory, not the hub" do
     # Same gap as the inventory counts list: below 640px the layout's auto-chevron
     # points at the module hub (Stock), overshooting the Inventory index this page
