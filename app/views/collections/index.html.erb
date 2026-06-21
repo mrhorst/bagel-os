@@ -32,7 +32,10 @@
     <% end %>
   </ul>
 <% else %>
-  <p class="empty-state">No collections yet. Create one to group a campaign or shoot.</p>
+  <article class="panel empty-state">
+    <strong>No collections yet.</strong>
+    <span>Create one to group a campaign or shoot — a seasonal set, an album, the new menu.</span>
+  </article>
 <% end %>
 
 <%= mobile_fab_button new_collection_path, label: "New collection" %>
