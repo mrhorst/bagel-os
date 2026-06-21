@@ -85,6 +85,25 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on an order guide returns to Order Guides, not the hub" do
+    # Same gap as the Log Book and Products sub-pages: below 640px the layout's
+    # auto-chevron points at the module hub (Buying), overshooting the Order
+    # Guides catalog this page was opened from and contradicting the in-body
+    # "All guides" button. The chevron should go up exactly one level.
+    guide = OrderGuide.create!(name: "Test Guide")
+    page.current_window.resize_to(414, 896)
+    visit order_guide_path(guide)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Order Guides", chevron["aria-label"]
+    assert_equal order_guides_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path order_guides_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form

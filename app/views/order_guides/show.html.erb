@@ -1,5 +1,14 @@
 <% content_for :title, @order_guide.name %>
 
+<% content_for :mobile_left_action do %>
+  <%= link_to order_guides_path, class: "mobile-header-back", aria: { label: "Back to Order Guides" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Order Guides</span>
+  <% end %>
+<% end %>
+
 <div class="page-heading">
   <div>
     <h1><%= @order_guide.name %></h1>
