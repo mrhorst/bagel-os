@@ -11,6 +11,14 @@
   <%= link_to "All imports", import_batches_path, class: "button" %>
 </section>
 
+<% if @import_batch.status == "failed" && @import_batch.notes.present? %>
+  <div class="flash flash-alert" role="alert">
+    <strong>This import failed.</strong>
+    <%= simple_format(@import_batch.notes) %>
+    <p>Fix the file and <%= link_to "upload a corrected CSV", new_import_batch_path %>.</p>
+  </div>
+<% end %>
+
 <section class="metric-grid">
   <article class="metric"><span>Receipt date</span><strong><%= @receipt&.purchased_at&.strftime("%Y-%m-%d %I:%M %p") || "n/a" %></strong></article>
   <article class="metric"><span>Receipt number</span><strong><%= @receipt&.receipt_number || "n/a" %></strong></article>
