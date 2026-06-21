@@ -9,30 +9,37 @@
 </section>
 
 <article class="panel">
-  <table>
-    <thead>
-      <tr>
-        <th>File</th>
-        <th>Supplier</th>
-        <th>Status</th>
-        <th class="numeric">Rows</th>
-        <th class="numeric">Imported</th>
-        <th class="numeric">Failed</th>
-        <th>Imported at</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @import_batches.each do |batch| %>
+  <% if @import_batches.any? %>
+    <table>
+      <thead>
         <tr>
-          <td><%= link_to batch.source_filename, batch %></td>
-          <td><%= batch.supplier.name %></td>
-          <td><span class="badge"><%= batch.status %></span></td>
-          <td class="numeric"><%= batch.rows_processed %></td>
-          <td class="numeric"><%= batch.rows_imported %></td>
-          <td class="numeric"><%= batch.rows_failed %></td>
-          <td><%= batch.imported_at&.strftime("%Y-%m-%d %I:%M %p") %></td>
+          <th>File</th>
+          <th>Supplier</th>
+          <th>Status</th>
+          <th class="numeric">Rows</th>
+          <th class="numeric">Imported</th>
+          <th class="numeric">Failed</th>
+          <th>Imported at</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% @import_batches.each do |batch| %>
+          <tr>
+            <td><%= link_to batch.source_filename, batch %></td>
+            <td><%= batch.supplier.name %></td>
+            <td><span class="badge"><%= batch.status %></span></td>
+            <td class="numeric"><%= batch.rows_processed %></td>
+            <td class="numeric"><%= batch.rows_imported %></td>
+            <td class="numeric"><%= batch.rows_failed %></td>
+            <td><%= batch.imported_at&.strftime("%Y-%m-%d %I:%M %p") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">
+      <strong>No imports yet.</strong>
+      <span>Upload a supplier CSV to track its rows, imported and failed counts, and status here.</span>
+    </p>
+  <% end %>
 </article>
