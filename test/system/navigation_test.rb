@@ -31,6 +31,23 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on Log Sections returns to Log Book, not the hub" do
+    # Same gap as the Log Book settings sub-page: below 640px the layout's
+    # auto-chevron points at the module hub (Shift), overshooting Log Book — the
+    # page's own parent and what its in-body "Back to Log Book" button names.
+    page.current_window.resize_to(414, 896)
+    visit log_book_sections_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Log Book", chevron["aria-label"]
+    assert_equal log_book_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path log_book_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form
