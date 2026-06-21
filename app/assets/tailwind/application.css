@@ -4816,16 +4816,12 @@
     letter-spacing: -0.02em;
     line-height: 1;
   }
-  .tasks-kpi-accent {
-    background: var(--accent-soft);
-    border-color: color-mix(in oklch, var(--accent) 35%, transparent);
-    box-shadow:
-      inset 2px 0 0 var(--accent),
-      var(--shadow-e1);
-  }
+  /* Status on a KPI tile is a 2px left rule on the neutral surface — the same
+     convention as .task-row-late / .decision-card-error — never a painted fill.
+     Accent/orange is reserved for actions (the create FAB), so a neutral "Open"
+     count stays neutral; only genuinely meaningful states (late, done) get a
+     colored rule, and only when their count is positive. */
   .tasks-kpi-danger {
-    background: var(--danger-soft);
-    border-color: color-mix(in oklch, var(--danger) 30%, transparent);
     box-shadow:
       inset 2px 0 0 var(--danger),
       var(--shadow-e1);
@@ -4834,8 +4830,12 @@
     color: var(--danger-fg);
   }
   .tasks-kpi-ok {
-    background: var(--ok-soft);
-    border-color: color-mix(in oklch, var(--ok) 25%, transparent);
+    box-shadow:
+      inset 2px 0 0 var(--ok),
+      var(--shadow-e1);
+  }
+  .tasks-kpi-ok strong {
+    color: var(--ok-fg);
   }
 
   .tasks-more-stats {

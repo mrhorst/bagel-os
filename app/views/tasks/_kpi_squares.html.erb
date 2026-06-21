@@ -22,11 +22,11 @@
       <strong class="tnum"><%= metrics[:late_today] %></strong>
     </article>
   <% end %>
-  <article class="tasks-kpi <%= "tasks-kpi-accent" if !past && metrics[:open_today].to_i.positive? %>">
+  <article class="tasks-kpi">
     <span>Open</span>
     <strong class="tnum"><%= metrics[:open_today] %></strong>
   </article>
-  <article class="tasks-kpi tasks-kpi-ok">
+  <article class="tasks-kpi <%= "tasks-kpi-ok" if metrics[:completed_today].to_i.positive? %>">
     <span>Done</span>
     <strong class="tnum"><%= metrics[:completed_today] %></strong>
   </article>
