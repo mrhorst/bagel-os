@@ -52,7 +52,9 @@ namespace :qa do
     { slug: "inventory-count-new", label: "Inventory counts → new count → back",
       entry: "/inventory/counts", drill: [ "a[href*='/inventory/counts/new']" ] },
     { slug: "admin-tags-new", label: "Admin tags → new tag → back",
-      entry: "/admin/tags", drill: [ "a[href*='/admin/tags/new']" ] }
+      entry: "/admin/tags", drill: [ "a[href*='/admin/tags/new']" ] },
+    { slug: "follow-ups", label: "Follow-ups → open a flagged item → back",
+      entry: "/follow-ups", drill: [ "a[href*='/follow-ups/']" ] }
   ].freeze
 
   VIEWPORT = [ 414, 896 ].freeze # mobile — where the back affordance is the primary nav

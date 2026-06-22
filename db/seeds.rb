@@ -154,4 +154,25 @@ if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
     task.active                 = true
     task.save!
   end
+
+  # ── Demo follow-ups ─────────────────────────────────────────────────
+  # A couple of open follow-ups so the Follow-ups journey (Shift →
+  # Follow-ups → open an item → back) has something to click into. The
+  # index defaults to the "open" scope, so these must stay open to show.
+  # Generic, non-private demo content. Idempotent on title.
+  demo_follow_ups = [
+    { title: "Walk-in cooler running a few degrees warm", urgency: "important",
+      description: "Noticed the walk-in reading higher than usual at open. Keep an eye on it through the day and call for service if it keeps climbing." },
+    { title: "Reorder to-go cups before the weekend", urgency: "normal",
+      description: "Down to the last sleeve on the line. Make sure they land on the next order guide." }
+  ]
+
+  demo_follow_ups.each do |attrs|
+    follow_up = FollowUp.find_or_initialize_by(title: attrs.fetch(:title))
+    follow_up.urgency     = attrs.fetch(:urgency)
+    follow_up.status      = "open"
+    follow_up.description = attrs.fetch(:description)
+    follow_up.opened_at ||= Time.current
+    follow_up.save!
+  end
 end
