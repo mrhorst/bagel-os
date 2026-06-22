@@ -3944,7 +3944,7 @@
   .home-surface-card-count {
     background: var(--surface-3);
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     color: var(--ink);
     font-size: 0.78rem;
     font-variant-numeric: tabular-nums;
