@@ -1774,7 +1774,7 @@
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
   .action-card {
-    background: var(--surface-2);
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     color: var(--ink);
