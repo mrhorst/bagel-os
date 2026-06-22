@@ -436,6 +436,29 @@
     color: var(--ink-muted);
   }
 
+  /* Native <select> otherwise keeps the OS dropdown arrow — an un-themed glyph
+     that renders differently per platform and, in dark, sits as a stray bright
+     mark against the glass (the same un-themed-control problem the file-picker
+     button had). Suppress the native chrome and draw our own chevron so selects
+     read like the rest of the form language. The chevron is a muted gray that
+     clears its --surface-2 field in both schemes (light below, dark overridden
+     in the media query that follows). */
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%236b7280'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m6%209%206%206%206-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+    /* Room for the chevron so long option labels never collide with it. */
+    padding-right: 36px;
+  }
+  @media (prefers-color-scheme: dark) {
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%239ca3af'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m6%209%206%206%206-6'/%3E%3C/svg%3E");
+    }
+  }
+
   /* Native file-picker control. Left unthemed, the OS pseudo-button renders as
      inert body text inside the field — no fill, no radius, no affordance, and
      in dark it's the brightest thing on the screen. Restyle it into a real
