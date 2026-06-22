@@ -59,7 +59,12 @@
           <td class="numeric"><%= line.inner_quantity.present? ? "#{compact_decimal(line.inner_quantity)} #{line.inner_unit_label}" : "n/a" %></td>
           <td class="numeric"><%= line.inner_unit_price.present? ? "#{money(line.inner_unit_price)} / #{line.inner_unit_label}" : "n/a" %></td>
           <td class="numeric"><%= money(line.line_total) %></td>
-          <td><%= review_badge(line) %></td>
+          <td>
+            <div class="button-row">
+              <%= review_badge(line) %>
+              <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line), class: "button small #{'primary' if line.needs_review?}" %>
+            </div>
+          </td>
         </tr>
       <% end %>
     </tbody>
