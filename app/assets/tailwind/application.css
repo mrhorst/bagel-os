@@ -1828,7 +1828,7 @@
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
   .action-card {
-    background: var(--surface);
+    background: var(--surface-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     color: var(--ink);
@@ -1838,12 +1838,12 @@
     padding: 14px;
     transition:
       border-color 120ms ease,
-      background 120ms ease,
+      box-shadow 120ms ease,
       transform 120ms ease;
   }
   .action-card:hover {
-    background: var(--surface-3);
     border-color: var(--line-2);
+    box-shadow: var(--shadow-e1);
     text-decoration: none;
   }
   .action-card strong,
