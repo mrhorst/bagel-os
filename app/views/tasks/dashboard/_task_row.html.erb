@@ -27,7 +27,11 @@
   <div class="task-checkbox-cell">
     <% if !monthly && occurrence.completed? %>
       <% if occurrence.undoable? %>
-        <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "task-checkbox-form" do |form| %>
+        <%# Undo reverts a logged completion, so guard the single-tap circle with
+            a confirmation — matching the explicit "Confirm undo" checkbox on the
+            occurrence detail page (and the controller's confirm_undo guard). %>
+        <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "task-checkbox-form",
+              data: { turbo_confirm: "Undo completion of #{occurrence.snapshot_title}?" } do |form| %>
           <%= hidden_field_tag :confirm_undo, "1" %>
           <%= form.button type: "submit",
                 class: "task-checkbox task-checkbox-completed",
