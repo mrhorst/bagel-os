@@ -1915,9 +1915,17 @@
     min-height: 32px;
     padding: 5px 8px;
   }
-  .inline-guide-form .compact-input,
-  .inline-guide-form .compact-select {
+  .inline-guide-form .compact-input {
     min-width: 130px;
+  }
+  /* The primary-guide <select> must show its full selected value. The custom
+     chevron reserves 36px of right padding, so a 130px floor left only ~94px
+     for text — clipping real guide names ("Cleaning Supplies", "Every 2
+     weeks") mid-word, and rendering at different widths across the per-section
+     tables. Give the select a floor wide enough for the longest guide label so
+     it never truncates and the column stays consistent down the page. */
+  .inline-guide-form .compact-select {
+    min-width: 180px;
   }
 
   .guide-gap-form,
