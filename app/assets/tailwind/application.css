@@ -1539,6 +1539,16 @@
   .log-book-recent-row-current .log-book-recent-link {
     background: color-mix(in oklch, var(--accent-soft) 50%, var(--surface-2));
   }
+  /* A day carrying open follow-ups gets the standard 2px left status rule on the
+     neutral surface — warn for needs-attention, escalating to danger when any
+     flag is urgent — the same convention as .warning-row / .follow-up-card-urgent,
+     never a painted row background. */
+  .log-book-recent-row-flagged .log-book-recent-link {
+    box-shadow: inset 2px 0 0 var(--warn);
+  }
+  .log-book-recent-row-urgent .log-book-recent-link {
+    box-shadow: inset 2px 0 0 var(--danger);
+  }
   .log-book-recent-date {
     color: var(--ink);
     font-variant-numeric: tabular-nums;

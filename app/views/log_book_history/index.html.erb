@@ -29,7 +29,7 @@
       <% @entries.each do |entry| %>
         <% open_flags  = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? } %>
         <% urgent_open = entry.log_book_responses.count { |r| r.flagged_for_follow_up? && r.follow_up_resolved_at.blank? && r.urgency == "urgent" } %>
-        <li class="log-book-recent-row <%= 'log-book-recent-row-flagged' if open_flags.positive? %>">
+        <li class="log-book-recent-row <%= 'log-book-recent-row-flagged' if open_flags.positive? %> <%= 'log-book-recent-row-urgent' if urgent_open.positive? %>">
           <%= link_to log_book_path(date: entry.operating_date), class: "log-book-recent-link" do %>
             <span class="log-book-recent-date"><%= entry.operating_date.strftime("%a %b %-d, %Y") %></span>
             <span class="log-book-recent-signals">
