@@ -43,6 +43,9 @@ class NormalizationReviewsController < ApplicationController
     clear_skipped(review.id)
 
     redirect_to normalization_reviews_path, notice: "Created #{product.canonical_name}."
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: normalization_reviews_path,
+      alert: "Couldn't create product: #{e.record.errors.full_messages.to_sentence}. Try assigning to an existing product instead."
   end
 
   def resolve
