@@ -21,7 +21,12 @@
     <label class="check"><%= form.check_box :needs_review, { checked: params[:needs_review] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Needs review</label>
     <label class="check"><%= form.check_box :no_standard_unit_price, { checked: params[:no_standard_unit_price] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> No standard unit price</label>
     <label class="check"><%= form.check_box :missing_category, { checked: params[:missing_category] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Missing category</label>
-    <%= form.submit "Apply", class: "button", data: { auto_submit_form_target: "submit", filter_submit: true } %>
+    <div class="filter-actions">
+      <%= form.submit "Apply", class: "button", data: { auto_submit_form_target: "submit", filter_submit: true } %>
+      <% if product_filters_active?(params) %>
+        <%= link_to "Clear filters", products_cleared_filters_path(request.query_parameters), class: "button", data: { filter_clear: true } %>
+      <% end %>
+    </div>
   <% end %>
 </article>
 
@@ -95,9 +100,14 @@
       <% end %>
     </tbody>
   </table>
+  <% elsif product_filters_active?(params) %>
+    <%= render "dashboard/empty_state",
+      title: "No products match these filters",
+      message: "Nothing matches the current search and filters. Clear them to see the full catalog.",
+      action: link_to("Clear filters", products_cleared_filters_path(request.query_parameters), class: "button", data: { filter_clear: true }) %>
   <% else %>
     <%= render "dashboard/empty_state",
       title: "No products to show",
-      message: "Try clearing the filters above, or import receipt CSVs to populate your product list." %>
+      message: "Import receipt CSVs to populate your product list." %>
   <% end %>
 </article>

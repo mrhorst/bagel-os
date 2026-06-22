@@ -1825,6 +1825,11 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
+  .filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
   .stack.small {
     gap: 8px;
   }
