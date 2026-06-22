@@ -436,6 +436,37 @@
     color: var(--ink-muted);
   }
 
+  /* Native file-picker control. Left unthemed, the OS pseudo-button renders as
+     inert body text inside the field — no fill, no radius, no affordance, and
+     in dark it's the brightest thing on the screen. Restyle it into a real
+     secondary button (the .button language) so the "Choose file" tap target
+     reads as a button in both schemes: --surface-3 chip on the --surface-2
+     field, hairline edge, one radius, comfortable touch height. */
+  input[type='file'] {
+    align-items: center;
+    display: flex;
+  }
+  input[type='file']::file-selector-button {
+    background: var(--surface-3);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-md);
+    color: var(--ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-inline-end: 12px;
+    min-height: 32px;
+    padding: 6px 12px;
+    transition:
+      background 140ms var(--ease-out-quint),
+      border-color 140ms var(--ease-out-quint);
+  }
+  input[type='file']::file-selector-button:hover {
+    background: color-mix(in oklch, var(--surface-3) 82%, var(--ink));
+    border-color: color-mix(in oklch, var(--ink) 25%, var(--line-2));
+  }
+
   input:focus,
   select:focus,
   textarea:focus,
