@@ -175,4 +175,50 @@ if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
     follow_up.opened_at ||= Time.current
     follow_up.save!
   end
+
+  # ── Demo receipt import ─────────────────────────────────────────────
+  # One imported receipt batch so the Imports journey (Buying → Imports →
+  # open a batch → back) has a row to click into, and so the batch detail
+  # (with its receipt lines) renders for hand-probes. Generic, non-private
+  # demo content. Idempotent on the batch's unique file_checksum.
+  demo_supplier = Supplier.primary
+
+  import_batch = ImportBatch.find_or_initialize_by(file_checksum: "demo-receipt-0001")
+  import_batch.supplier        = demo_supplier
+  import_batch.source_filename = "demo-receipt-2026-06-01.csv"
+  import_batch.status          = "imported"
+  import_batch.imported_at   ||= Time.current
+  import_batch.rows_processed  = 2
+  import_batch.rows_imported   = 2
+  import_batch.rows_failed     = 0
+  import_batch.save!
+
+  receipt = Receipt.find_or_initialize_by(supplier: demo_supplier, receipt_number: "DEMO-0001")
+  receipt.import_batch = import_batch
+  receipt.purchased_at ||= Time.current
+  receipt.subtotal = 86.50
+  receipt.tax      = 0.00
+  receipt.total    = 86.50
+  receipt.save!
+
+  demo_lines = [
+    { line_number: 1, raw_name: "All-purpose flour, 50 lb bag", raw_sku: "FLR-50",
+      unit_quantity: 2, line_total: 54.00, needs_review: false },
+    { line_number: 2, raw_name: "Whole milk, 4 x 1 gal", raw_sku: "MLK-4G",
+      unit_quantity: 1, line_total: 32.50, needs_review: true }
+  ]
+
+  demo_lines.each do |attrs|
+    line = ReceiptLineItem.find_or_initialize_by(import_batch: import_batch, line_number: attrs.fetch(:line_number))
+    line.receipt       = receipt
+    line.supplier      = demo_supplier
+    line.line_type     = "item"
+    line.raw_name      = attrs.fetch(:raw_name)
+    line.raw_sku       = attrs.fetch(:raw_sku)
+    line.unit_quantity = attrs.fetch(:unit_quantity)
+    line.line_total    = attrs.fetch(:line_total)
+    line.needs_review  = attrs.fetch(:needs_review)
+    line.row_checksum  = "demo-receipt-0001-line-#{attrs.fetch(:line_number)}"
+    line.save!
+  end
 end

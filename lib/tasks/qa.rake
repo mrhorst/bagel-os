@@ -54,7 +54,9 @@ namespace :qa do
     { slug: "admin-tags-new", label: "Admin tags → new tag → back",
       entry: "/admin/tags", drill: [ "a[href*='/admin/tags/new']" ] },
     { slug: "follow-ups", label: "Follow-ups → open a flagged item → back",
-      entry: "/follow-ups", drill: [ "a[href*='/follow-ups/']" ] }
+      entry: "/follow-ups", drill: [ "a[href*='/follow-ups/']" ] },
+    { slug: "imports", label: "Imports → open a receipt batch → back",
+      entry: "/import_batches", drill: [ "a[href*='/import_batches/']:not([href*='/new'])" ] }
   ].freeze
 
   VIEWPORT = [ 414, 896 ].freeze # mobile — where the back affordance is the primary nav
