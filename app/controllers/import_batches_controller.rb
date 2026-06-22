@@ -27,7 +27,7 @@ class ImportBatchesController < ApplicationController
       # batch, where the failure reason and a recovery link are shown.
       redirect_to import_batch_path(batch), alert: result[:message]
     else
-      redirect_to import_batches_path, notice: result[:message]
+      redirect_to import_batches_path, notice: success_notice(result, batch)
     end
   end
 
@@ -35,5 +35,23 @@ class ImportBatchesController < ApplicationController
     @import_batch = ImportBatch.includes(:supplier, :receipt).find(params[:id])
     @receipt = @import_batch.receipt
     @line_items = @import_batch.receipt_line_items.includes(:product).order(:line_number)
+  end
+
+  private
+
+  # A clean import still leaves work behind: some lines couldn't be matched with
+  # confidence and are flagged for review. The success notice is the only cue the
+  # user gets before landing back on the index (which has no review column), so
+  # tell them how many lines need attention — otherwise the import looks "done"
+  # when it isn't. Skipped re-imports (already imported by checksum/receipt) made
+  # no new lines, so they get the plain message.
+  def success_notice(result, batch)
+    message = result[:message]
+    return message if result[:skipped] || batch.blank?
+
+    review_count = batch.receipt_line_items.needs_review.count
+    return message unless review_count.positive?
+
+    "#{message} #{review_count} #{'line'.pluralize(review_count)} #{review_count == 1 ? 'needs' : 'need'} review."
   end
 end
