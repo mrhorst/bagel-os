@@ -18,4 +18,16 @@ class ReportExporterTest < ActiveSupport::TestCase
     assert_includes exporter.price_history, "package_price"
     assert_includes exporter.items_needing_review, "issue_type"
   end
+
+  test "every report has a written description distinct from its humanized name" do
+    Purchasing::ReportExporter::REPORTS.each do |report|
+      description = Purchasing::ReportExporter.description_for(report)
+      assert description.present?, "#{report} has no description"
+      assert_not_equal report.humanize, description, "#{report} only restates its name"
+    end
+  end
+
+  test "description_for falls back to the humanized slug for an unknown report" do
+    assert_equal "Brand new report", Purchasing::ReportExporter.description_for("brand_new_report")
+  end
 end
