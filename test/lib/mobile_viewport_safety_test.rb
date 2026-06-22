@@ -74,15 +74,21 @@ class MobileViewportSafetyTest < ActiveSupport::TestCase
     assert_match(/width:\s*100%/, combined_body)
   end
 
-  test "non-production env banner reserves its height instead of overlaying chrome" do
+  test "non-production env banner overlays the top and the chrome is offset clear of it" do
     css = File.read(CSS_PATH)
 
-    # The ribbon must be sticky, not a fixed overlay — fixed would cover the
-    # sidebar brand and the mobile header instead of reserving space for them.
+    # The ribbon is a fixed overlay — it reserves no flow height; the body:has()
+    # offsets below push every top-pinned chrome element (and the content column)
+    # down by --env-banner-total so nothing is covered. It must NOT be sticky: a
+    # sticky ribbon *reserves* its own height, which then double-counts against
+    # the mobile header's own --env-banner-total offset and opens an empty band
+    # between the ribbon and the screen title (the staging-gap regression).
     banner = css[/\.env-banner\s*\{[^}]*\}/m]
     refute_nil banner, "could not locate the .env-banner rule"
-    assert_match(/position:\s*sticky/, banner,
-      ".env-banner must be sticky so it reserves height in flow rather than overlaying top chrome")
+    assert_match(/position:\s*fixed/, banner,
+      ".env-banner must be a fixed overlay; the body:has(.env-banner) offsets keep top chrome clear of it")
+    refute_match(/position:\s*sticky/, banner,
+      ".env-banner must not be sticky — a space-reserving ribbon double-counts the mobile header's --env-banner-total offset and reopens the title gap")
 
     # The top-pinned chrome must be offset by the banner height while it's on
     # the page, keyed off a --env-banner-h measure.
