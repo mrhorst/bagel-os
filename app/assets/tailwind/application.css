@@ -4434,17 +4434,35 @@
     color: inherit;
     display: grid;
     gap: 12px;
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr) 8px;
     padding: 14px;
     text-decoration: none;
     transition:
       border-color 120ms ease,
       background 120ms ease;
   }
+  /* Trailing disclosure chevron — these cards are whole-card navigation links,
+     so they carry the iOS settings-row "›" affordance to signal they route
+     somewhere. Drawn from a mask so it tracks --ink-muted in both schemes. */
+  .settings-card::after {
+    align-self: center;
+    background: var(--ink-muted);
+    content: "";
+    height: 13px;
+    mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    transition: background 120ms ease;
+    width: 8px;
+  }
   .settings-card:hover {
     background: color-mix(in oklch, var(--surface-3) 60%, var(--surface-2));
     border-color: var(--line-2);
     text-decoration: none;
+  }
+  .settings-card:hover::after {
+    background: var(--ink);
   }
   .settings-card h2 {
     font-size: 1.02rem;
