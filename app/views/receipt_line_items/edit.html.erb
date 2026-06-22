@@ -1,5 +1,14 @@
 <% content_for :title, "Edit purchase line" %>
 
+<% content_for :mobile_left_action do %>
+  <%= link_to import_batch_path(@line_item.import_batch, anchor: dom_id(@line_item)), class: "mobile-header-back", aria: { label: "Back to receipt" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Receipt</span>
+  <% end %>
+<% end %>
+
 <section class="page-heading">
   <div>
     <h1>Edit purchase line</h1>

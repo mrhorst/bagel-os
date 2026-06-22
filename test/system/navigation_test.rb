@@ -291,6 +291,66 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on a receipt import returns to Imports, not the hub" do
+    # Same gap as the Products and Order Guide sub-pages: import_batches IS a
+    # navigation module (hub Stock), and its index and detail share one
+    # controller, so without a per-page override the layout's auto-chevron points
+    # at the hub on the detail page too — overshooting the Imports list the user
+    # tapped in from and contradicting the in-body "All imports" button. It
+    # should go up exactly one level, to that list.
+    batch = build_import_batch_with_line
+    page.current_window.resize_to(414, 896)
+    visit import_batch_path(batch)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Imports", chevron["aria-label"]
+    assert_equal import_batches_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path import_batches_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on the receipt upload form returns to Imports, not the hub" do
+    # The new-upload page shares the import_batches controller, so the auto-chevron
+    # overshoots to the Stock hub. It should return to the Imports list it was
+    # opened from.
+    page.current_window.resize_to(414, 896)
+    visit new_import_batch_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Imports", chevron["aria-label"]
+    assert_equal import_batches_path, URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path import_batches_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on a receipt line editor returns to the receipt, not the hub" do
+    # The deepest step of the receipt import → review pipeline. receipt_line_items
+    # is catalogued under the Imports module, so without an override the
+    # auto-chevron points at the hub (Stock), overshooting by two levels and
+    # stranding the user away from the receipt they were triaging. It should land
+    # on the import batch the line belongs to — where the in-body "Open receipt"
+    # button and the post-save redirect already send them.
+    batch = build_import_batch_with_line
+    line = batch.receipt_line_items.first
+    page.current_window.resize_to(414, 896)
+    visit edit_receipt_line_item_path(line)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to receipt", chevron["aria-label"]
+    assert_equal import_batch_path(batch), URI(chevron[:href]).path
+
+    chevron.click
+    assert_current_path import_batch_path(batch)
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form
@@ -316,5 +376,19 @@ class NavigationTest < ApplicationSystemTestCase
   def build_product
     supplier = Supplier.create!(name: "Primary Supplier")
     Product.create!(canonical_name: "Test Product", supplier: supplier)
+  end
+
+  # A minimal import batch with one receipt line so the import show and the
+  # per-line editor render without running the full CSV importer.
+  def build_import_batch_with_line
+    supplier = Supplier.create!(name: "Primary Supplier")
+    batch = ImportBatch.create!(supplier: supplier, source_filename: "receipt.csv",
+                                file_checksum: SecureRandom.hex, imported_at: Time.current,
+                                status: "imported")
+    receipt = Receipt.create!(supplier: supplier, import_batch: batch, receipt_number: "R-1")
+    ReceiptLineItem.create!(receipt: receipt, supplier: supplier, import_batch: batch,
+                            line_number: 1, line_type: "item", raw_name: "Eggs",
+                            row_checksum: SecureRandom.hex)
+    batch
   end
 end
