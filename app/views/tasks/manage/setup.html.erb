@@ -10,7 +10,7 @@
 
 <section class="task-builder-menu" aria-label="Task builder options">
   <% if @task_lists.any? %>
-    <%= link_to new_tasks_manage_task_path(flow: "guided", return_to: "dashboard"), class: "task-builder-card task-builder-card-primary" do %>
+    <%= link_to new_tasks_manage_task_path(flow: "guided", return_to: "dashboard"), class: "task-builder-card" do %>
       <span class="task-builder-card-icon" aria-hidden="true">+</span>
       <span>
         <strong>Add to an existing list</strong>

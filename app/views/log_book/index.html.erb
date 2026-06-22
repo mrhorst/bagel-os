@@ -24,7 +24,17 @@
   </div>
 <% end %>
 
-<%# ── Page header: date pager + saved status ─────────────────────────── %>
+<%# Page title — matches every sibling index (Inventory Counts, Users, …); on
+    mobile the H1 is hidden by the layout (the sticky header is authoritative)
+    and only the subtitle shows, consistent with those screens. %>
+<div class="page-heading">
+  <div>
+    <h1>Log Book</h1>
+    <p>Daily notes, counts, and follow-ups.</p>
+  </div>
+</div>
+
+<%# ── Date pager + saved status ──────────────────────────────────────── %>
 <header class="log-book-header">
   <nav class="log-book-date-nav" aria-label="Log Book date">
     <%= link_to log_book_path(date: @prev_date), class: "log-book-date-arrow", aria: { label: "Previous day" } do %>
