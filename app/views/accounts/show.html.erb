@@ -58,6 +58,7 @@
 
 <section class="panel narrow">
   <h2>Change password</h2>
+  <p class="muted small">Changing your password signs out all other devices.</p>
   <%= form_with model: @user, url: account_password_path, method: :patch, class: "stacked-form" do |form| %>
     <% if @user.errors.any? && (@user.errors[:current_password].any? || @user.errors[:password].any? || @user.errors[:password_confirmation].any?) %>
       <div class="flash flash-alert">
@@ -88,7 +89,6 @@
       <%= form.submit "Update password", class: "button primary" %>
     </div>
   <% end %>
-  <p class="muted small">Changing your password signs out all other devices.</p>
 </section>
 
 <section class="panel narrow">
