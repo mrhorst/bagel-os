@@ -1125,7 +1125,7 @@
   }
 
   .guide-card {
-    background: var(--surface-2);
+    background: var(--surface-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     padding: 14px;
