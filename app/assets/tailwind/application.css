@@ -4388,6 +4388,7 @@
   .settings-card-icon {
     align-items: center;
     background: var(--surface-3);
+    border: 1px solid var(--line-2);
     border-radius: var(--radius-md);
     color: var(--ink);
     display: flex;
