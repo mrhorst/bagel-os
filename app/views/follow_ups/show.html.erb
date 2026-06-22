@@ -112,17 +112,29 @@
     <% end %>
 
     <% unless @follow_up.resolved? %>
-      <details class="follow-up-spawn">
+      <%# @spawn is set only when a spawn attempt failed validation: repopulate the
+          form with what was typed and open the disclosure so the user doesn't lose it. %>
+      <details class="follow-up-spawn"<%= " open".html_safe if @spawn_errors %>>
         <summary class="button small">Create task from this follow-up</summary>
         <%= form_with url: spawn_task_follow_up_path(@follow_up), method: :post, class: "stacked-form",
               data: { controller: "follow-up-spawn" } do %>
+          <% if @spawn_errors %>
+            <div class="form-errors" role="alert">
+              <strong><%= pluralize(@spawn_errors.count, "error") %> kept this task from saving:</strong>
+              <ul>
+                <% @spawn_errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
           <div class="field">
             <%= label_tag "spawn[title]", "Task title" %>
-            <%= text_field_tag "spawn[title]", @follow_up.title, required: true %>
+            <%= text_field_tag "spawn[title]", (@spawn && @spawn[:title].presence) || @follow_up.title, required: true %>
           </div>
           <div class="field">
             <%= label_tag "spawn[description]", "Instructions (optional)" %>
-            <%= text_area_tag "spawn[description]", @follow_up.description, rows: 2 %>
+            <%= text_area_tag "spawn[description]", (@spawn && @spawn[:description]) || @follow_up.description, rows: 2 %>
           </div>
           <div class="field">
             <%= label_tag "spawn[link_kind]", "Kind" %>
@@ -130,17 +142,17 @@
                   options_for_select([
                     ["One-shot (in 'Follow-up tasks')",      "one_shot"],
                     ["Recurring (in a list of your choice)", "recurring"]
-                  ]),
+                  ], (@spawn && @spawn[:link_kind]) || "one_shot"),
                   data: { follow_up_spawn_target: "kind", action: "change->follow-up-spawn#sync" } %>
           </div>
           <div class="field" data-follow-up-spawn-target="oneShotField">
             <%= label_tag "spawn[one_time_on]", "Due date" %>
-            <%= date_field_tag "spawn[one_time_on]", Date.current %>
+            <%= date_field_tag "spawn[one_time_on]", (@spawn && @spawn[:one_time_on].presence) || Date.current %>
           </div>
           <div class="field" hidden data-follow-up-spawn-target="recurringField">
             <%= label_tag "spawn[task_list_id]", "Task list" %>
             <%= select_tag "spawn[task_list_id]",
-                  options_from_collection_for_select(TaskList.active.ordered, :id, :name) %>
+                  options_from_collection_for_select(TaskList.active.ordered, :id, :name, @spawn && @spawn[:task_list_id]) %>
           </div>
           <div class="field" hidden data-follow-up-spawn-target="recurringField">
             <%= label_tag "spawn[recurrence_type]", "How often?" %>
@@ -149,15 +161,16 @@
                     ["Daily",   "daily"],
                     ["Weekly",  "weekly"],
                     ["Monthly", "monthly"]
-                  ]),
+                  ], (@spawn && @spawn[:recurrence_type]) || "daily"),
                   data: { follow_up_spawn_target: "recurrence", action: "change->follow-up-spawn#sync" } %>
           </div>
           <div class="field" hidden data-follow-up-spawn-target="weeklyField">
             <span class="field-label">Repeat on</span>
             <div class="weekday-checks">
+              <% selected_weekdays = @spawn ? Array(@spawn[:weekdays]).map(&:to_i) : [ Date.current.wday ] %>
               <% %w[Sun Mon Tue Wed Thu Fri Sat].each_with_index do |day, idx| %>
                 <label class="check">
-                  <%= check_box_tag "spawn[weekdays][]", idx, idx == Date.current.wday %>
+                  <%= check_box_tag "spawn[weekdays][]", idx, selected_weekdays.include?(idx) %>
                   <span><%= day %></span>
                 </label>
               <% end %>
@@ -165,10 +178,10 @@
           </div>
           <div class="field">
             <%= label_tag "spawn[due_time]", "Due time" %>
-            <%= time_field_tag "spawn[due_time]", "17:00" %>
+            <%= time_field_tag "spawn[due_time]", (@spawn && @spawn[:due_time].presence) || "17:00" %>
           </div>
           <label class="check">
-            <%= check_box_tag "spawn[auto_resolve]", "1", true %>
+            <%= check_box_tag "spawn[auto_resolve]", "1", @spawn ? @spawn[:auto_resolve] == "1" : true %>
             <span>Resolve this follow-up after creating the task</span>
           </label>
           <div class="form-footer">
