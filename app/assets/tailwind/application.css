@@ -4439,9 +4439,6 @@
     text-decoration: none;
     transform: translateY(-1px);
   }
-  .task-builder-card-primary {
-    border-color: color-mix(in oklch, var(--accent) 45%, var(--line));
-  }
   .task-builder-card-disabled {
     color: var(--ink-muted);
     opacity: 0.74;
