@@ -100,6 +100,33 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     refute follow_up.reload.resolved?
   end
 
+  test "a failed spawn re-renders the form with the typed input preserved instead of dropping it" do
+    follow_up = FollowUp.create!(title: "Fix walk-in", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one))
+    list = TaskList.create!(name: "Cleaning", position: 1)
+
+    # Weekly recurrence with no weekday checked is an easy mis-step — unchecked
+    # boxes send no param — and fails validation. The user should not lose the
+    # title and instructions they typed.
+    assert_no_difference -> { Task.count } do
+      post spawn_task_follow_up_path(follow_up),
+        params: { spawn: { title: "My carefully typed title", description: "Lots of typed notes",
+                           link_kind: "recurring", recurrence_type: "weekly", task_list_id: list.id,
+                           due_time: "08:30", auto_resolve: "0" } }
+    end
+
+    # Re-rendered in place (not redirected away), so the form survives.
+    assert_response :unprocessable_entity
+    assert_select ".form-errors", text: /at least one day/i
+    # The disclosure is reopened so the repopulated form is visible.
+    assert_select "details.follow-up-spawn[open]"
+    # Everything the user typed/chose is preserved.
+    assert_select "input[name='spawn[title]'][value='My carefully typed title']"
+    assert_select "textarea[name='spawn[description]']", text: /Lots of typed notes/
+    assert_select "select[name='spawn[link_kind]'] option[selected][value=recurring]"
+    assert_select "select[name='spawn[recurrence_type]'] option[selected][value=weekly]"
+    assert_select "input[name='spawn[due_time]'][value='08:30']"
+  end
+
   test "employee without permission is redirected" do
     employee = users(:two)
     sign_in_as(employee)

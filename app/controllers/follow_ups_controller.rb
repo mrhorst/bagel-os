@@ -35,16 +35,17 @@ class FollowUpsController < ApplicationController
   end
 
   def spawn_task
-    result = FollowUps::SpawnTask.new(
-      @follow_up,
-      params: params.require(:spawn).permit(:title, :description, :link_kind, :recurrence_type, :task_list_id, :one_time_on, :due_time, :auto_resolve, weekdays: []),
-      user: Current.user
-    ).call
+    spawn_params = params.require(:spawn).permit(:title, :description, :link_kind, :recurrence_type, :task_list_id, :one_time_on, :due_time, :auto_resolve, weekdays: [])
+    result = FollowUps::SpawnTask.new(@follow_up, params: spawn_params, user: Current.user).call
 
     if result.ok?
       redirect_to follow_up_path(@follow_up), notice: "Task created: #{result.task.title}"
     else
-      redirect_to follow_up_path(@follow_up), alert: result.errors.full_messages.to_sentence
+      # Re-render the detail page with the form repopulated and the errors shown,
+      # rather than redirecting — a redirect would drop everything the user typed.
+      @spawn = spawn_params
+      @spawn_errors = result.errors
+      render :show, status: :unprocessable_entity
     end
   end
 
