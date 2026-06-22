@@ -114,6 +114,42 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_select "[data-async-frame='products'] .muted", text: /Page 3 of 3/
   end
 
+  test "an active filter exposes a clear-filters control that drops the filter" do
+    get products_path(q: "tongol")
+
+    assert_response :success
+    assert_select "form.filters a[data-filter-clear]", text: "Clear filters"
+    clear_href = css_select("a[data-filter-clear]").first["href"]
+    assert_match %r{\A/products}, clear_href
+    assert_not_includes clear_href, "q="
+  end
+
+  test "the unfiltered catalog has no clear-filters control" do
+    get products_path
+
+    assert_response :success
+    assert_select "a[data-filter-clear]", count: 0
+  end
+
+  test "a zero-result filter shows an in-context clear-filters action" do
+    get products_path(q: "zzzznotaproduct")
+
+    assert_response :success
+    assert_select "[data-async-frame='products'] tbody tr", count: 0
+    assert_select ".dashboard-empty-state", text: /No products match these filters/
+    assert_select ".dashboard-empty-state a[data-filter-clear]", text: "Clear filters"
+  end
+
+  test "clearing filters preserves the chosen sort and page size" do
+    get products_path(q: "zzzznotaproduct", sort: "total_spend", per_page: "25")
+
+    assert_response :success
+    clear_href = css_select("a[data-filter-clear]").first["href"]
+    assert_includes clear_href, "sort=total_spend"
+    assert_includes clear_href, "per_page=25"
+    assert_not_includes clear_href, "q="
+  end
+
   test "stylesheet preserves hidden option panels" do
     stylesheet = Rails.root.join("app/assets/stylesheets/application.css").read
 
