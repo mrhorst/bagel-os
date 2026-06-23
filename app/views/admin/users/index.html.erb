@@ -30,7 +30,7 @@
           </td>
           <td data-label="Name"><%= user.name.presence || "—" %></td>
           <td data-label="Role">
-            <span class="badge <%= user.admin? ? 'badge-ok' : '' %>"><%= user.role.titleize %></span>
+            <span class="badge"><%= user.role.titleize %></span>
           </td>
           <td data-label="Modules">
             <% if user.admin? %>
