@@ -4038,6 +4038,20 @@
      genuine warnings and red (--danger) remains the only attention color on
      this grid. */
 
+  /* On single-column mobile the cards stack one per row, so the desktop
+     bottom-anchor (min-height + summary margin-top:auto, which aligns
+     summaries across a grid row) has no row to align against — it just
+     orphans the eyebrow above a dead gap. Let the card size to its content
+     and pack top-down instead. */
+  @media (max-width: 640px) {
+    .home-surface-card {
+      min-height: 0;
+    }
+    .home-surface-card-summary {
+      margin-top: 0;
+    }
+  }
+
   /* ── Dashboard ────────────────────────────────────────────────────── */
   .dashboard-hero {
     align-items: end;
