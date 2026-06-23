@@ -90,7 +90,11 @@
         <% if @occurrence.requires_photo_evidence? %>
           <div class="field">
             <%= form.label :photo, "Photo evidence" %>
-            <%= form.file_field :photo, accept: "image/*", capture: "environment" %>
+            <%# This task can't be completed without a photo (the model enforces it).
+                Mark the input required so the browser blocks the submit up front
+                instead of round-tripping to a rejected save that discards the
+                note the user just typed. %>
+            <%= form.file_field :photo, accept: "image/*", capture: "environment", required: true %>
           </div>
         <% end %>
         <div class="field">
