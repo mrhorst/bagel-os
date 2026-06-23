@@ -2473,7 +2473,16 @@
     border-width: 0 2px 2px 0;
     content: '';
     height: 11px;
-    transform: rotate(45deg) translate(-1px, -1px);
+    /* Anchor the checkmark to the circle's center so it can never be shifted
+       or squeezed by sibling content. The undoable variant is a real submit
+       <button> whose label is hidden by the parent's `color: transparent` but
+       still takes part in the flex layout — without absolute centering it
+       compressed this glyph and pushed it off-center, leaving an "ugly"
+       half-rendered tick instead of a clean checkmark right after completing. */
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -60%) rotate(45deg);
     width: 5px;
   }
   .task-checkbox-photo {
