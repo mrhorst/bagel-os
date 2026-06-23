@@ -5712,6 +5712,20 @@
       margin-bottom: 2px;
       text-transform: uppercase;
     }
+    /* The row's primary identifier becomes the card's heading on mobile,
+       so each stacked card reads as its name ("Eggs") instead of a labeled
+       field ("ITEM / Eggs"): drop the redundant column label and give the
+       value real title weight. Mobile-only; desktop tables are untouched. */
+    .responsive-table td.row-heading {
+      color: var(--ink);
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.3;
+      padding-bottom: 8px;
+    }
+    .responsive-table td.row-heading[data-label]::before {
+      display: none;
+    }
     .responsive-table td.numeric {
       text-align: left !important;
     }

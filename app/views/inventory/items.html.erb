@@ -39,7 +39,7 @@
       <tbody>
         <% @items_needing_review.first(20).each do |item| %>
           <tr>
-            <td data-label="Guide item"><%= item.name %></td>
+            <td class="row-heading" data-label="Guide item"><%= item.name %></td>
             <td data-label="Section"><%= item.inventory_section&.name || "Unsectioned" %></td>
             <td data-label="Pack / count note"><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
           </tr>
@@ -74,7 +74,7 @@
       <tbody>
         <% items.sort_by { |item| [item.position, item.name] }.each do |item| %>
           <tr>
-            <td data-label="Item"><%= item.name %></td>
+            <td class="row-heading" data-label="Item"><%= item.name %></td>
             <td data-label="Guide">
               <%= render "inventory/primary_order_guide_form", item: item, order_guides: @order_guides %>
               <% if item.additional_order_guides.any? %>
@@ -111,7 +111,7 @@
       <tbody>
         <% @unsectioned_items.each do |item| %>
           <tr>
-            <td data-label="Item"><%= item.name %></td>
+            <td class="row-heading" data-label="Item"><%= item.name %></td>
             <td data-label="Receipt product"><%= item.linked_product_name %></td>
           </tr>
         <% end %>
