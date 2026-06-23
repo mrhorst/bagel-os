@@ -127,6 +127,21 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     assert_select "input[name='spawn[due_time]'][value='08:30']"
   end
 
+  test "a spawned task is reachable from the follow-up that created it" do
+    follow_up = FollowUp.create!(title: "Toilet clogged", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one))
+
+    # auto_resolve off so the follow-up stays open and we render its detail plainly.
+    post spawn_task_follow_up_path(follow_up),
+      params: { spawn: { title: "Snake the toilet", link_kind: "one_shot", due_time: "17:00", auto_resolve: "0" } }
+    task = Task.last
+
+    get follow_up_path(follow_up)
+    assert_response :success
+    # The "Tasks spawned" list must link the task to its definition — otherwise the
+    # user can see what they created but has no way to reach it.
+    assert_select ".follow-up-task-links a[href=?]", edit_tasks_manage_task_path(task), text: /Snake the toilet/
+  end
+
   test "employee without permission is redirected" do
     employee = users(:two)
     sign_in_as(employee)

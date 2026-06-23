@@ -946,8 +946,12 @@
   .follow-up-task-link {
     background: var(--surface-3);
     border-radius: var(--radius-md);
+    color: var(--ink);
+    display: block;
     padding: 8px 12px;
+    text-decoration: none;
   }
+  .follow-up-task-link:hover { background: color-mix(in oklch, var(--surface-3) 85%, var(--ink)); }
 
   .follow-up-spawn {
     margin-top: 6px;
