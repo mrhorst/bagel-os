@@ -19,8 +19,8 @@
     <tbody>
       <% @reports.each do |report| %>
         <tr>
-          <td data-label="Report"><%= report %>.csv</td>
-          <td data-label="Description"><%= report.humanize %></td>
+          <td data-label="Report"><%= report.humanize %> <span class="muted small">(<code><%= report %>.csv</code>)</span></td>
+          <td data-label="Description"><%= report_description(report) %></td>
           <td class="numeric" data-label=""><%= link_to "Download", report_path(report), class: "button" %></td>
         </tr>
       <% end %>

@@ -79,7 +79,7 @@
    ───────────────────────────────────────────────────────────────────────── */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* ── Surfaces — cool iOS-neutral grays. Body is a soft systemGray6; content
      cards sit a touch brighter; surface-3 is the inset/hover step. */
@@ -148,60 +148,11 @@
     0 2px 8px -4px oklch(0.2 0.03 265 / 0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: oklch(0.18 0.006 265);
-    --surface-2: oklch(0.23 0.007 265);
-    --surface-3: oklch(0.28 0.008 265);
-
-    --ink: oklch(0.97 0.003 265);
-    --ink-2: oklch(0.85 0.005 265);
-    --ink-muted: oklch(0.68 0.01 265);
-    --ink-subtle: oklch(0.55 0.008 265);
-
-    --line: oklch(0.34 0.008 265);
-    --line-2: oklch(0.4 0.01 265);
-
-    /* Fill stays L0.57 so white labels keep their AA margin; the tint brightens
-       for links/selected text against dark surfaces (8:1). */
-    --accent-text: oklch(0.78 0.16 58);
-    --accent-soft: oklch(0.4 0.09 50 / 0.4);
-
-    --ok: oklch(0.72 0.15 152);
-    --ok-soft: oklch(0.45 0.09 152 / 0.38);
-    --ok-fg: oklch(0.84 0.13 152);
-
-    --warn: oklch(0.82 0.13 85);
-    --warn-soft: oklch(0.5 0.09 80 / 0.38);
-    --warn-fg: oklch(0.86 0.12 88);
-
-    --danger: oklch(0.66 0.2 25);
-    --danger-soft: oklch(0.45 0.11 25 / 0.42);
-    --danger-fg: oklch(0.82 0.14 25);
-
-    --info: oklch(0.68 0.16 255);
-    --info-soft: oklch(0.45 0.1 255 / 0.38);
-    --info-fg: oklch(0.82 0.12 256);
-
-    --sidebar: oklch(0.34 0.012 265);
-    --sidebar-2: oklch(0.42 0.012 265);
-
-    --shadow-e1-color:
-      0 1px 2px 0 oklch(0 0 0 / 0.4), 0 1px 1px 0 oklch(0 0 0 / 0.3);
-    --shadow-e2-color:
-      0 2px 6px -1px oklch(0 0 0 / 0.5), 0 12px 30px -8px oklch(0 0 0 / 0.55);
-
-    --glass-bg: oklch(0.26 0.008 265 / 0.52);
-    --glass-bg-strong: oklch(0.24 0.008 265 / 0.72);
-    --glass-tint: linear-gradient(180deg, oklch(1 0 0 / 0.08), oklch(1 0 0 / 0) 42%);
-    --glass-border: oklch(1 0 0 / 0.12);
-    --glass-edge: oklch(1 0 0 / 0.16);
-    --glass-shadow:
-      inset 0 1px 0 0 var(--glass-edge),
-      0 8px 28px -10px oklch(0 0 0 / 0.6),
-      0 2px 10px -4px oklch(0 0 0 / 0.5);
-  }
-}
+/* The app is light-only. `color-scheme: light` above (plus the matching meta in
+   the layout) keeps the UA chrome — form controls, scrollbars, the overscroll
+   canvas — light even when the OS/browser is in dark mode, so a dark-mode phone
+   no longer renders the app dark. No prefers-color-scheme override exists by
+   design; every token is its single light value. */
 
 /* ─────────────────────────────────────────────────────────────────────────
    Base — body, headings, links, tables, forms, focus
@@ -434,6 +385,66 @@
     /* --ink-muted (5.5:1), not --ink-subtle (2.9:1) — placeholders are text
        and must clear WCAG AA like any other readable copy. */
     color: var(--ink-muted);
+  }
+
+  /* Native <select> otherwise keeps the OS dropdown arrow — an un-themed glyph
+     that renders differently per platform and, in dark, sits as a stray bright
+     mark against the glass (the same un-themed-control problem the file-picker
+     button had). Suppress the native chrome and draw our own chevron so selects
+     read like the rest of the form language. The chevron is a muted gray that
+     clears its --surface-2 field in both schemes (light below, dark overridden
+     in the media query that follows). */
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%236b7280'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m6%209%206%206%206-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+    /* Room for the chevron so long option labels never collide with it. */
+    padding-right: 36px;
+  }
+  @media (prefers-color-scheme: dark) {
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='16'%20height='16'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%239ca3af'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m6%209%206%206%206-6'/%3E%3C/svg%3E");
+    }
+  }
+
+  /* Native file-picker control. Left unthemed, the OS pseudo-button renders as
+     inert body text inside the field — no fill, no radius, no affordance, and
+     in dark it's the brightest thing on the screen. Restyle it into a real
+     secondary button (the .button language) so the "Choose file" tap target
+     reads as a button in both schemes: --surface-3 chip on the --surface-2
+     field, hairline edge, one radius, comfortable touch height. */
+  input[type='file'] {
+    align-items: center;
+    display: flex;
+    /* The 16px floor on the shared input rule exists only to stop iOS zooming
+       a text field on focus; a file input opens a native picker, never the
+       keyboard, so it doesn't need it. Drop to the button text size so the
+       inert "No file chosen" status text stops outweighing the actionable
+       "Choose file" button beside it. */
+    font-size: 0.875rem;
+  }
+  input[type='file']::file-selector-button {
+    background: var(--surface-3);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-md);
+    color: var(--ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-inline-end: 12px;
+    min-height: 36px;
+    padding: 7px 12px;
+    transition:
+      background 140ms var(--ease-out-quint),
+      border-color 140ms var(--ease-out-quint);
+  }
+  input[type='file']::file-selector-button:hover {
+    background: color-mix(in oklch, var(--surface-3) 82%, var(--ink));
+    border-color: color-mix(in oklch, var(--ink) 25%, var(--line-2));
   }
 
   input:focus,
@@ -1120,7 +1131,7 @@
   }
 
   .guide-card {
-    background: var(--surface-2);
+    background: var(--surface-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     padding: 14px;
@@ -1485,6 +1496,16 @@
   .log-book-recent-row-current .log-book-recent-link {
     background: color-mix(in oklch, var(--accent-soft) 50%, var(--surface-2));
   }
+  /* A day carrying open follow-ups gets the standard 2px left status rule on the
+     neutral surface — warn for needs-attention, escalating to danger when any
+     flag is urgent — the same convention as .warning-row / .follow-up-card-urgent,
+     never a painted row background. */
+  .log-book-recent-row-flagged .log-book-recent-link {
+    box-shadow: inset 2px 0 0 var(--warn);
+  }
+  .log-book-recent-row-urgent .log-book-recent-link {
+    box-shadow: inset 2px 0 0 var(--danger);
+  }
   .log-book-recent-date {
     color: var(--ink);
     font-variant-numeric: tabular-nums;
@@ -1679,16 +1700,18 @@
   }
 
   /* ── Environment ribbon (staging / non-production) ────────────────────
-     Slim sticky strip so a deployed non-prod install is never mistaken for
-     production. Sticky (not fixed) so it reserves its own height in normal
-     flow — a fixed overlay would sit on top of the sidebar brand and the
-     mobile header, hiding them. The body:has() offsets below keep the other
-     top-pinned chrome clear of it, and the ribbon owns the top safe-area inset
-     so it clears the notch on installed PWAs. Neutral ink chrome — not a
-     status colour, never the accent. pointer-events:none so it never
-     intercepts a click. */
+     Slim fixed strip so a deployed non-prod install is never mistaken for
+     production. Fixed (not sticky): it overlays the very top and the body:has()
+     offsets below push every top-pinned chrome element (sidebar, topbar, PTR
+     chip, mobile header) and the content column down by --env-banner-total so
+     nothing is covered. A sticky ribbon instead *reserved* its height, which
+     double-counted against the mobile header's own --env-banner-total offset
+     and opened an empty band between the ribbon and the screen title. The
+     ribbon owns the top safe-area inset so it clears the notch on installed
+     PWAs. Neutral ink chrome — not a status colour, never the accent.
+     pointer-events:none so it never intercepts a click. */
   .env-banner {
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -1774,7 +1797,7 @@
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
   .action-card {
-    background: var(--surface);
+    background: var(--surface-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     color: var(--ink);
@@ -1784,12 +1807,12 @@
     padding: 14px;
     transition:
       border-color 120ms ease,
-      background 120ms ease,
+      box-shadow 120ms ease,
       transform 120ms ease;
   }
   .action-card:hover {
-    background: var(--surface-3);
     border-color: var(--line-2);
+    box-shadow: var(--shadow-e1);
     text-decoration: none;
   }
   .action-card strong,
@@ -1898,9 +1921,17 @@
     min-height: 32px;
     padding: 5px 8px;
   }
-  .inline-guide-form .compact-input,
-  .inline-guide-form .compact-select {
+  .inline-guide-form .compact-input {
     min-width: 130px;
+  }
+  /* The primary-guide <select> must show its full selected value. The custom
+     chevron reserves 36px of right padding, so a 130px floor left only ~94px
+     for text — clipping real guide names ("Cleaning Supplies", "Every 2
+     weeks") mid-word, and rendering at different widths across the per-section
+     tables. Give the select a floor wide enough for the longest guide label so
+     it never truncates and the column stays consistent down the page. */
+  .inline-guide-form .compact-select {
+    min-width: 180px;
   }
 
   .guide-gap-form,
@@ -2618,8 +2649,8 @@
     display: flex;
     gap: 10px;
     justify-content: space-between;
-    margin-top: 10px;
-    padding: 0 4px;
+    margin-top: 20px;
+    padding: 0 14px;
   }
   .manage-stack-group-header:first-child {
     margin-top: 0;
@@ -4373,17 +4404,35 @@
     color: inherit;
     display: grid;
     gap: 12px;
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr) 8px;
     padding: 14px;
     text-decoration: none;
     transition:
       border-color 120ms ease,
       background 120ms ease;
   }
+  /* Trailing disclosure chevron — these cards are whole-card navigation links,
+     so they carry the iOS settings-row "›" affordance to signal they route
+     somewhere. Drawn from a mask so it tracks --ink-muted in both schemes. */
+  .settings-card::after {
+    align-self: center;
+    background: var(--ink-muted);
+    content: "";
+    height: 13px;
+    mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    transition: background 120ms ease;
+    width: 8px;
+  }
   .settings-card:hover {
     background: color-mix(in oklch, var(--surface-3) 60%, var(--surface-2));
     border-color: var(--line-2);
     text-decoration: none;
+  }
+  .settings-card:hover::after {
+    background: var(--ink);
   }
   .settings-card h2 {
     font-size: 1.02rem;
@@ -4441,9 +4490,6 @@
     border-color: var(--line-2);
     text-decoration: none;
     transform: translateY(-1px);
-  }
-  .task-builder-card-primary {
-    border-color: color-mix(in oklch, var(--accent) 45%, var(--line));
   }
   .task-builder-card-disabled {
     color: var(--ink-muted);

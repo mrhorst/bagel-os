@@ -224,6 +224,25 @@ class TasksDashboardTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "completed task circle guards undo with a confirmation on the focused list view" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      occurrence = build_today_occurrence
+      post tasks_occurrence_completion_path(occurrence), params: { notes: "Done before lunch." }
+      assert_equal "completed", occurrence.reload.status
+
+      get tasks_list_path(occurrence.task_list)
+      assert_response :success
+
+      # The completed circle is itself the submit button for an undo (DELETE),
+      # so a single accidental tap would wipe the logged completion. It must
+      # carry a Turbo confirmation — the same guard the occurrence detail page
+      # enforces with its explicit "Confirm undo" checkbox.
+      assert_select "form.task-checkbox-form[data-turbo-confirm] button.task-checkbox-completed",
+        count: 1,
+        message: "completed task circle must confirm before undoing a completion"
+    end
+  end
+
   test "photo-required task rejects completion without photo" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       occurrence = build_today_occurrence(requires_photo_evidence: true)

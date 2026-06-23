@@ -13,16 +13,16 @@
   <% end %>
 <% end %>
 
-<section class="block-page-header">
+<div class="page-heading">
   <div>
     <h1>Log Sections</h1>
     <p>Choose what appears in the daily Log Book. Archiving hides a section from new days; old entries keep their values.</p>
   </div>
-  <div class="block-header-actions">
-    <%= link_to "Back to Log Book", log_book_path, class: "button" %>
-    <%= link_to "New section", new_log_book_section_path, class: "button primary" %>
+  <div class="actions">
+    <%= link_to "Back to Log Book", log_book_path, class: "button small" %>
+    <%= link_to "New section", new_log_book_section_path, class: "button primary small" %>
   </div>
-</section>
+</div>
 
 <section class="block-panel">
   <% if @sections.any? %>

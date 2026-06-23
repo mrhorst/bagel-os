@@ -16,8 +16,8 @@ class PhotoAssetBulkActionsController < ApplicationController
       return redirect_back_to_library(alert: "That bulk action isn't available.")
     end
 
-    notice = perform(action, assets)
-    redirect_back_to_library(notice: notice)
+    level, message = perform(action, assets)
+    redirect_back_to_library(level => message)
   end
 
   private
@@ -26,11 +26,14 @@ class PhotoAssetBulkActionsController < ApplicationController
     Array(params[:photo_asset_ids]).map(&:to_i).reject(&:zero?)
   end
 
+  # Returns a [flash_level, message] pair so the action can render a real
+  # failure (e.g. nothing chosen in the Tag/Collection dropdown) through the
+  # warn-toned :alert channel rather than the green :notice "success" one.
   def perform(action, assets)
     case action
-    when "favorite"          then set_favorite(assets, true)
-    when "unfavorite"        then set_favorite(assets, false)
-    when "delete"            then delete_assets(assets)
+    when "favorite"          then [ :notice, set_favorite(assets, true) ]
+    when "unfavorite"        then [ :notice, set_favorite(assets, false) ]
+    when "delete"            then [ :notice, delete_assets(assets) ]
     when "add_tag"           then add_tag(assets)
     when "add_to_collection" then add_to_collection(assets)
     end
@@ -48,7 +51,7 @@ class PhotoAssetBulkActionsController < ApplicationController
 
   def add_tag(assets)
     tag = Tag.active.find_by(id: params[:tag_id])
-    return "Choose a tag to apply." if tag.nil?
+    return [ :alert, "Choose a tag to apply." ] if tag.nil?
 
     assets.find_each do |asset|
       tagging = asset.taggings.find_or_initialize_by(tag: tag)
@@ -57,12 +60,12 @@ class PhotoAssetBulkActionsController < ApplicationController
       tagging.created_by ||= Current.user
       tagging.save!
     end
-    "Tagged #{pluralize_photos(assets.count)} #{tag.name}."
+    [ :notice, "Tagged #{pluralize_photos(assets.count)} #{tag.name}." ]
   end
 
   def add_to_collection(assets)
     collection = Collection.find_by(id: params[:collection_id])
-    return "Choose a collection." if collection.nil?
+    return [ :alert, "Choose a collection." ] if collection.nil?
 
     next_position = (collection.collection_memberships.maximum(:position) || 0)
     assets.find_each do |asset|
@@ -73,7 +76,7 @@ class PhotoAssetBulkActionsController < ApplicationController
       membership.position = (next_position += 1)
       membership.save!
     end
-    "Added #{pluralize_photos(assets.count)} to #{collection.name}."
+    [ :notice, "Added #{pluralize_photos(assets.count)} to #{collection.name}." ]
   end
 
   def pluralize_photos(count)

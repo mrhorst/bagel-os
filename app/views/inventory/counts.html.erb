@@ -36,7 +36,7 @@
       <tbody>
         <% @counts.each do |count| %>
           <tr>
-            <td><%= count.counted_at.to_fs(:long) %></td>
+            <td><%= link_to count.counted_at.to_fs(:long), inventory_count_path(count) %></td>
             <td>
               <% if count.order_guide.present? %>
                 <%= link_to count.order_guide.name, order_guide_path(count.order_guide) %>

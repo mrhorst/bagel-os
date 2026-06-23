@@ -12,6 +12,25 @@ module Purchasing
       items_needing_review
     ].freeze
 
+    # Plain-language summary of what each export contains, so the Reports page
+    # can tell a manager which file to download instead of just restating the
+    # filename. Each line is derived from the columns the matching method emits.
+    DESCRIPTIONS = {
+      "master_products" => "One row per product: latest, average, lowest and highest package price, plus lifetime spend and purchase counts.",
+      "normalized_purchases" => "Every imported receipt line, normalized to a product, with quantities, package price and standard-unit pricing.",
+      "price_history" => "Each recorded price observation over time, with the source receipt and possible price-spike flags.",
+      "category_spend_summary" => "Total spend, product count and observation count rolled up by product category.",
+      "frequent_items" => "Your most-purchased products with times bought, total spend and the date last purchased.",
+      "price_spike_alerts" => "Price observations flagged as spikes — where the package price jumped above its recent average.",
+      "items_needing_review" => "Receipt lines and product matches the importer could not auto-resolve and that still need a human decision."
+    }.freeze
+
+    # Falls back to the humanized slug for any report without a written summary,
+    # so a new entry in REPORTS never renders blank.
+    def self.description_for(report)
+      DESCRIPTIONS.fetch(report.to_s, report.to_s.humanize)
+    end
+
     def initialize(price_intelligence: PriceIntelligence.new)
       @price_intelligence = price_intelligence
     end

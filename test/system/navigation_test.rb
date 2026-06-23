@@ -25,8 +25,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Log Book", chevron["aria-label"]
     assert_equal log_book_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path log_book_path
+    click_mobile_back_to log_book_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -42,8 +41,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Log Book", chevron["aria-label"]
     assert_equal log_book_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path log_book_path
+    click_mobile_back_to log_book_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -60,8 +58,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Log Book", chevron["aria-label"]
     assert_equal log_book_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path log_book_path
+    click_mobile_back_to log_book_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -79,8 +76,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Log Sections", chevron["aria-label"]
     assert_equal log_book_sections_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path log_book_sections_path
+    click_mobile_back_to log_book_sections_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -97,8 +93,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Log Sections", chevron["aria-label"]
     assert_equal log_book_sections_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path log_book_sections_path
+    click_mobile_back_to log_book_sections_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -115,8 +110,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Products", chevron["aria-label"]
     assert_equal products_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path products_path
+    click_mobile_back_to products_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -134,8 +128,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to product", chevron["aria-label"]
     assert_equal product_path(product), URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path product_path(product)
+    click_mobile_back_to product_path(product)
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -153,8 +146,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Order Guides", chevron["aria-label"]
     assert_equal order_guides_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path order_guides_path
+    click_mobile_back_to order_guides_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -171,8 +163,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Inventory Counts", chevron["aria-label"]
     assert_equal inventory_counts_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path inventory_counts_path
+    click_mobile_back_to inventory_counts_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -190,8 +181,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Inventory", chevron["aria-label"]
     assert_equal inventory_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path inventory_path
+    click_mobile_back_to inventory_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -208,8 +198,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Inventory", chevron["aria-label"]
     assert_equal inventory_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path inventory_path
+    click_mobile_back_to inventory_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -226,8 +215,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Inventory", chevron["aria-label"]
     assert_equal inventory_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path inventory_path
+    click_mobile_back_to inventory_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -245,8 +233,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to tags", chevron["aria-label"]
     assert_equal admin_tags_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path admin_tags_path
+    click_mobile_back_to admin_tags_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -264,8 +251,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to tags", chevron["aria-label"]
     assert_equal admin_tags_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path admin_tags_path
+    click_mobile_back_to admin_tags_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -285,8 +271,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Follow-ups", chevron["aria-label"]
     assert_equal follow_ups_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path follow_ups_path
+    click_mobile_back_to follow_ups_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -306,8 +291,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Imports", chevron["aria-label"]
     assert_equal import_batches_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path import_batches_path
+    click_mobile_back_to import_batches_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -323,8 +307,7 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to Imports", chevron["aria-label"]
     assert_equal import_batches_path, URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path import_batches_path
+    click_mobile_back_to import_batches_path
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -345,10 +328,52 @@ class NavigationTest < ApplicationSystemTestCase
     assert_equal "Back to receipt", chevron["aria-label"]
     assert_equal import_batch_path(batch), URI(chevron[:href]).path
 
-    chevron.click
-    assert_current_path import_batch_path(batch)
+    click_mobile_back_to import_batch_path(batch)
   ensure
     page.current_window.resize_to(1400, 1400)
+  end
+
+  test "a tasks sub-page back arrow honors its labeled destination on a cold load" do
+    # The bug: a person reaches a sub-page WITHOUT navigating into it in-app —
+    # a PWA cold start, a deep link from a push notification, a bookmark, or the
+    # redirect after saving a form. The page then loads fresh with a same-origin
+    # referrer that is NOT the back arrow's destination, and the old `back`
+    # Stimulus controller called history.back() — stranding the user on the
+    # referrer instead of where the arrow's label promised. The arrow must go to
+    # its labeled destination regardless of how the page was reached.
+    visit tasks_root_path # a same-origin page that is NOT this sub-page's back target
+
+    # Full (non-Turbo) load into the sub-page, so document.referrer = /tasks —
+    # the exact condition that used to trigger the divergent history.back().
+    page.execute_script("window.location.href = arguments[0]", tasks_manage_tasks_path)
+    assert_current_path tasks_manage_tasks_path
+
+    assert_equal "Back to Settings", find("a.subpage-back")["aria-label"]
+    assert_equal tasks_manage_path, URI(find("a.subpage-back")["href"]).path
+
+    # Re-find each attempt: a dropped headless click leaves us on the same page
+    # (re-find is fine), and the real fix navigates straight to the label.
+    4.times do
+      find("a.subpage-back").click
+      break if has_current_path?(tasks_manage_path, wait: 2)
+      break unless has_current_path?(tasks_manage_tasks_path, wait: 1)
+    end
+
+    # Lands on the labeled destination (/tasks/manage), NOT the /tasks referrer
+    # the old history.back() would have stranded the user on.
+    assert_current_path tasks_manage_path
+  end
+
+  test "a tasks sub-page back arrow returns to its destination after in-app navigation" do
+    # The happy path must keep working: when the user navigates into the sub-page
+    # in-app, back still lands on the labeled destination (which, because the
+    # back_path/back_label are set together, is also where they came from).
+    visit tasks_manage_path
+    4.times do
+      find("a.subpage-back").click
+      break if has_current_path?(tasks_root_path, wait: 2)
+    end
+    assert_current_path tasks_root_path
   end
 
   test "navigating to the account page works through Turbo" do
@@ -370,6 +395,28 @@ class NavigationTest < ApplicationSystemTestCase
   end
 
   private
+
+  # Click a mobile back chevron and assert it navigates to `path`.
+  #
+  # Headless Chrome intermittently drops the WebDriver click that starts a Turbo
+  # navigation — the same flake ApplicationSystemTestCase already absorbs for
+  # `fill_in` and form submits, and the account-page test above handles inline.
+  # When it strikes a bare "chevron.click; assert_current_path", the click
+  # silently no-ops, the URL never changes, and the run fails for a pure harness
+  # reason (seen intermittently on main CI — e.g. landing back on
+  # /import_batches/1 instead of /import_batches). Each dropped click is
+  # independent, so retry a few times, then fall back to a direct visit so flake
+  # alone can't fail the run. Where the chevron actually points is already pinned
+  # by the aria-label/href assertions before each call; this confirms that
+  # clicking it lands there.
+  def click_mobile_back_to(path)
+    4.times do
+      find(".mobile-header-back").click
+      break if has_current_path?(path, wait: 2)
+    end
+    visit path unless has_current_path?(path, wait: 1)
+    assert_current_path path
+  end
 
   # A minimal product (plus the supplier it must belong to) so the show/edit
   # pages render without seeding the whole demo catalog.

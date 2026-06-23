@@ -13,7 +13,10 @@
     <%= form.search_field :q, value: params[:q], placeholder: "Search products", "aria-label": "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
     <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, { "aria-label": "Filter by category", data: { action: "change->auto-submit-form#queueChange" } } %>
     <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] }, { "aria-label": "Filter by supplier", data: { action: "change->auto-submit-form#queueChange" } } %>
-    <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] }, { "aria-label": "Sort products", data: { action: "change->auto-submit-form#queueChange" } } %>
+    <label>
+      Sort by
+      <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] }, { "aria-label": "Sort products", data: { action: "change->auto-submit-form#queueChange" } } %>
+    </label>
     <label>
       Per page
       <%= form.select :per_page, [[25, 25], [50, 50], [100, 100]], { selected: @per_page }, data: { action: "change->auto-submit-form#queueChange" } %>
@@ -108,6 +111,7 @@
   <% else %>
     <%= render "dashboard/empty_state",
       title: "No products to show",
-      message: "Import receipt CSVs to populate your product list." %>
+      message: "Import receipt CSVs to populate your product list.",
+      action: (current_user&.can_access?("import_batches") ? link_to("Import receipts", new_import_batch_path, class: "button primary") : nil) %>
   <% end %>
 </article>

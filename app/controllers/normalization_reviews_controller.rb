@@ -43,6 +43,9 @@ class NormalizationReviewsController < ApplicationController
     clear_skipped(review.id)
 
     redirect_to normalization_reviews_path, notice: "Created #{product.canonical_name}."
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: normalization_reviews_path,
+      alert: "Couldn't create product: #{e.record.errors.full_messages.to_sentence}. Try assigning to an existing product instead."
   end
 
   def resolve
@@ -55,7 +58,7 @@ class NormalizationReviewsController < ApplicationController
   def skip
     review = NormalizationReview.find(params[:id])
     session[:skipped_review_ids] = (session_skipped_ids + [ review.id ]).last(200)
-    redirect_to normalization_reviews_path
+    redirect_to normalization_reviews_path, notice: "Skipped for now — it'll come back around at the end of the queue."
   end
 
   private

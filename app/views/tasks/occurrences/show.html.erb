@@ -67,7 +67,11 @@
       <% end %>
 
       <% if @occurrence.undoable? %>
-        <%= form_with url: tasks_occurrence_completion_path(@occurrence), method: :delete, class: "stacked-form note-block" do |form| %>
+        <%# This page has no task row / KPI targets for the completions controller's
+            Turbo-stream response to replace, so submit as a normal navigation: the
+            controller's redirect_back branch reloads the page with the updated state
+            and a flash, instead of a Turbo stream silently no-op-ing here. %>
+        <%= form_with url: tasks_occurrence_completion_path(@occurrence), method: :delete, class: "stacked-form note-block", data: { turbo: false } do |form| %>
           <%= form.label :undone_note, "Undo note" %>
           <%= form.text_field :undone_note, placeholder: "Optional undo note" %>
           <label class="check">
@@ -82,7 +86,7 @@
     <% elsif @occurrence.missed? %>
       <p class="empty-state">This task was missed and can no longer be completed.</p>
     <% else %>
-      <%= form_with url: tasks_occurrence_completion_path(@occurrence), multipart: true, class: "stacked-form" do |form| %>
+      <%= form_with url: tasks_occurrence_completion_path(@occurrence), multipart: true, class: "stacked-form", data: { turbo: false } do |form| %>
         <% if @occurrence.requires_photo_evidence? %>
           <div class="field">
             <%= form.label :photo, "Photo evidence" %>
