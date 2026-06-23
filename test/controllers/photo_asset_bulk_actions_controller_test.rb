@@ -70,6 +70,39 @@ class PhotoAssetBulkActionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "applying with no tag chosen warns via alert, not a success notice" do
+    sign_in_as(users(:one))
+    asset = create_asset
+
+    post bulk_actions_photo_assets_path, params: { bulk_action: "add_tag", tag_id: "", photo_asset_ids: [ asset.id ] }
+
+    assert_equal "Choose a tag to apply.", flash[:alert]
+    assert_nil flash[:notice]
+    assert_empty asset.reload.taggings
+  end
+
+  test "adding to collection with none chosen warns via alert, not a success notice" do
+    sign_in_as(users(:one))
+    asset = create_asset
+
+    assert_no_difference "CollectionMembership.count" do
+      post bulk_actions_photo_assets_path, params: { bulk_action: "add_to_collection", collection_id: "", photo_asset_ids: [ asset.id ] }
+    end
+
+    assert_equal "Choose a collection.", flash[:alert]
+    assert_nil flash[:notice]
+  end
+
+  test "a successful tag reports success via notice" do
+    sign_in_as(users(:one))
+    asset = create_asset
+
+    post bulk_actions_photo_assets_path, params: { bulk_action: "add_tag", tag_id: tags(:food).id, photo_asset_ids: [ asset.id ] }
+
+    assert_nil flash[:alert]
+    assert_match(/Tagged/, flash[:notice])
+  end
+
   test "an empty selection is rejected with an alert" do
     sign_in_as(users(:one))
     post bulk_actions_photo_assets_path, params: { bulk_action: "favorite", photo_asset_ids: [] }
