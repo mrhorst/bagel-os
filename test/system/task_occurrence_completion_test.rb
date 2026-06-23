@@ -25,6 +25,30 @@ class TaskOccurrenceCompletionTest < ApplicationSystemTestCase
     assert_no_button "Complete task"
   end
 
+  test "the back arrow never points at the occurrence page after completing there" do
+    occurrence = open_occurrence_today
+
+    # Arrive the way a person does: from the focused list, tap the task.
+    visit tasks_list_path(occurrence.task_list)
+    click_on occurrence.snapshot_title
+    assert_current_path tasks_occurrence_path(occurrence)
+
+    # Before completing, back honors where we came from (the list).
+    assert_equal tasks_list_path(occurrence.task_list),
+      URI(find("a.subpage-back")[:href]).path
+
+    # Completing submits a full-page form that redirect_backs here, so the
+    # reloaded page's referer is this page. The back arrow must not point at the
+    # page it sits on — that's a dead-end loop where "back" appears to do nothing.
+    click_on "Complete task"
+    assert_text "Completed by"
+
+    landed = URI(find("a.subpage-back")[:href]).path
+    assert_not_equal tasks_occurrence_path(occurrence), landed,
+      "Back arrow points at the occurrence page itself — a dead-end loop"
+    assert_equal tasks_root_path, landed
+  end
+
   test "undoing a completion from the occurrence detail page reflects the undo" do
     occurrence = open_occurrence_today
     visit tasks_occurrence_path(occurrence)
