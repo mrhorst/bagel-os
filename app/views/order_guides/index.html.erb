@@ -44,72 +44,70 @@
   </div>
 </section>
 
-<section class="grid two">
-  <div class="panel">
-    <div class="panel-heading">
-      <div>
-        <h2>Named Guides</h2>
-        <p class="muted">Use practical names staff recognize, like Daily, Every 2 weeks, Cleaning Supplies, or Weekend Prep.</p>
-      </div>
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Named Guides</h2>
+      <p class="muted">Use practical names staff recognize, like Daily, Every 2 weeks, Cleaning Supplies, or Weekend Prep.</p>
     </div>
+  </div>
 
-    <% if @order_guides.any? %>
-      <table class="responsive-table">
-        <thead>
+  <% if @order_guides.any? %>
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th class="numeric">Active items</th>
+          <th>Status</th>
+          <th>Items</th>
+          <th>Rename</th>
+          <th>Archive</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @order_guides.each do |guide| %>
           <tr>
-            <th>Name</th>
-            <th class="numeric">Active items</th>
-            <th>Status</th>
-            <th>Items</th>
-            <th>Rename</th>
-            <th>Archive</th>
+            <td data-label="Name"><strong><%= guide.name %></strong></td>
+            <td class="numeric" data-label="Active items"><%= guide.active_item_count %></td>
+            <td data-label="Status"><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
+            <td data-label="Items"><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
+            <td data-label="Rename">
+              <%= form_with model: guide, class: "inline-guide-form" do |form| %>
+                <%= form.label :name, "Guide name", class: "sr-only" %>
+                <%= form.text_field :name, value: guide.name, class: "compact-input" %>
+                <%= form.submit "Save", class: "button small" %>
+              <% end %>
+            </td>
+            <td data-label="Archive">
+              <% if guide.active? %>
+                <%= button_to "Archive", order_guide_path(guide), method: :delete, class: "button small",
+                      data: { turbo_confirm: "Archive #{guide.name}? Its #{pluralize(guide.active_item_count, "item")} will be removed from the guide." } %>
+              <% else %>
+                <span class="muted">Archived</span>
+              <% end %>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          <% @order_guides.each do |guide| %>
-            <tr>
-              <td data-label="Name"><strong><%= guide.name %></strong></td>
-              <td class="numeric" data-label="Active items"><%= guide.active_item_count %></td>
-              <td data-label="Status"><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
-              <td data-label="Items"><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
-              <td data-label="Rename">
-                <%= form_with model: guide, class: "inline-guide-form" do |form| %>
-                  <%= form.label :name, "Guide name", class: "sr-only" %>
-                  <%= form.text_field :name, value: guide.name, class: "compact-input" %>
-                  <%= form.submit "Save", class: "button small" %>
-                <% end %>
-              </td>
-              <td data-label="Archive">
-                <% if guide.active? %>
-                  <%= button_to "Archive", order_guide_path(guide), method: :delete, class: "button small",
-                        data: { turbo_confirm: "Archive #{guide.name}? Its #{pluralize(guide.active_item_count, "item")} will be removed from the guide." } %>
-                <% else %>
-                  <span class="muted">Archived</span>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="empty-state">No named guides yet. Create the first one below.</p>
-    <% end %>
-  </div>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No named guides yet. Create the first one below.</p>
+  <% end %>
+</section>
 
-  <div class="panel">
-    <h2>Create Guide</h2>
-    <%= form_with model: OrderGuide.new, class: "stacked-form" do |form| %>
-      <div class="field">
-        <%= form.label :name, "Guide name" %>
-        <%= form.text_field :name, placeholder: "Every 2 weeks" %>
-      </div>
-      <div class="field">
-        <%= form.label :notes, "Notes" %>
-        <%= form.text_area :notes, rows: 3, placeholder: "Optional staff note for how this guide is used." %>
-      </div>
-      <%= form.submit "Create guide", class: "button primary" %>
-    <% end %>
-  </div>
+<section class="panel narrow">
+  <h2>Create Guide</h2>
+  <%= form_with model: OrderGuide.new, class: "stacked-form" do |form| %>
+    <div class="field">
+      <%= form.label :name, "Guide name" %>
+      <%= form.text_field :name, placeholder: "Every 2 weeks" %>
+    </div>
+    <div class="field">
+      <%= form.label :notes, "Notes" %>
+      <%= form.text_area :notes, rows: 3, placeholder: "Optional staff note for how this guide is used." %>
+    </div>
+    <%= form.submit "Create guide", class: "button primary" %>
+  <% end %>
 </section>
 
 <section class="panel">
