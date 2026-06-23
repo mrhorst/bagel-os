@@ -3590,6 +3590,9 @@
     max-width: 42ch;
     margin: 0 auto;
   }
+  .empty-state .button {
+    margin-top: 12px;
+  }
 
   /* ── Counts (inventory) ──────────────────────────────────────────── */
   .count-grid {
