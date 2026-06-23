@@ -25,7 +25,7 @@
     <% active_tasks.group_by(&:task_list).each do |task_list, tasks| %>
       <header class="manage-stack-group-header">
         <h2><%= task_list.name %></h2>
-        <span class="muted small"><%= pluralize(tasks.size, "task") %></span>
+        <span class="muted small tnum"><%= pluralize(tasks.size, "task") %></span>
       </header>
       <% tasks.each do |task| %>
         <%= render "manage_row", task: task %>
