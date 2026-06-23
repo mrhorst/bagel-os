@@ -299,6 +299,19 @@
     text-decoration: underline;
   }
 
+  /* Inline code — slugs, filenames, literal example values. A subtle inset
+     chip on --surface-3 so a literal recedes from running copy yet stays
+     scannable. Sized in em so it tracks whatever text it sits in. */
+  code {
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 0.1em 0.4em;
+  }
+
   h1,
   h2,
   h3,
