@@ -1,5 +1,12 @@
 <% content_for :title, "Follow-ups" %>
 
+<section class="page-heading">
+  <div>
+    <h1>Follow-ups</h1>
+    <p>Items flagged for attention, tracked until they're resolved.</p>
+  </div>
+</section>
+
 <div class="follow-ups-tabs" role="tablist" aria-label="Follow-up status">
   <%= link_to follow_ups_path(scope: "open"), role: "tab",
         class: ["follow-ups-tab", ("active" if @scope == "open")],
