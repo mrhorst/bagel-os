@@ -59,6 +59,7 @@
     <% if @scope == "open" %>
       <strong>No open follow-ups.</strong>
       <span>Flag a Log Book note to create one. It will show up here for tracking.</span>
+      <%= link_to "Open the Log Book", log_book_path, class: "button primary" %>
     <% else %>
       <strong>No resolved follow-ups yet.</strong>
       <span>Follow-ups you close out will be listed here.</span>

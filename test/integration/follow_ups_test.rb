@@ -14,6 +14,26 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     assert_select ".follow-up-card h2", text: "Old issue", count: 0
   end
 
+  test "open empty state offers a path to the Log Book instead of a dead end" do
+    # No open follow-ups: the empty state tells the user to "flag a Log Book
+    # note", so it must give them a way to get there rather than stranding them.
+    assert_equal 0, FollowUp.open.count
+
+    get follow_ups_path
+    assert_response :success
+    assert_select ".empty-state a.button[href=?]", log_book_path, text: /Log Book/
+  end
+
+  test "resolved empty state stays informational with no create CTA" do
+    # The resolved tab is a passive archive — nothing to create from here, so it
+    # must not sprout the open tab's Log Book call to action.
+    assert_equal 0, FollowUp.resolved.count
+
+    get follow_ups_path(scope: "resolved")
+    assert_response :success
+    assert_select ".empty-state a.button", count: 0
+  end
+
   test "resolved tab lists resolved follow-ups" do
     seed_follow_ups
 
