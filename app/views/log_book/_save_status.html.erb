@@ -1,4 +1,4 @@
-<%# locals: saved_at:, error: nil %>
+<%# locals: saved_at:, error: nil, editable: false %>
 <div id="log_book_save_status" class="log-book-save-status" data-log-book-autosave-target="status">
   <% if error %>
     <span class="log-book-save-status-error">
@@ -8,5 +8,11 @@
     <span class="log-book-save-status-saved">
       Saved <%= saved_at.strftime("%-l:%M %p") %>
     </span>
+  <% elsif local_assigns[:editable] %>
+    <%# Resting state for a fresh, never-saved entry. Without it the strip
+        renders empty and the "Saves automatically as you type" promise has no
+        visible status until the first keystroke. The autosave controller
+        replaces this with "Saving…"/"Saved …" once the user starts typing. %>
+    <span class="log-book-save-status-idle">Not saved yet</span>
   <% end %>
 </div>
