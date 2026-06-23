@@ -58,7 +58,8 @@
           <%= button_to "Remove",
             order_guide_membership_path(order_guide, membership),
             method: :delete,
-            class: "button small" %>
+            class: "button small",
+            data: { turbo_confirm: "Remove #{item.name} from #{order_guide.name}? Its guide setup will be cleared." } %>
         </td>
       </tr>
     <% end %>
