@@ -1091,7 +1091,12 @@ textarea {
   border-width: 0 2px 2px 0;
   content: "";
   height: 12px;
-  transform: rotate(45deg) translate(-1px, -1px);
+  /* Anchor the checkmark to the circle's center so sibling content (e.g. the
+     undo <button>'s hidden default label) can't squeeze or shift the glyph. */
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -60%) rotate(45deg);
   width: 6px;
 }
 

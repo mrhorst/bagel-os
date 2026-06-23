@@ -44,7 +44,7 @@
       <% end %>
       <form action="<%= tasks_root_path %>" method="get" class="tasks-date-pager-form" data-controller="auto-submit">
         <label class="tasks-date-pager-label">
-          <span class="visually-hidden">Pick a date</span>
+          <span class="sr-only">Pick a date</span>
           <span class="tasks-date-pager-label-text">
             <%= @viewing_today ? "Today · #{@selected_date.strftime('%a, %b %-d')}" : @selected_date.strftime('%A, %b %-d') %>
           </span>

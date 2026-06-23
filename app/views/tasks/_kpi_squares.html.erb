@@ -6,18 +6,25 @@
 
   On a past day, "Late" is meaningless — the window already closed — so we
   swap it for "Missed".
+
+  A permanent "Late 0" is needlessly anxiety-inducing, so on the current day
+  the Late tile only appears when something is actually late. With it hidden
+  the row drops to a balanced 2-up grid (.tasks-kpi-squares-2up). The Turbo
+  Stream replace from the completions controller re-renders this partial, so
+  the tile appears/disappears as the late count crosses zero.
 %>
 <% past = local_assigns.fetch(:past, false) %>
+<% show_first_tile = past || metrics[:late_today].to_i.positive? %>
 <section id="<%= local_assigns.fetch(:dom_id, "task_list_kpis") %>"
-         class="tasks-kpi-squares"
+         class="tasks-kpi-squares<%= " tasks-kpi-squares-2up" unless show_first_tile %>"
          aria-label="Task metrics">
   <% if past %>
     <article class="tasks-kpi <%= "tasks-kpi-danger" if metrics[:missed_today].to_i.positive? %>">
       <span>Missed</span>
       <strong class="tnum"><%= metrics[:missed_today].to_i %></strong>
     </article>
-  <% else %>
-    <article class="tasks-kpi <%= "tasks-kpi-danger" if metrics[:late_today].to_i.positive? %>">
+  <% elsif show_first_tile %>
+    <article class="tasks-kpi tasks-kpi-danger">
       <span>Late</span>
       <strong class="tnum"><%= metrics[:late_today] %></strong>
     </article>
