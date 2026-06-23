@@ -10,9 +10,18 @@
 
 <article class="panel">
   <%= form_with url: products_path, method: :get, class: "filters", data: { controller: "auto-submit-form", action: "submit->auto-submit-form#submit", auto_submit_form: true, async_frame: "products", auto_submit_form_async_frame_value: "products" } do |form| %>
-    <%= form.search_field :q, value: params[:q], placeholder: "Search products", "aria-label": "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
-    <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, { "aria-label": "Filter by category", data: { action: "change->auto-submit-form#queueChange" } } %>
-    <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] }, { "aria-label": "Filter by supplier", data: { action: "change->auto-submit-form#queueChange" } } %>
+    <label>
+      Search
+      <%= form.search_field :q, value: params[:q], placeholder: "Search products", "aria-label": "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
+    </label>
+    <label>
+      Category
+      <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, { "aria-label": "Filter by category", data: { action: "change->auto-submit-form#queueChange" } } %>
+    </label>
+    <label>
+      Supplier
+      <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] }, { "aria-label": "Filter by supplier", data: { action: "change->auto-submit-form#queueChange" } } %>
+    </label>
     <label>
       Sort by
       <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] }, { "aria-label": "Sort products", data: { action: "change->auto-submit-form#queueChange" } } %>
