@@ -1417,6 +1417,7 @@
   }
   .log-book-save-status-saved { color: var(--ok-fg); }
   .log-book-save-status-error { color: var(--danger-fg); }
+  .log-book-save-status-idle { color: var(--ink-muted); }
 
   /* Visually distinct from .check (which is a checkbox). A radio inside a
      label gets a slightly tighter feel and a subtle border treatment so the

@@ -78,7 +78,7 @@
       <% end %>
     </span>
     <span class="log-book-status-saved">
-      <%= render "log_book/save_status", saved_at: (@entry.persisted? ? @entry.submitted_at : nil), error: nil %>
+      <%= render "log_book/save_status", saved_at: (@entry.persisted? ? @entry.submitted_at : nil), error: nil, editable: @editable %>
     </span>
   </div>
 </header>
