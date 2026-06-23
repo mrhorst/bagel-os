@@ -57,7 +57,21 @@ module Tasks
             )
           ]
         end
-        format.html { redirect_back fallback_location: tasks_root_path, notice: notice }
+        format.html { change_redirect(occurrence.id, notice: notice) }
+      end
+    end
+
+    # The occurrence detail page's complete/undo forms submit a full-page
+    # request carrying ?back (the list the user was working from). Preserve it
+    # on the redirect so the reloaded occurrence page's back arrow keeps naming
+    # that list instead of decaying to the dashboard. Other callers (the list's
+    # own no-JS completion circle) carry no ?back and fall back to redirect_back,
+    # returning to the list as before.
+    def change_redirect(occurrence_id, **flash)
+      if params[:back].present?
+        redirect_to tasks_occurrence_path(occurrence_id, back: params[:back]), **flash
+      else
+        redirect_back fallback_location: tasks_root_path, **flash
       end
     end
 
@@ -76,8 +90,8 @@ module Tasks
 
     def respond_with_error(error)
       respond_to do |format|
-        format.turbo_stream { redirect_back fallback_location: tasks_root_path, alert: error.message }
-        format.html         { redirect_back fallback_location: tasks_root_path, alert: error.message }
+        format.turbo_stream { change_redirect(params[:occurrence_id], alert: error.message) }
+        format.html         { change_redirect(params[:occurrence_id], alert: error.message) }
       end
     end
   end

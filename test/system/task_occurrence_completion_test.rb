@@ -25,7 +25,7 @@ class TaskOccurrenceCompletionTest < ApplicationSystemTestCase
     assert_no_button "Complete task"
   end
 
-  test "the back arrow never points at the occurrence page after completing there" do
+  test "the back arrow keeps pointing at the originating list after completing there" do
     occurrence = open_occurrence_today
 
     # Arrive the way a person does: from the focused list, tap the task.
@@ -37,16 +37,37 @@ class TaskOccurrenceCompletionTest < ApplicationSystemTestCase
     assert_equal tasks_list_path(occurrence.task_list),
       URI(find("a.subpage-back")[:href]).path
 
-    # Completing submits a full-page form that redirect_backs here, so the
-    # reloaded page's referer is this page. The back arrow must not point at the
-    # page it sits on — that's a dead-end loop where "back" appears to do nothing.
+    # Completing submits a full-page form that reloads this page with its OWN url
+    # as the referer. The arrow must still (a) never point at the page it sits on
+    # — that's a dead-end loop where "back" appears to do nothing — and (b) keep
+    # naming the list the user was working from, instead of decaying to the
+    # dashboard and dropping them out of their place in the list.
     click_on "Complete task"
     assert_text "Completed by"
 
     landed = URI(find("a.subpage-back")[:href]).path
     assert_not_equal tasks_occurrence_path(occurrence), landed,
       "Back arrow points at the occurrence page itself — a dead-end loop"
-    assert_equal tasks_root_path, landed
+    assert_equal tasks_list_path(occurrence.task_list), landed,
+      "Back arrow forgot the originating list and decayed to the dashboard"
+    assert_includes find("a.subpage-back").text, occurrence.task_list.name
+  end
+
+  test "the back target survives an undo from the occurrence detail page too" do
+    occurrence = open_occurrence_today
+
+    visit tasks_list_path(occurrence.task_list)
+    click_on occurrence.snapshot_title
+    click_on "Complete task"
+    assert_text "Completed by"
+
+    check "Confirm undo"
+    click_on "Undo completion"
+    assert_button "Complete task"
+
+    assert_equal tasks_list_path(occurrence.task_list),
+      URI(find("a.subpage-back")[:href]).path,
+      "Back arrow forgot the originating list after undoing"
   end
 
   test "undoing a completion from the occurrence detail page reflects the undo" do
