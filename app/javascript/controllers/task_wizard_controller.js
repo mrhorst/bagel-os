@@ -2,9 +2,13 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["panel", "step", "back", "next", "submit"]
+  static values = { errorStep: { type: Number, default: -1 } }
 
   connect() {
-    this.index = 0
+    // After a failed save the server re-renders this form with the offending
+    // field's step index. Open there instead of collapsing to step 1, where the
+    // error banner would name a field sitting on a hidden panel.
+    this.index = this.errorStepValue >= 0 ? this.errorStepValue : 0
     this.showCurrentPanel()
   }
 
