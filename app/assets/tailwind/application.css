@@ -419,6 +419,12 @@
   input[type='file'] {
     align-items: center;
     display: flex;
+    /* The 16px floor on the shared input rule exists only to stop iOS zooming
+       a text field on focus; a file input opens a native picker, never the
+       keyboard, so it doesn't need it. Drop to the button text size so the
+       inert "No file chosen" status text stops outweighing the actionable
+       "Choose file" button beside it. */
+    font-size: 0.875rem;
   }
   input[type='file']::file-selector-button {
     background: var(--surface-3);
@@ -427,11 +433,11 @@
     color: var(--ink);
     cursor: pointer;
     font: inherit;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     font-weight: 500;
     margin-inline-end: 12px;
-    min-height: 32px;
-    padding: 6px 12px;
+    min-height: 36px;
+    padding: 7px 12px;
     transition:
       background 140ms var(--ease-out-quint),
       border-color 140ms var(--ease-out-quint);
