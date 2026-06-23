@@ -108,6 +108,7 @@
   <% else %>
     <%= render "dashboard/empty_state",
       title: "No products to show",
-      message: "Import receipt CSVs to populate your product list." %>
+      message: "Import receipt CSVs to populate your product list.",
+      action: (current_user&.can_access?("import_batches") ? link_to("Import receipts", new_import_batch_path, class: "button primary") : nil) %>
   <% end %>
 </article>
