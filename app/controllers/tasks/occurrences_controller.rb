@@ -22,6 +22,12 @@ module Tasks
       uri = URI.parse(referer)
       return default if uri.host.present? && uri.host != request.host
 
+      # Completing or undoing on this page submits a full-page form (turbo: false)
+      # that redirect_backs here, so the reloaded page's referer is THIS page.
+      # Never let "back" point at the page it's on — that's a dead-end loop where
+      # the arrow appears to do nothing. Fall back to the dashboard instead.
+      return default if uri.path == request.path
+
       case uri.path
       when tasks_root_path
         [ tasks_root_path, "Tasks" ]
