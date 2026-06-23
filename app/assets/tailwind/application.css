@@ -844,9 +844,12 @@
     font-size: 0.92rem;
     margin: 4px 0 6px;
   }
-  /* Status indication via 2 px left rule per design system. */
+  /* Status indication via 2 px left rule per design system — warn (amber) for
+     needs-attention, escalating to danger (red) when urgent. Same convention as
+     .log-book-recent-row-flagged / -urgent; never the brand accent, which is
+     reserved for primary action only. */
   .follow-up-card-urgent { box-shadow: inset 2px 0 0 var(--danger), var(--shadow-e1); }
-  .follow-up-card-important { box-shadow: inset 2px 0 0 var(--accent), var(--shadow-e1); }
+  .follow-up-card-important { box-shadow: inset 2px 0 0 var(--warn), var(--shadow-e1); }
 
   .follow-up-detail {
     background: var(--surface-2);
