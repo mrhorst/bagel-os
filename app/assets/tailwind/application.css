@@ -4870,6 +4870,11 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     margin-bottom: 12px;
   }
+  /* When there's nothing late, the Late tile is dropped and the row balances
+     as two equal columns rather than leaving a stretched gap. */
+  .tasks-kpi-squares-2up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .tasks-kpi {
     background: var(--surface-2);
     border: 1px solid var(--line);
@@ -5403,7 +5408,8 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    /* KPI squares stay 3-up even at 390 — that's the whole point */
+    /* KPI squares keep their column count (3-up, or 2-up when Late is hidden)
+       even at 390 — that's the whole point */
     .tasks-kpi-squares {
       gap: 6px;
     }
