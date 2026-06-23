@@ -10,7 +10,7 @@
 
 <article class="panel">
   <% if @import_batches.any? %>
-    <table>
+    <table class="responsive-table">
       <thead>
         <tr>
           <th>File</th>
@@ -25,13 +25,13 @@
       <tbody>
         <% @import_batches.each do |batch| %>
           <tr>
-            <td><%= link_to batch.source_filename, batch %></td>
-            <td><%= batch.supplier.name %></td>
-            <td><span class="badge"><%= batch.status %></span></td>
-            <td class="numeric"><%= batch.rows_processed %></td>
-            <td class="numeric"><%= batch.rows_imported %></td>
-            <td class="numeric"><%= batch.rows_failed %></td>
-            <td><%= batch.imported_at&.strftime("%Y-%m-%d %I:%M %p") %></td>
+            <td data-label="File"><%= link_to batch.source_filename, batch %></td>
+            <td data-label="Supplier"><%= batch.supplier.name %></td>
+            <td data-label="Status"><span class="badge"><%= batch.status %></span></td>
+            <td class="numeric" data-label="Rows"><%= batch.rows_processed %></td>
+            <td class="numeric" data-label="Imported"><%= batch.rows_imported %></td>
+            <td class="numeric" data-label="Failed"><%= batch.rows_failed %></td>
+            <td data-label="Imported at"><%= batch.imported_at&.strftime("%Y-%m-%d %I:%M %p") %></td>
           </tr>
         <% end %>
       </tbody>
