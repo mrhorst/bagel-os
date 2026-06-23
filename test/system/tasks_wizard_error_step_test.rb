@@ -36,4 +36,46 @@ class TasksWizardErrorStepTest < ApplicationSystemTestCase
     assert_selector "label", text: "Due time"
     assert_no_text "Choose the list"
   end
+
+  test "jumping past a required field then submitting reopens that step, not a silent no-op" do
+    # The step nav lets a user jump straight to the last step (e.g. to "Review")
+    # without filling the required title on step 2. The title input then sits on
+    # a hidden panel, so the browser's native validation blocks the submit but
+    # can't render its bubble — the "Create task" click used to silently do
+    # nothing, stranding the user. It must instead reopen the step that holds the
+    # missing field.
+    visit new_tasks_manage_task_path(flow: "guided", return_to: "dashboard")
+
+    select "Prep", from: "Task list"
+    # Jump to the last step via the step nav, skipping the title (step 2).
+    find("button.task-wizard-step[data-task-wizard-index-param='4']").click
+    assert_text "Final options"
+
+    click_on "Create task"
+
+    # Lands on the title step where the missing field lives — not a dead click.
+    assert_text "Name the work"
+    assert_no_text "Final options"
+    assert_equal 0, Task.count
+  end
+
+  test "a fully completed wizard still creates the task" do
+    # Guard the happy path: turning off native validation (so the controller can
+    # surface hidden-field errors itself) must not stop a valid form submitting.
+    visit new_tasks_manage_task_path(flow: "guided", return_to: "dashboard")
+
+    select "Prep", from: "Task list"
+    click_on "Next"
+    fill_in "Task name", with: "Wipe counters"
+    click_on "Next"
+    assert_text "Set the timing"
+    fill_in "Due time", with: "11:00"
+    click_on "Next" # → instructions
+    click_on "Next" # → final options
+    click_on "Create task"
+
+    assert_no_text "kept this task from saving"
+    assert_equal 1, Task.count
+    assert_equal "Wipe counters", Task.last.title
+  end
 end
