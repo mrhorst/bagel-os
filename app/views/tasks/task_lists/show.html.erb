@@ -19,11 +19,34 @@
 
 <section class="tasks-now-panel">
   <% if @today_occurrences.any? %>
-    <div class="task-row-list">
-      <% @today_occurrences.each do |occurrence| %>
-        <%= render "tasks/dashboard/task_row", occurrence: occurrence %>
-      <% end %>
-    </div>
+    <% if @open_occurrences.any? %>
+      <div class="task-row-list">
+        <% @open_occurrences.each do |occurrence| %>
+          <%= render "tasks/dashboard/task_row", occurrence: occurrence %>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="empty-state">
+        <strong>All done for today.</strong>
+        <span>Every task on this list is complete.</span>
+      </p>
+    <% end %>
+
+    <%# Completed tasks live in a collapsed disclosure so the focus stays on
+        what's left. Native <details> keeps it accessible with no JS. %>
+    <% if @completed_occurrences.any? %>
+      <details class="tasks-completed-disclosure">
+        <summary>
+          <span class="tasks-completed-disclosure-label">Completed</span>
+          <span class="tasks-completed-disclosure-count tnum"><%= @completed_occurrences.size %></span>
+        </summary>
+        <div class="task-row-list">
+          <% @completed_occurrences.each do |occurrence| %>
+            <%= render "tasks/dashboard/task_row", occurrence: occurrence %>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
   <% else %>
     <p class="empty-state">
       <strong>Nothing on this list today.</strong>

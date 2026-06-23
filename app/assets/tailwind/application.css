@@ -5001,6 +5001,53 @@
   .tasks-now-panel {
     margin-bottom: 16px;
   }
+
+  /* Completed tasks fold away under a collapsed disclosure so the open list
+     stays the focus. Native <details> — accessible and works with no JS. */
+  .tasks-completed-disclosure {
+    margin-top: 14px;
+  }
+  .tasks-completed-disclosure > summary {
+    align-items: center;
+    color: var(--ink-muted);
+    cursor: pointer;
+    display: flex;
+    font-size: 0.88rem;
+    font-weight: 500;
+    gap: 8px;
+    list-style: none;
+    padding: 6px 2px;
+    user-select: none;
+  }
+  .tasks-completed-disclosure > summary::-webkit-details-marker { display: none; }
+  .tasks-completed-disclosure > summary:hover {
+    color: var(--ink);
+  }
+  .tasks-completed-disclosure > summary::before {
+    border-right: 1.6px solid currentColor;
+    border-bottom: 1.6px solid currentColor;
+    content: "";
+    display: inline-block;
+    height: 6px;
+    transform: rotate(-45deg);
+    transition: transform 120ms ease;
+    width: 6px;
+  }
+  .tasks-completed-disclosure[open] > summary::before {
+    transform: rotate(45deg);
+  }
+  .tasks-completed-disclosure-count {
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--ink-2);
+    font-size: 0.78rem;
+    padding: 1px 8px;
+  }
+  .tasks-completed-disclosure[open] > summary {
+    margin-bottom: 8px;
+  }
+
   .tasks-month-panel {
     margin-top: 18px;
   }

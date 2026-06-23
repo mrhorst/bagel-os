@@ -15,6 +15,10 @@ module Tasks
       OccurrenceBuilder.new(operating_day: @operating_day).build!(from: @operating_day.today.beginning_of_month, to: @operating_day.today.end_of_month)
 
       @today_occurrences   = day_occurrences_for(@task_list, @operating_day)
+      # Tuck completed tasks into their own collapsed section so the main list
+      # stays focused on what's left to do. Both halves keep the same sort.
+      @open_occurrences, @completed_occurrences =
+        @today_occurrences.partition { |occurrence| !occurrence.completed? }
       @monthly_occurrences = month_occurrences_for(@task_list, @operating_day)
       @metrics = TaskMetrics.new(daily: @today_occurrences, monthly: @monthly_occurrences, operating_day: @operating_day).summary.to_h_with_today_suffix
     end
