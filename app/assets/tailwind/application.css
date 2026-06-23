@@ -5666,6 +5666,12 @@
     .metric-grid-desktop-only {
       display: none;
     }
+    /* Log Book's in-heading Settings link is the desktop path to the
+       History/Settings overflow that only renders in the mobile header; hide
+       it on mobile, where the ⋯ menu already provides it. */
+    .log-book-heading-actions {
+      display: none;
+    }
 
     /* Responsive tables: stacked card-per-row at <=640px. Apply the
        .responsive-table class on <table> and `data-label` on each <td>. */
