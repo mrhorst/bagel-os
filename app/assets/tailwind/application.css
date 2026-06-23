@@ -1546,7 +1546,14 @@
   }
   .log-book-recent-signals { align-items: center; display: inline-flex; gap: 6px; flex-wrap: wrap; }
 
+  /* Flex column so the value pins to the bottom of the (grid-stretched,
+     equal-height) tile. Without this the label and value top-stack, so a tile
+     whose label wraps to two lines pushes its number a full line lower than the
+     one-line tile beside it — the big numbers in a row stop sharing a baseline.
+     Bottom-aligning the value keeps every number in a row on one line. */
   .metric {
+    display: flex;
+    flex-direction: column;
     padding: 14px;
   }
   .metric span {
@@ -1565,6 +1572,7 @@
     font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.1;
+    margin-top: auto;
   }
 
   /* Generic grids used by older views */
