@@ -14,6 +14,7 @@
     <h1>Upload receipt CSV</h1>
     <p>Upload one vendor receipt export. Duplicate checks use file checksum and receipt number.</p>
   </div>
+  <%= link_to "CSV example", csv_example_import_batches_path, class: "button small" %>
 </section>
 
 <article class="panel narrow">
@@ -21,6 +22,7 @@
     <div>
       <%= form.label :csv_file, "CSV file" %>
       <%= form.file_field :csv_file, accept: ".csv,text/csv", required: true %>
+      <p class="field-hint">Not sure of the format? <%= link_to "Download a CSV example", csv_example_import_batches_path %> to see the expected columns.</p>
     </div>
     <%= form.submit "Import receipt", class: "button primary" %>
   <% end %>
