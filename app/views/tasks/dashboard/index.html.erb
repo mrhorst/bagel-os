@@ -1,6 +1,12 @@
 <% content_for :title, "Tasks" %>
 <%= turbo_stream_from Tasks::LiveUpdates::STREAM if @viewing_today %>
 <% if @viewing_today %>
+  <%# Morph the DOM in place on Tasks::LiveUpdates page-refresh broadcasts so
+      completion updates land without a full-page flash and preserve scroll. %>
+  <% content_for :head do %>
+    <meta name="turbo-refresh-method" content="morph">
+    <meta name="turbo-refresh-scroll" content="preserve">
+  <% end %>
   <% content_for :mobile_fab do %>
     <%= mobile_fab_button setup_tasks_manage_tasks_path, label: "Add task or list" %>
   <% end %>

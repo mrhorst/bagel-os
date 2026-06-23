@@ -6,6 +6,11 @@
     when a row appears "open" momentarily before being replaced. %>
 <% content_for :head do %>
   <meta name="turbo-cache-control" content="no-preview">
+  <%# Make Tasks::LiveUpdates page-refresh broadcasts morph the DOM in place
+      instead of full-replacing it, so completing a task relocates rows without
+      a flash and preserves scroll + the Completed disclosure's open state. %>
+  <meta name="turbo-refresh-method" content="morph">
+  <meta name="turbo-refresh-scroll" content="preserve">
 <% end %>
 
 <%=
@@ -35,7 +40,10 @@
     <%# Completed tasks live in a collapsed disclosure so the focus stays on
         what's left. Native <details> keeps it accessible with no JS. %>
     <% if @completed_occurrences.any? %>
-      <details class="tasks-completed-disclosure">
+      <details class="tasks-completed-disclosure"
+               data-controller="persisted-disclosure"
+               data-action="toggle->persisted-disclosure#save"
+               data-persisted-disclosure-key-value="tasks:completed-disclosure:<%= @task_list.id %>">
         <summary>
           <span class="tasks-completed-disclosure-label">Completed</span>
           <span class="tasks-completed-disclosure-count tnum"><%= @completed_occurrences.size %></span>
