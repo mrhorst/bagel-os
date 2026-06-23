@@ -273,6 +273,29 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{archive_log_book_section_path(section)}'] button[data-turbo-confirm*='used in 1 entry']"
   end
 
+  test "log book index exposes a Settings path in the page body, not only the mobile-only overflow" do
+    # The History/Settings overflow ⋯ menu renders solely inside the mobile
+    # header (:mobile_right_action), which is display:none on desktop. Without a
+    # second affordance in the page body, a desktop admin has no path to Log
+    # Book settings/sections/history at all. Assert the in-heading Settings link
+    # is present in the always-rendered page body (the default test user is an
+    # admin). Scope to .page-heading so this fails if the only Settings link
+    # left is the mobile-only overflow item.
+    get log_book_path
+    assert_response :success
+    assert_select ".page-heading a[href=?]", log_book_settings_path
+  end
+
+  test "non-admins do not see the Log Book settings affordance" do
+    employee = users(:two)
+    employee.grant_module("log_book")
+    sign_in_as(employee)
+
+    get log_book_path
+    assert_response :success
+    assert_select ".page-heading a[href=?]", log_book_settings_path, count: 0
+  end
+
   test "admin resolves flagged follow-ups" do
     section = LogBookSection.create!(title: "Follow-ups", section_type: "long_text")
     entry = LogBookEntry.create!(operating_date: Date.current)

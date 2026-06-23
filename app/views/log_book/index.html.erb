@@ -32,6 +32,18 @@
     <h1>Log Book</h1>
     <p>Daily notes, counts, and follow-ups.</p>
   </div>
+  <% if current_user.admin? %>
+    <%# The History/Settings overflow ⋯ lives only in the mobile header
+        (:mobile_right_action), which is display:none on desktop — so on a wide
+        screen an admin otherwise has NO path to Settings/Sections/History at
+        all. Surface the same admin Settings entry in the heading on desktop;
+        hide on mobile, where the ⋯ already provides it (and in-page duplicates
+        of header controls are hidden by design). Settings links onward to both
+        Sections and History. %>
+    <div class="actions log-book-heading-actions">
+      <%= link_to "Settings", log_book_settings_path, class: "button small" %>
+    </div>
+  <% end %>
 </div>
 
 <%# ── Date pager + saved status ──────────────────────────────────────── %>
