@@ -41,10 +41,20 @@ namespace :qa do
       entry: "/tasks", drill: [ "a[href*='/tasks/lists/']" ] },
     { slug: "tasks-manage", label: "Tasks → manage tasks → edit a task → back out",
       entry: "/tasks/manage/tasks", drill: [ "a[href*='/tasks/manage/tasks/'][href$='/edit'], a[href$='/edit']" ] },
-    { slug: "log-book-settings", label: "Log book → settings → back",
-      entry: "/log-book", drill: [ "a[href*='/log-book/settings']" ] },
-    { slug: "log-book-sections", label: "Log book → sections → back",
-      entry: "/log-book", drill: [ "a[href*='/log-book/sections']" ] },
+    # Log Book settings/sections back-walk. Settings is reached from /log-book via
+    # a ⋯ overflow popover — a non-navigating JS toggle, so its link is hidden until
+    # tapped — and Sections now lives UNDER settings (no /log-book/sections link on
+    # /log-book at all). The old `entry: "/log-book"` drills therefore matched
+    # nothing visible, ended the walk on /log-book, and silently back-walked
+    # /log-book's own chevron instead of these pages — so the flows reported clean
+    # while never touching the affordances they name. Enter at the settings hub (the
+    # real parent of both pages) so the back-walk + referrer probe exercise the
+    # settings and sections "Back to Log Book" arrows. No popover toggle in the drill
+    # — a non-navigating step would log a misleading "clicks did not navigate".
+    { slug: "log-book-settings", label: "Log book settings → back to Log Book",
+      entry: "/log-book/settings", drill: [] },
+    { slug: "log-book-sections", label: "Log book settings → sections → back",
+      entry: "/log-book/settings", drill: [ "a[href*='/log-book/sections']" ] },
     { slug: "products-edit", label: "Products → product → edit → back to product → back",
       entry: "/products", drill: [ "a[href*='/products/']:not([href$='/edit'])", "a[href$='/edit']" ] },
     { slug: "order-guides", label: "Order guides → guide → back",
