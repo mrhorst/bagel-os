@@ -4,7 +4,8 @@ module TasksHelper
     badge_class =
       case status
       when "completed" then "badge-ok"
-      when "late", "missed" then "badge-warning"
+      when "late" then "badge-warning"
+      when "missed" then "badge-danger"
       else ""
       end
 
