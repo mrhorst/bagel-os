@@ -5689,6 +5689,13 @@
       grid-column: 1 / -1;
     }
 
+    /* KPI tiles pair up on phones instead of stacking one-per-row — the
+       auto-fit floor (178px) can't seat two columns in a 390px viewport, so
+       without this every metric grid becomes a tall scroll wall. .compact
+       keeps its single column via the higher-specificity override below. */
+    .metric-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .metric-grid.compact {
       grid-template-columns: 1fr;
     }
