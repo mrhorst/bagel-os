@@ -33,10 +33,14 @@
         <%= form_with url: tasks_occurrence_completion_path(occurrence), method: :delete, class: "task-checkbox-form",
               data: { turbo_confirm: "Undo completion of #{occurrence.snapshot_title}?" } do |form| %>
           <%= hidden_field_tag :confirm_undo, "1" %>
-          <%= form.button type: "submit",
+          <%# Pass an explicit empty label: an empty `do; end` block makes
+              FormBuilder#button fall back to the literal text "Button", which
+              (though hidden by `color: transparent`) sits in the circle's flex
+              layout and shoves the checkmark glyph off-center. %>
+          <%= form.button "", type: "submit",
                 class: "task-checkbox task-checkbox-completed",
                 aria: { label: "Undo completion" },
-                title: "Undo" do %><% end %>
+                title: "Undo" %>
         <% end %>
       <% else %>
         <span class="task-checkbox task-checkbox-completed" aria-label="Completed" role="img"></span>
@@ -62,10 +66,10 @@
       <% end %>
     <% else %>
       <%= form_with url: tasks_occurrence_completion_path(occurrence), class: "task-checkbox-form" do |form| %>
-        <%= form.button type: "submit",
+        <%= form.button "", type: "submit",
               class: "task-checkbox task-checkbox-open",
               aria: { label: "Mark complete" },
-              title: "Mark complete" do %><% end %>
+              title: "Mark complete" %>
       <% end %>
     <% end %>
   </div>
