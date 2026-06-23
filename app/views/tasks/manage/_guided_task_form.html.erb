@@ -1,10 +1,24 @@
 <% task_list_options = (@task_lists.to_a + [task.task_list]).compact.uniq.sort_by { |task_list| [task_list.position, task_list.name] } %>
 
+<%
+  # Which wizard panel each field lives on, so a failed save can reopen the step
+  # that actually holds the error instead of resetting to step 1.
+  wizard_field_steps = {
+    0 => %i[task_list_id],
+    1 => %i[title],
+    2 => %i[recurrence_type due_time one_time_on starts_on ends_on weekdays],
+    3 => %i[instructions],
+    4 => %i[requires_photo_evidence position]
+  }
+  errored_attrs = task.errors.attribute_names
+  error_step = wizard_field_steps.select { |_step, fields| (fields & errored_attrs).any? }.keys.min || -1
+%>
+
 <%= form_with model: task,
       url: url,
       method: method,
       class: "task-wizard stacked-form",
-      data: { controller: "task-wizard task-schedule-form", action: "submit->task-wizard#submit" } do |form| %>
+      data: { controller: "task-wizard task-schedule-form", action: "submit->task-wizard#submit", task_wizard_error_step_value: error_step } do |form| %>
   <%= hidden_field_tag :return_to, params[:return_to].presence || "dashboard" %>
   <%= form.hidden_field :starts_on %>
   <%= form.hidden_field :ends_on %>
