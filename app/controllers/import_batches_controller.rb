@@ -3,6 +3,14 @@ class ImportBatchesController < ApplicationController
 
   def index
     @import_batches = ImportBatch.includes(:supplier).recent
+    # A batch can finish "imported" yet still leave lines flagged for review.
+    # The post-import flash is transient, so surface the pending count on the
+    # index too — otherwise an unfinished import looks done once the flash is
+    # gone. Grouped count keeps this to one query instead of N.
+    @review_counts = ReceiptLineItem.needs_review
+                                     .where(import_batch_id: @import_batches.map(&:id))
+                                     .group(:import_batch_id)
+                                     .count
   end
 
   def new
