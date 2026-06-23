@@ -42,9 +42,16 @@
 <% else %>
   <%= form_with url: inventory_counts_path, method: :post, class: "count-form" do %>
     <%= hidden_field_tag :order_guide_id, @order_guide.id %>
+
+    <% if @count_error.present? %>
+      <div class="form-errors" role="alert">
+        <strong><%= @count_error %></strong>
+      </div>
+    <% end %>
+
     <section class="panel">
       <label for="notes"><strong>Count notes</strong></label>
-      <%= text_area_tag :notes, nil, rows: 2, placeholder: "Optional notes about this count" %>
+      <%= text_area_tag :notes, params[:notes], rows: 2, placeholder: "Optional notes about this count" %>
     </section>
 
     <% grouped_memberships = @memberships.group_by(&:order_guide_section) %>
@@ -62,7 +69,7 @@
                 <strong><%= item.name %></strong>
                 <small><%= item.pack_size.presence || item.count_unit.presence || item.linked_product_name %></small>
               </span>
-              <%= number_field_tag "counts[#{membership.id}]", nil, min: 0, step: "any", inputmode: "decimal" %>
+              <%= inventory_count_field(membership) %>
             </label>
           <% end %>
         </div>
@@ -81,7 +88,7 @@
                 <strong><%= item.name %></strong>
                 <small><%= item.pack_size.presence || item.count_unit.presence || item.linked_product_name %></small>
               </span>
-              <%= number_field_tag "counts[#{membership.id}]", nil, min: 0, step: "any", inputmode: "decimal" %>
+              <%= inventory_count_field(membership) %>
             </label>
           <% end %>
         </div>

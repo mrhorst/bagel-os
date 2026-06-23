@@ -78,6 +78,30 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_equal 0, InventoryCount.count
   end
 
+  test "a count with one unparseable value re-renders the form keeping the other counts instead of dropping them" do
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      notes: "Sunday morning count",
+      counts: {
+        @cream_membership.id => "4.5",
+        @egg_membership.id => "2 cases" # not a number — BigDecimal would raise
+      }
+    }
+
+    # Re-render in place (not a redirect that throws the whole count away).
+    assert_response :unprocessable_entity
+    assert_equal 0, InventoryCount.count
+
+    # The bad row is named so the user knows exactly what to fix...
+    assert_select ".form-errors", text: /Eggs/
+    # ...the valid count the user already keyed in is still there...
+    assert_select "input[name=?][value=?]", "counts[#{@cream_membership.id}]", "4.5"
+    # ...the offending field is flagged...
+    assert_select "input[name=?][aria-invalid=?]", "counts[#{@egg_membership.id}]", "true"
+    # ...and the notes survive too.
+    assert_select "textarea[name=notes]", text: "Sunday morning count"
+  end
+
   test "counts list links each row to the count detail page" do
     post inventory_counts_path, params: {
       order_guide_id: @guide.id,

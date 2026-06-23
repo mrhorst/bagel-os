@@ -85,7 +85,13 @@ class InventoryController < ApplicationController
       return
     end
 
-    memberships = order_guide.order_guide_memberships.active.counted.includes(:inventory_item).where(id: submitted_counts.keys)
+    parsed_counts, invalid_ids = parse_submitted_counts(submitted_counts)
+    if invalid_ids.any?
+      rerender_new_count(order_guide, submitted_counts, invalid_ids)
+      return
+    end
+
+    memberships = order_guide.order_guide_memberships.active.counted.includes(:inventory_item).where(id: parsed_counts.keys)
     memberships_by_id = memberships.index_by { |membership| membership.id.to_s }
     inventory_count = nil
 
@@ -99,20 +105,18 @@ class InventoryController < ApplicationController
         notes: params[:notes]
       )
 
-      submitted_counts.each do |membership_id, value|
-        membership = memberships_by_id.fetch(membership_id.to_s)
+      parsed_counts.each do |membership_id, quantity|
+        membership = memberships_by_id.fetch(membership_id)
         inventory_count.inventory_count_lines.create!(
           order_guide_membership: membership,
           inventory_item: membership.inventory_item,
-          quantity_on_hand: BigDecimal(value.to_s),
+          quantity_on_hand: quantity,
           unit: membership.inventory_item.count_unit
         )
       end
     end
 
     redirect_to inventory_shopping_list_path(order_guide_id: order_guide.id), notice: "Saved #{inventory_count.inventory_count_lines.count} #{order_guide.name} counts."
-  rescue ArgumentError
-    redirect_to new_inventory_count_path(order_guide_id: params[:order_guide_id]), alert: "One of the counts was not a valid number."
   rescue ActiveRecord::RecordNotFound, KeyError
     redirect_to new_inventory_count_path, alert: "Choose an active guide and countable guide rows."
   end
@@ -154,6 +158,44 @@ class InventoryController < ApplicationController
     raw_counts = params[:counts]
     count_values = raw_counts.respond_to?(:each_pair) ? raw_counts.each_pair.to_h : {}
     count_values.select { |_item_id, value| value.present? }
+  end
+
+  # Parse each submitted count into a number, separating any that don't parse.
+  # Returning the unparseable keys (rather than letting BigDecimal raise) lets
+  # create_guide_count re-render the form with the user's other counts intact
+  # instead of redirecting and throwing the whole count away.
+  def parse_submitted_counts(submitted_counts)
+    parsed = {}
+    invalid_ids = []
+    submitted_counts.each do |membership_id, value|
+      parsed[membership_id.to_s] = BigDecimal(value.to_s)
+    rescue ArgumentError
+      invalid_ids << membership_id.to_s
+    end
+    [ parsed, invalid_ids ]
+  end
+
+  # Re-render the count form instead of redirecting, so one bad entry doesn't
+  # discard every count the user keyed in. Repopulates the submitted values and
+  # names the rows that still need a valid number.
+  def rerender_new_count(order_guide, submitted_counts, invalid_ids)
+    @order_guide = order_guide
+    @order_guides = OrderGuide.active.ordered
+    @memberships = counted_memberships_for(order_guide)
+    @submitted_counts = submitted_counts.transform_keys(&:to_s)
+    @invalid_count_ids = invalid_ids.to_set
+
+    invalid_names = @memberships
+      .select { |membership| @invalid_count_ids.include?(membership.id.to_s) }
+      .map { |membership| membership.inventory_item.name }
+    @count_error =
+      if invalid_names.any?
+        "Enter a number for #{invalid_names.to_sentence}. Your other counts are still here — fix these and save again."
+      else
+        "One of the counts was not a valid number."
+      end
+
+    render :new_count, status: :unprocessable_entity
   end
 
   def counted_memberships_for(order_guide)

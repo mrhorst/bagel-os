@@ -3535,6 +3535,9 @@
     max-width: 110px;
     text-align: right;
   }
+  .count-row input[aria-invalid="true"] {
+    border-color: color-mix(in oklch, var(--warn) 55%, var(--line));
+  }
 
   /* ── Sticky-actions footer ────────────────────────────────────────── */
   .sticky-actions {
