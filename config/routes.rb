@@ -98,7 +98,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :import_batches, only: %i[index new create show]
+  resources :import_batches, only: %i[index new create show] do
+    collection do
+      get :csv_example
+    end
+  end
   get "inventory", to: "inventory#index", as: :inventory
   get "inventory/items", to: "inventory#items", as: :inventory_items
   get "inventory/shopping-list", to: "inventory#shopping_list", as: :inventory_shopping_list

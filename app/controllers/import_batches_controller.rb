@@ -1,5 +1,32 @@
+require "csv"
+
 class ImportBatchesController < ApplicationController
   require_module_access :import_batches
+
+  # A receipt CSV is not a plain table: the parser keys off a header preamble, an
+  # "Invoice:" line, an exact "UPC,Description,Unit Qty,Case Qty,Price" item header,
+  # and totals encoded as UPC=0 rows (see Purchasing::ReceiptCsvParser). Without a
+  # sample to copy, a first upload almost always fails on "Could not find expected
+  # receipt item header." This example mirrors that contract with generic data, the
+  # same way the order-guide import offers a downloadable example.
+  CSV_EXAMPLE_PREAMBLE = [
+    [ "Primary Supplier", nil, "Customer #0000000000" ],
+    [ "100 Example Ave", nil, "Demo Restaurant" ],
+    [ "Example City, ST 00000", nil, "1 Demo Way" ],
+    [],
+    [ "Invoice: 100001", "Terminal: 01", "2026/06/01 09:15 am" ]
+  ].freeze
+
+  CSV_EXAMPLE_ITEM_HEADER = [ "UPC", "Description", "Unit Qty", "Case Qty", "Price" ].freeze
+
+  CSV_EXAMPLE_ROWS = [
+    [ "000000000001", "All-purpose flour 50 lb bag", "2", "0", "$27.00" ],
+    [ "000000000002", "Whole milk 4 x 1 gal", "0", "1", "$32.50" ],
+    [ "000000000003", "(Coupon) Case rebate", "0", "1", "$0.00" ],
+    [ "0", "Sub-Total", "0", "0", "$86.50" ],
+    [ "0", "Tax", "0", "0", "$0.00" ],
+    [ "0", "Total", "0", "0", "$86.50" ]
+  ].freeze
 
   def index
     @import_batches = ImportBatch.includes(:supplier).recent
@@ -43,6 +70,16 @@ class ImportBatchesController < ApplicationController
     @import_batch = ImportBatch.includes(:supplier, :receipt).find(params[:id])
     @receipt = @import_batch.receipt
     @line_items = @import_batch.receipt_line_items.includes(:product).order(:line_number)
+  end
+
+  def csv_example
+    csv = CSV.generate do |output|
+      CSV_EXAMPLE_PREAMBLE.each { |row| output << row }
+      output << CSV_EXAMPLE_ITEM_HEADER
+      CSV_EXAMPLE_ROWS.each { |row| output << row }
+    end
+
+    send_data csv, filename: "receipt-import-example.csv", type: "text/csv"
   end
 
   private
