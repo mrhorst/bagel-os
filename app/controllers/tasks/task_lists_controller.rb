@@ -45,6 +45,7 @@ module Tasks
 
     def edit
       @task_list = TaskList.find(params[:id])
+      @back_path, @back_label = resolve_edit_back_target(@task_list)
     end
 
     def update
@@ -52,8 +53,9 @@ module Tasks
 
       if @task_list.update(task_list_params)
         LiveUpdates.task_state_changed!
-        redirect_to tasks_manage_lists_path, notice: "Task list updated."
+        redirect_to after_update_path(@task_list), notice: "Task list updated."
       else
+        @back_path, @back_label = resolve_edit_back_target(@task_list)
         render :edit, status: :unprocessable_entity
       end
     end
@@ -72,8 +74,38 @@ module Tasks
 
     private
 
+    # The edit page has two entry points across the two Tasks trees, and the
+    # back arrow must name (and reach) the one the user actually came from:
+    #
+    #   • Settings → Task lists → Edit list  → back to the management index
+    #   • Work surface → focused list → Edit → back to that focused list
+    #
+    # The work-surface "Edit list" link carries origin=list so the cross-tree
+    # jump resolves its back target to its origin instead of stranding the user
+    # in Settings. This mirrors Tasks::OccurrencesController#resolve_back_target:
+    # back_path and back_label are decided together server-side so the arrow
+    # always lands where its label promises (see app/views/tasks/_subpage_header).
+    def resolve_edit_back_target(task_list)
+      if params[:origin] == "list"
+        [ tasks_list_path(task_list), task_list.name ]
+      else
+        [ tasks_manage_lists_path, "Task lists" ]
+      end
+    end
+
     def task_list_params
       params.require(:task_list).permit(:name, :position, :notes, :display_start_time, :display_end_time)
+    end
+
+    # When the user edited from the focused work-surface view, saving returns
+    # them there — the same origin the back arrow resolves to — rather than
+    # dumping them into the Settings management index.
+    def after_update_path(task_list)
+      if params[:origin] == "list"
+        tasks_list_path(task_list)
+      else
+        tasks_manage_lists_path
+      end
     end
 
     def after_create_path(task_list)

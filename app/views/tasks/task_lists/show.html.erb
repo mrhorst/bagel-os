@@ -12,7 +12,7 @@
   render "tasks/subpage_header",
     title: @task_list.name,
     subtitle: task_list_display_window_label(@task_list),
-    actions: link_to("Edit list", tasks_manage_lists_path(anchor: dom_id(@task_list)), class: "button small")
+    actions: link_to("Edit list", edit_tasks_manage_list_path(@task_list, origin: "list"), class: "button small")
 %>
 
 <%= render "tasks/kpi_squares", metrics: @metrics, dom_id: "task_list_kpis_#{@task_list.id}" %>
