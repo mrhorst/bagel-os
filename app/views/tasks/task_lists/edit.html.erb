@@ -1,15 +1,25 @@
 <% content_for :title, "Edit #{@task_list.name}" %>
 
+<%# origin carries the entry tree (work surface vs Settings) through the form
+    POST so a failed save re-renders with the right back target, and the
+    controller resolves back_path/back_label and the post-save redirect to match. %>
+<% origin = params[:origin].presence %>
+
 <%=
   render "tasks/subpage_header",
     title: "Edit list",
     subtitle: @task_list.name,
-    back_path: tasks_manage_lists_path,
-    back_label: "Task lists"
+    back_path: @back_path,
+    back_label: @back_label
 %>
 
 <section class="panel panel-compact">
-  <%= render "form", task_list: @task_list, url: tasks_manage_list_path(@task_list), method: :patch, submit_label: "Save list" %>
+  <%= render "form",
+        task_list: @task_list,
+        url: tasks_manage_list_path(@task_list, origin: origin),
+        method: :patch,
+        submit_label: "Save list",
+        cancel_path: @back_path %>
 </section>
 
 <section class="panel panel-compact panel-danger-zone">

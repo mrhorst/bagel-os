@@ -376,6 +376,38 @@ class NavigationTest < ApplicationSystemTestCase
     assert_current_path tasks_root_path
   end
 
+  test "editing a list from the focused work surface returns to that list, not Settings" do
+    # The bug: "Edit list" on the focused work-surface view (/tasks/lists/:id)
+    # dove into the Settings tree, whose back arrow names "Settings" — so back
+    # stranded the user on the Tasks Settings hub instead of the list they came
+    # from. The edit page must resolve its back target to its origin: the focused
+    # list, label-honest (named by the list), matching where Save redirects.
+    list = TaskList.create!(name: "Prep", position: 1)
+
+    visit tasks_list_path(list)
+    click_through_to(edit_tasks_manage_list_path(list, origin: "list")) { click_link "Edit list" }
+
+    assert_equal "Back to #{list.name}", find("a.subpage-back")["aria-label"]
+    assert_equal tasks_list_path(list), URI(find("a.subpage-back")["href"]).path
+
+    click_through_to(tasks_list_path(list)) { find("a.subpage-back").click }
+  end
+
+  test "editing a list from Settings returns to the Task lists index, not the focused list" do
+    # The other entry point must stay correct: reached from Settings → Task
+    # lists → Edit list, the back arrow names "Task lists" and returns there.
+    list = TaskList.create!(name: "Prep", position: 1)
+
+    visit tasks_manage_lists_path
+    edit_href = edit_tasks_manage_list_path(list)
+    click_through_to(edit_href) { find("a.manage-row[href='#{edit_href}']").click }
+
+    assert_equal "Back to Task lists", find("a.subpage-back")["aria-label"]
+    assert_equal tasks_manage_lists_path, URI(find("a.subpage-back")["href"]).path
+
+    click_through_to(tasks_manage_lists_path) { find("a.subpage-back").click }
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form
@@ -412,6 +444,20 @@ class NavigationTest < ApplicationSystemTestCase
   def click_mobile_back_to(path)
     4.times do
       find(".mobile-header-back").click
+      break if has_current_path?(path, wait: 2)
+    end
+    visit path unless has_current_path?(path, wait: 1)
+    assert_current_path path
+  end
+
+  # Run the block (a click that starts a Turbo navigation), retrying through the
+  # same dropped-click flake click_mobile_back_to absorbs, then fall back to a
+  # direct visit so a swallowed click can't fail the run. Where the link points
+  # is already pinned by the aria-label/href assertions around each call; this
+  # confirms following it lands on `path`.
+  def click_through_to(path)
+    4.times do
+      yield
       break if has_current_path?(path, wait: 2)
     end
     visit path unless has_current_path?(path, wait: 1)
