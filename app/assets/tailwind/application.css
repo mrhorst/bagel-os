@@ -1970,8 +1970,15 @@
     min-height: 32px;
     padding: 5px 8px;
   }
+  /* Keep the rename field compact rather than letting the global
+     `input { width: 100% }` stretch it to fill the whole RENAME table column —
+     a full-width input dwarfs the row's actual data (name, count, status) and
+     becomes the heaviest element in every row. Match the sibling primary-guide
+     <select> floor (180px) so longer guide names ("Cleaning Supplies") still
+     fit and the two inline controls stay one consistent size. Mobile re-stacks
+     it full-width below. */
   .inline-guide-form .compact-input {
-    min-width: 130px;
+    width: 180px;
   }
   /* The primary-guide <select> must show its full selected value. The custom
      chevron reserves 36px of right padding, so a 130px floor left only ~94px
@@ -5753,6 +5760,7 @@
       min-width: 0;
     }
     .inline-guide-form .compact-select,
+    .inline-guide-form .compact-input,
     .inline-guide-form .button,
     .inline-guide-form input[type='submit'] {
       min-width: 0;
