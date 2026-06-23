@@ -1412,6 +1412,18 @@
   .decision-card.log-book-section-card .decision-card-body {
     padding: 14px 0 8px;
   }
+  /* The section's helper sentence ("Anything important from today's shift.")
+     is supporting text, not content — demote it to match the panel's own
+     `.block-panel-header p` helper above it (muted + 0.86rem) so the heading →
+     helper → field hierarchy reads correctly and the prose stops out-shouting
+     the actual Note input. Scoped to the editable section card's *direct* `> p`
+     (the description) so the nested `.log-book-card-error` paragraph keeps its
+     danger color. */
+  .decision-card.log-book-section-card .decision-card-body > p {
+    color: var(--ink-muted);
+    font-size: 0.86rem;
+    line-height: 1.42;
+  }
   .log-book-section-textarea {
     field-sizing: content;
     font-size: 1rem; /* ≥16px keeps iOS from zooming on focus */
