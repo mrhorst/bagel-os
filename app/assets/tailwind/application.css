@@ -4408,10 +4408,15 @@
   }
 
   /* ── Settings hub (cards on /tasks/manage) ────────────────────────── */
+  /* auto-fill (not auto-fit) keeps the empty trailing tracks, so cards stay a
+     uniform ~1/3 width regardless of how many a hub has. auto-fit would
+     collapse the empty tracks and stretch a lone card (e.g. the 4th on /more)
+     or a 2-card hub to the full row width, breaking sibling consistency and
+     stranding the trailing "›" chevron far from its text. */
   .settings-hub {
     display: grid;
     gap: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
   .settings-card {
     align-items: flex-start;
