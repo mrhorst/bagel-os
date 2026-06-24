@@ -44,6 +44,27 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
     assert_select "a.subpage-back[href=?]", setup_tasks_manage_tasks_path(origin: "manage")
   end
 
+  # The guided form's Cancel must honor the same origin its Back arrow and its
+  # post-create redirect already honor — otherwise cancelling out of the form
+  # reached from Manage strands the user on the dashboard instead of returning
+  # them to the Manage tasks list they came from.
+  test "new task cancel returns to the manage list when reached from manage" do
+    task_list = TaskList.create!(name: "Opening", position: 1)
+
+    get new_tasks_manage_task_path(task_list_id: task_list.id, flow: "guided", return_to: "manage")
+    assert_response :success
+    assert_select ".task-wizard-actions a[href=?]", tasks_manage_tasks_path
+    assert_select ".task-wizard-actions a[href=?]", tasks_root_path, count: 0
+  end
+
+  test "new task cancel returns to the dashboard when reached from the dashboard" do
+    task_list = TaskList.create!(name: "Opening", position: 1)
+
+    get new_tasks_manage_task_path(task_list_id: task_list.id, flow: "guided", return_to: "dashboard")
+    assert_response :success
+    assert_select ".task-wizard-actions a[href=?]", tasks_root_path
+  end
+
   test "guided task creation from the manage list returns to the manage list" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       task_list = TaskList.create!(name: "Opening", position: 1)
