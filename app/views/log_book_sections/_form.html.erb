@@ -55,7 +55,12 @@
     <h3 class="log-book-fields-manager-title">Inputs</h3>
     <p class="muted small">One input per row. Drag in <code>plain</code>, <code>sesame</code>, etc.</p>
     <ol class="log-book-fields-list" data-log-book-fields-target="list">
-      <% section.fields.each do |field| %>
+      <%# A multi-input section needs at least one input. Seed one blank starter
+          row when there are none yet — so switching the type to Multi-input (or
+          re-rendering after the "must have at least one input" error) presents a
+          row to fill instead of an empty list with no obvious next step. %>
+      <% rows = section.fields.presence || [ { "key" => "", "label" => "", "type" => "number", "unit_label" => "", "value_decimals" => 0 } ] %>
+      <% rows.each do |field| %>
         <%= render "log_book_sections/field_row", field: field %>
       <% end %>
     </ol>
