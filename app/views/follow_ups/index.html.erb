@@ -28,7 +28,7 @@
       <%= link_to follow_up_path(follow_up), class: ["follow-up-card", "follow-up-card-#{follow_up.urgency}"] do %>
         <div class="follow-up-card-head">
           <h2><%= follow_up.title %></h2>
-          <span class="badge badge-warning"><%= follow_up.urgency.humanize %></span>
+          <span class="<%= follow_up_urgency_badge_class(follow_up.urgency) %>"><%= follow_up.urgency.humanize %></span>
         </div>
         <% if follow_up.description.present? %>
           <p class="follow-up-card-body"><%= truncate(follow_up.description, length: 140) %></p>

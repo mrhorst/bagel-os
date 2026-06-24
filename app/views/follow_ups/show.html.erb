@@ -11,7 +11,7 @@
 
 <article class="follow-up-detail">
   <header class="follow-up-detail-head">
-    <span class="badge badge-warning"><%= @follow_up.urgency.humanize %></span>
+    <span class="<%= follow_up_urgency_badge_class(@follow_up.urgency) %>"><%= @follow_up.urgency.humanize %></span>
     <h1><%= @follow_up.title %></h1>
     <p class="muted">
       Opened <%= @follow_up.opened_at.strftime("%B %-d, %Y · %-l:%M %p") %>
