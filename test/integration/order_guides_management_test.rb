@@ -97,6 +97,32 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "guide show page surfaces the staff note collected at creation" do
+    # The "Create Guide" form collects a free-text note ("Optional staff note
+    # for how this guide is used.") into OrderGuide#notes, but nothing rendered
+    # it back — the value was write-only, so the note a manager wrote vanished
+    # with no way to see it. It must appear where staff use the guide.
+    guide = OrderGuide.create!(name: "Daily", notes: "Count before the morning order.\nFlag anything short.")
+
+    get order_guide_path(guide)
+
+    assert_response :success
+    assert_select ".note-block", text: /Guide note/
+    assert_select ".note-block", text: /Count before the morning order\./
+    # simple_format splits the two lines into separate paragraphs (no invalid
+    # <p> nesting — see #191), so both lines render.
+    assert_select ".note-block p", text: /Flag anything short\./
+  end
+
+  test "guide show page omits the note block when the guide has no note" do
+    guide = OrderGuide.create!(name: "Weekly", notes: "")
+
+    get order_guide_path(guide)
+
+    assert_response :success
+    assert_select ".note-block", count: 0
+  end
+
   test "downloads csv example for order guide import shape" do
     get csv_example_order_guides_path
 
