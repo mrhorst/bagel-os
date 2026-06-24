@@ -35,6 +35,7 @@ module Tasks
 
     def edit
       @task = Task.find(params[:id])
+      @back_path, @back_label = resolve_edit_back_target(@task)
     end
 
     def update
@@ -43,8 +44,9 @@ module Tasks
       if @task.update(task_params)
         refresh_open_occurrences(@task)
         LiveUpdates.task_state_changed!
-        redirect_to tasks_manage_tasks_path, notice: "Task updated."
+        redirect_to after_update_path(@task), notice: "Task updated."
       else
+        @back_path, @back_label = resolve_edit_back_target(@task)
         render :edit, status: :unprocessable_entity
       end
     end
@@ -67,6 +69,42 @@ module Tasks
 
     def load_form_collections
       @task_lists = TaskList.active.ordered
+    end
+
+    # The edit page is reached from two trees, and the back arrow + post-save
+    # redirect must return the user to the one they actually came from:
+    #
+    #   • Settings → Manage tasks → Edit task         → back to the management index
+    #   • Work surface → occurrence detail → Edit task → back to that occurrence
+    #
+    # The occurrence's "Edit task" link carries origin=occurrence (+ the
+    # occurrence id) so this cross-tree jump resolves back to where it started
+    # instead of stranding the manager deep in Settings. Mirrors
+    # TaskListsController#resolve_edit_back_target and
+    # OccurrencesController#resolve_back_target.
+    def resolve_edit_back_target(task)
+      occurrence = origin_occurrence(task)
+      if occurrence
+        [ tasks_occurrence_path(occurrence), occurrence.snapshot_title ]
+      else
+        [ tasks_manage_tasks_path, "Tasks" ]
+      end
+    end
+
+    # Saving from the work-surface occurrence returns the user there — the same
+    # place the back arrow resolves to — rather than the Settings index.
+    def after_update_path(task)
+      occurrence = origin_occurrence(task)
+      occurrence ? tasks_occurrence_path(occurrence) : tasks_manage_tasks_path
+    end
+
+    # Only honor origin=occurrence when the referenced occurrence really belongs
+    # to this task, so a hand-edited query string can't point the back target at
+    # an unrelated page.
+    def origin_occurrence(task)
+      return nil unless params[:origin] == "occurrence" && params[:occurrence_id].present?
+
+      task.task_occurrences.find_by(id: params[:occurrence_id])
     end
 
     def task_params
