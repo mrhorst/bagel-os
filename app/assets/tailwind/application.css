@@ -4590,7 +4590,12 @@
     gap: 12px;
     grid-template-columns: 44px minmax(0, 1fr);
     min-height: 112px;
-    padding: 16px;
+    /* Right padding reserves the gutter for the trailing disclosure chevron so
+       descriptions never run under it; applied to all cards (link + disabled)
+       so the two cards' text columns stay aligned side by side even when one
+       is the no-list disabled variant. position:relative anchors the chevron. */
+    padding: 16px 40px 16px 16px;
+    position: relative;
     text-decoration: none;
     transition:
       border-color 120ms ease,
@@ -4602,6 +4607,29 @@
     border-color: var(--line-2);
     text-decoration: none;
     transform: translateY(-1px);
+  }
+  /* Trailing disclosure chevron — these cards navigate, so they carry the same
+     iOS settings-row "›" affordance as a.action-card / .settings-card; without
+     it the two choices read as inert info panels rather than tappable routes.
+     Scoped to anchors so the disabled (no-list) variant — a non-link div —
+     correctly shows no chevron. Drawn from a mask so it tracks --ink-muted. */
+  a.task-builder-card::after {
+    background: var(--ink-muted);
+    content: "";
+    height: 13px;
+    mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: background 120ms ease;
+    width: 8px;
+  }
+  a.task-builder-card:hover::after {
+    background: var(--ink);
   }
   .task-builder-card-disabled {
     color: var(--ink-muted);
@@ -4723,7 +4751,8 @@
     }
     .task-builder-card {
       min-height: 104px;
-      padding: 14px;
+      /* Keep the right gutter for the disclosure chevron on phones. */
+      padding: 14px 38px 14px 14px;
     }
     .task-wizard-steps {
       gap: 6px;
