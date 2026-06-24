@@ -1868,7 +1868,11 @@
     margin-bottom: 6px;
   }
   .action-card span {
-    color: var(--ink-muted);
+    /* Secondary, not muted: the card fill is --surface-3, where --ink-muted
+       only reaches 4.48:1 — under WCAG AA for this 0.85rem body text. --ink-2
+       clears AA comfortably and the subtitle is real data (the row count that
+       drives guide selection), so it earns secondary, not tertiary, weight. */
+    color: var(--ink-2);
     font-size: 0.85rem;
     line-height: 1.4;
   }
