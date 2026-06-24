@@ -150,8 +150,11 @@ class InventoryController < ApplicationController
     end
 
     redirect_to inventory_counts_path, notice: "Saved #{inventory_count.inventory_count_lines.count} inventory counts."
-  rescue ArgumentError
-    redirect_to new_inventory_count_path, alert: "One of the counts was not a valid number."
+  rescue ArgumentError, ActiveRecord::RecordInvalid
+    # ArgumentError = a value that didn't parse; RecordInvalid = a value that
+    # parsed but the count line rejects (e.g. a negative quantity). Either way,
+    # surface a recoverable alert instead of crashing the save.
+    redirect_to new_inventory_count_path, alert: "Each count must be a number of 0 or more."
   end
 
   def submitted_count_values
@@ -160,15 +163,21 @@ class InventoryController < ApplicationController
     count_values.select { |_item_id, value| value.present? }
   end
 
-  # Parse each submitted count into a number, separating any that don't parse.
-  # Returning the unparseable keys (rather than letting BigDecimal raise) lets
-  # create_guide_count re-render the form with the user's other counts intact
-  # instead of redirecting and throwing the whole count away.
+  # Parse each submitted count into a number, separating any that aren't a valid
+  # count. A value is invalid if it doesn't parse OR is negative — the count line
+  # model rejects negatives (quantity_on_hand >= 0), so letting one through would
+  # raise RecordInvalid in the transaction and crash the save to a generic error
+  # page, discarding every count the user keyed in. Flagging it here routes it
+  # through the same in-place re-render as an unparseable value, so the form
+  # keeps the user's other counts and names the row to fix.
   def parse_submitted_counts(submitted_counts)
     parsed = {}
     invalid_ids = []
     submitted_counts.each do |membership_id, value|
-      parsed[membership_id.to_s] = BigDecimal(value.to_s)
+      number = BigDecimal(value.to_s)
+      raise ArgumentError if number.negative?
+
+      parsed[membership_id.to_s] = number
     rescue ArgumentError
       invalid_ids << membership_id.to_s
     end
@@ -190,7 +199,7 @@ class InventoryController < ApplicationController
       .map { |membership| membership.inventory_item.name }
     @count_error =
       if invalid_names.any?
-        "Enter a number for #{invalid_names.to_sentence}. Your other counts are still here — fix these and save again."
+        "Enter a count of 0 or more for #{invalid_names.to_sentence}. Your other counts are still here — fix these and save again."
       else
         "One of the counts was not a valid number."
       end
