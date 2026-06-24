@@ -151,7 +151,9 @@
           <% end %>
         </div>
       <% end %>
-    <% else %>
+    <% elsif @editable %>
+      <%# Today, and no sections defined yet — the genuine "log book isn't set
+          up" onboarding case. Only here do we invite an admin to create one. %>
       <p class="empty-state">
         <strong>No Log Sections yet.</strong>
         <span>An admin can create sections like General Log, Maintenance, and Bagels Left.</span>
@@ -161,6 +163,15 @@
           <%= link_to "Create first section", new_log_book_section_path, class: "button primary" %>
         </div>
       <% end %>
+    <% else %>
+      <%# A past, read-only day that simply had nothing logged. Sections may
+          well exist — they just weren't filled that day — so don't claim the
+          log book is unconfigured or offer the "create your first section" CTA
+          (which would also be a dead-end action on a read-only day). %>
+      <p class="empty-state">
+        <strong>Nothing was logged on this day.</strong>
+        <span>No entries were recorded for <%= @operating_date.strftime("%b %-d, %Y") %>.</span>
+      </p>
     <% end %>
   </section>
 <% end %>
