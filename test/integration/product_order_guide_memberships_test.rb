@@ -54,4 +54,25 @@ class ProductOrderGuideMembershipsTest < ActionDispatch::IntegrationTest
     assert membership.order_only?
     assert_not membership.setup_needed?
   end
+
+  test "submitting without a guide gives a human message, not a raw lookup error" do
+    product = @supplier.products.create!(canonical_name: "Olives", needs_review: false)
+
+    post product_order_guide_memberships_path(product), params: {
+      membership: { order_guide_id: "", section_name: "Dry", item_name: "Olives" }
+    }
+
+    assert_redirected_to product_path(product)
+    assert_equal "Choose a guide to add this product to.", flash[:alert]
+    assert_no_match(/Couldn't find/, flash[:alert].to_s)
+    assert_empty product.inventory_items
+  end
+
+  test "the guide select is marked required so the browser blocks a guideless submit" do
+    product = @supplier.products.create!(canonical_name: "Capers", needs_review: false)
+
+    get product_path(product)
+    assert_response :success
+    assert_select "select[name='membership[order_guide_id]'][required]"
+  end
 end
