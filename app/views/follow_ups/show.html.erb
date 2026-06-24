@@ -214,7 +214,10 @@
     </section>
 
     <div class="form-footer">
-      <%= button_to "Reopen", reopen_follow_up_path(@follow_up), method: :patch, class: "button small" %>
+      <%# Reopening discards the resolution (outcome, who/when, and the note), so
+          guard the tap like every other irreversible control and say what's lost. %>
+      <%= button_to "Reopen", reopen_follow_up_path(@follow_up), method: :patch, class: "button small",
+            form: { data: { turbo_confirm: reopen_confirm_message(@follow_up) } } %>
     </div>
   <% else %>
     <section class="follow-up-detail-section">

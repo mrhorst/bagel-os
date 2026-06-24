@@ -54,6 +54,33 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     assert_equal "action_taken", follow_up.resolved_via
   end
 
+  test "reopening a resolved follow-up is guarded by a confirmation that names the lost note" do
+    # Reopen clears the resolution — outcome, who/when, and the typed note — and on
+    # mobile it's a single unguarded tap right beside that note. It must carry the
+    # same confirmation guard every other irreversible control in the app uses, and
+    # say what gets discarded.
+    follow_up = FollowUp.create!(title: "Door squeaks", urgency: "normal", opened_at: 2.hours.ago, opened_by: users(:one),
+                                 status: "resolved", resolved_at: 1.hour.ago, resolved_by: users(:one),
+                                 resolved_via: "action_taken", resolution_note: "Oiled the hinge")
+
+    get follow_up_path(follow_up)
+    assert_response :success
+    assert_select "form[action=?][data-turbo-confirm]", reopen_follow_up_path(follow_up)
+    assert_select "form[action=?][data-turbo-confirm*=?]", reopen_follow_up_path(follow_up), "resolution note will be cleared"
+  end
+
+  test "reopen confirmation drops the note warning when there is no resolution note" do
+    follow_up = FollowUp.create!(title: "Door squeaks", urgency: "normal", opened_at: 2.hours.ago, opened_by: users(:one),
+                                 status: "resolved", resolved_at: 1.hour.ago, resolved_by: users(:one),
+                                 resolved_via: "action_taken")
+
+    get follow_up_path(follow_up)
+    assert_response :success
+    # Still guarded, but no false claim that a (non-existent) note will be lost.
+    assert_select "form[action=?][data-turbo-confirm]", reopen_follow_up_path(follow_up)
+    assert_select "form[action=?][data-turbo-confirm*=?]", reopen_follow_up_path(follow_up), "resolution note", count: 0
+  end
+
   test "posting a note appends to the thread" do
     follow_up = FollowUp.create!(title: "Walk-in warm", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one))
 
