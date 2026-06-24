@@ -89,7 +89,7 @@
       <% @products.each do |product| %>
         <% stats = product.price_stats %>
         <tr>
-          <td data-label="Product"><%= link_to product.canonical_name, product %></td>
+          <td class="row-heading" data-label="Product"><%= link_to product.canonical_name, product %></td>
           <td data-label="Category"><%= product.category_name %></td>
           <td class="hide-on-mobile" data-label="SKU"><%= product.supplier_sku_summary %></td>
           <td class="numeric" data-label="Latest price"><%= money(stats[:latest_price]) %></td>
