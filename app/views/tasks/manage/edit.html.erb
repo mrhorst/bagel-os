@@ -1,11 +1,12 @@
 <% content_for :title, "Edit #{@task.title}" %>
 
-<%# origin (+ occurrence_id) carries the entry tree (work surface vs Settings)
-    through the form PATCH so a failed save re-renders with the right back
-    target, and the controller resolves back_path/back_label and the post-save
-    redirect to match. %>
+<%# origin (+ occurrence_id / follow_up_id) carries the entry tree (work surface,
+    Settings, or a follow-up) through the form PATCH so a failed save re-renders
+    with the right back target, and the controller resolves back_path/back_label
+    and the post-save redirect to match. %>
 <% origin = params[:origin].presence %>
 <% occurrence_id = params[:occurrence_id].presence %>
+<% follow_up_id = params[:follow_up_id].presence %>
 
 <%=
   render "tasks/subpage_header",
@@ -18,7 +19,7 @@
 <section class="panel panel-compact">
   <%= render "task_form",
         task: @task,
-        url: tasks_manage_task_path(@task, origin: origin, occurrence_id: occurrence_id),
+        url: tasks_manage_task_path(@task, origin: origin, occurrence_id: occurrence_id, follow_up_id: follow_up_id),
         method: :patch,
         submit_label: "Save task" %>
 </section>

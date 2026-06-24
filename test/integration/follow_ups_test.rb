@@ -185,8 +185,12 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     get follow_up_path(follow_up)
     assert_response :success
     # The "Tasks spawned" list must link the task to its definition — otherwise the
-    # user can see what they created but has no way to reach it.
-    assert_select ".follow-up-task-links a[href=?]", edit_tasks_manage_task_path(task), text: /Snake the toilet/
+    # user can see what they created but has no way to reach it. The link carries
+    # origin=follow_up so the edit page's back arrow returns here rather than
+    # stranding the user in the Settings management tree.
+    assert_select ".follow-up-task-links a[href=?]",
+      edit_tasks_manage_task_path(task, origin: "follow_up", follow_up_id: follow_up.id),
+      text: /Snake the toilet/
   end
 
   test "free-text blocks wrap simple_format in a block container so its paragraphs nest validly" do
