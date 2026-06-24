@@ -24,7 +24,7 @@ module ApplicationHelper
     { key: :marketing,      label: "Marketing",    hub: :more,   icon: "camera",    path_helper: :photo_assets_path,       controllers: %w[photo_assets],                                     module_name: "marketing",            description: "Photo library for menus, social, and the site." },
     { key: :review,         label: "Review",       hub: :more,   icon: "alert",     path_helper: :normalization_reviews_path, controllers: %w[normalization_reviews],                         module_name: "normalization_reviews", description: "Resolve uncertain receipt and product matches." },
     { key: :users,          label: "Users",        hub: :more,   icon: "users",     path_helper: :admin_users_path,        controllers: %w[admin/users],                                      admin_only: true,                    description: "Team members and what they can access." },
-    { key: :account,        label: "Account",      hub: :more,   icon: "users",     path_helper: :account_path,            controllers: %w[accounts passwords sessions],                                                           description: "Your profile, password, and sign out." }
+    { key: :account,        label: "Account",      hub: :more,   icon: "user-circle", path_helper: :account_path,          controllers: %w[accounts passwords sessions],                                                           description: "Your profile, password, and sign out." }
   ].freeze
 
   def app_branding
@@ -143,6 +143,7 @@ module ApplicationHelper
       "alert" => tag.path(d: "M12 8v5m0 4h.01M10.3 4.6 3.5 17.2A2 2 0 0 0 5.2 20h13.6a2 2 0 0 0 1.7-2.8L13.7 4.6a2 2 0 0 0-3.4 0Z", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "report" => tag.path(d: "M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 0v5h5M8 17h8M8 13h8", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "users" => tag.path(d: "M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0Zm-12 9a8 8 0 0 1 16 0", "stroke-linecap": "round", "stroke-linejoin": "round"),
+      "user-circle" => tag.path(d: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-9.2a2.8 2.8 0 1 0 0-5.6 2.8 2.8 0 0 0 0 5.6Zm-5.2 6.5a5.4 5.4 0 0 1 10.4 0", "stroke-linecap": "round", "stroke-linejoin": "round"),
       "camera" => tag.path(d: "M4 9a2 2 0 0 1 2-2h1.5l1.3-1.9A2 2 0 0 1 10.5 4h3a2 2 0 0 1 1.7 1.1L16.5 7H18a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9Zm8 7.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z", "stroke-linecap": "round", "stroke-linejoin": "round")
     }
 
