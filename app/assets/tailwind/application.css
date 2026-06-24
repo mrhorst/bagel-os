@@ -5689,6 +5689,14 @@
       display: none;
     }
 
+    /* An inline action that is duplicated by the floating action button at
+       mobile widths (the FAB is the canonical mobile "add" affordance). Hide
+       it here so the screen shows one primary CTA, not two; on desktop, where
+       no FAB renders, the inline button stays visible. */
+    .hide-for-fab {
+      display: none;
+    }
+
     /* Responsive tables: stacked card-per-row at <=640px. Apply the
        .responsive-table class on <table> and `data-label` on each <td>. */
     .responsive-table {
