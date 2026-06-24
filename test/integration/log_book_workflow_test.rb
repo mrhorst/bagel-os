@@ -75,6 +75,36 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
     assert_equal "Yesterday was busy.", entry.log_book_responses.first.reload.value_text
   end
 
+  test "a past day with nothing logged says so, instead of claiming the log book is unconfigured" do
+    # Sections exist, but no entry was recorded three days ago. The read-only
+    # past-day view must not fall through to the "No Log Sections yet" onboarding
+    # copy + admin "Create first section" CTA — that misleads a manager into
+    # thinking a configured log book is empty, and offers a dead-end action on a
+    # read-only day. (Default test user is an admin, so the CTA would render.)
+    LogBookSection.create!(title: "General Log", section_type: "long_text")
+    quiet_day = Date.current - 3
+
+    get log_book_path(date: quiet_day.iso8601)
+
+    assert_response :success
+    assert_match "Past operating days are read-only.", response.body
+    assert_match "Nothing was logged on this day.", response.body
+    refute_match "No Log Sections yet", response.body
+    assert_select "a[href=?]", new_log_book_section_path, count: 0
+  end
+
+  test "today with no sections still invites an admin to create the first one" do
+    # Guard the genuine onboarding case the regression test above must not break:
+    # when the editable day truly has no sections defined, keep the CTA.
+    assert_equal 0, LogBookSection.active.count
+
+    get log_book_path
+
+    assert_response :success
+    assert_match "No Log Sections yet", response.body
+    assert_select ".form-footer a[href=?]", new_log_book_section_path, text: "Create first section"
+  end
+
   test "archived sections stay visible on old entries but disappear from today's form" do
     section = LogBookSection.create!(title: "Bagels Left", section_type: "number", unit_label: "bagels")
     entry = LogBookEntry.create!(operating_date: Date.yesterday)
