@@ -132,6 +132,71 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_select "textarea[name=notes]", text: "Sunday morning count"
   end
 
+  test "a row removed from the guide mid-count re-renders keeping the other counts instead of discarding the whole count" do
+    # A row that was countable when the sheet loaded can stop being countable by
+    # save time — another admin removes it from the guide. Without a guard the
+    # save raised KeyError, redirected to the bare guide picker, and threw away
+    # every count the user walked the floor to enter. It must instead behave like
+    # any other recoverable problem: re-render in place, keep the rest.
+    @egg_membership.deactivate!
+
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      notes: "Sunday morning count",
+      counts: {
+        @cream_membership.id => "4.5",
+        @egg_membership.id => "2"
+      }
+    }
+
+    # Re-render in place — not a redirect to the guide picker that discards the count.
+    assert_response :unprocessable_entity
+    assert_equal 0, InventoryCount.count
+
+    # The removed row is named so the user understands what changed...
+    assert_select ".form-errors", text: /Eggs/
+    assert_select ".form-errors", text: /removed from this guide/
+    # ...the valid count the user already keyed in is still there...
+    assert_select "input[name=?][value=?]", "counts[#{@cream_membership.id}]", "4.5"
+    # ...and the notes survive too, so saving again records the rest.
+    assert_select "textarea[name=notes]", text: "Sunday morning count"
+  end
+
+  test "saving again after a row was removed records the remaining counts" do
+    @egg_membership.deactivate!
+
+    # First save hits the removed row and re-renders.
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      counts: { @cream_membership.id => "4.5", @egg_membership.id => "2" }
+    }
+    assert_response :unprocessable_entity
+    assert_equal 0, InventoryCount.count
+
+    # The user saves again — the removed row no longer has a field, so only the
+    # valid count is resubmitted and it now succeeds.
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      counts: { @cream_membership.id => "4.5" }
+    }
+    assert_redirected_to inventory_shopping_list_path(order_guide_id: @guide.id)
+    assert_equal 1, InventoryCount.count
+    assert_equal BigDecimal("4.5"), InventoryCount.last.inventory_count_lines.first.quantity_on_hand
+  end
+
+  test "saving a count for a guide that was deactivated mid-count gives a clear alert" do
+    @guide.update!(active: false)
+
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      counts: { @cream_membership.id => "4.5" }
+    }
+
+    assert_redirected_to new_inventory_count_path
+    assert_equal "That guide is no longer active. Pick an active guide to count.", flash[:alert]
+    assert_equal 0, InventoryCount.count
+  end
+
   test "a negative legacy count surfaces a recoverable alert instead of crashing" do
     post inventory_counts_path, params: { counts: { @cream_cheese.id => "-2" } }
 
