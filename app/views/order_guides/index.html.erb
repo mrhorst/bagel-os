@@ -67,7 +67,7 @@
       <tbody>
         <% @order_guides.each do |guide| %>
           <tr>
-            <td data-label="Name"><strong><%= guide.name %></strong></td>
+            <td class="row-heading" data-label="Name"><strong><%= guide.name %></strong></td>
             <td class="numeric" data-label="Active items"><%= guide.active_item_count %></td>
             <td data-label="Status"><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
             <td data-label="Items"><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
@@ -145,7 +145,7 @@
                 <% memberships.first(8).each do |membership| %>
                   <% item = membership.inventory_item %>
                   <tr>
-                    <td data-label="Item">
+                    <td class="row-heading" data-label="Item">
                       <strong><%= item.name %></strong>
                       <% if membership.primary_guide? %>
                         <span class="badge badge-ok badge-compact">Primary</span>
