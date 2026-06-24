@@ -4871,7 +4871,10 @@
     pointer-events: none;
   }
   .tasks-date-pager-form {
-    flex: 1;
+    /* Size to the date label so prev/next stay hugged to it as one grouped
+       stepper. On mobile the pager goes full-width (arrows at the edges) via
+       the max-width:640px override below. */
+    flex: 0 1 auto;
     min-width: 0;
   }
   .tasks-date-pager-label {
@@ -5548,6 +5551,11 @@
     }
     .tasks-page-header-titles h1 {
       font-size: 1.3rem;
+    }
+    /* On a phone the pager spans the content width, pushing the prev/next
+       arrows to the screen edges (the standard mobile day-stepper). */
+    .tasks-date-pager-form {
+      flex: 1;
     }
     .tasks-staff-chip {
       max-width: 130px;
