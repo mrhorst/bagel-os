@@ -53,7 +53,7 @@
         <% @occurrences.each do |occurrence| %>
           <tr>
             <td data-label="Status"><%= task_status_badge(occurrence) %></td>
-            <td data-label="Task">
+            <td class="row-heading" data-label="Task">
               <strong><%= occurrence.snapshot_title %></strong>
               <% if occurrence.requires_photo_evidence? %>
                 <small>Photo required</small>
