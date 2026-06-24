@@ -5,7 +5,7 @@ This repository uses GitHub Issues.
 ## Repository
 
 - Host: GitHub
-- Expected repository: `mrhorst/restaurant-inventory-os`
+- Expected repository: `mrhorst/bagel-os`
 - Visibility: private
 
 ## How Agents Should Work
