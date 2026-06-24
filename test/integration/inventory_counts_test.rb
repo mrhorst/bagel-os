@@ -102,6 +102,44 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_select "textarea[name=notes]", text: "Sunday morning count"
   end
 
+  test "a negative count re-renders the form keeping the other counts instead of crashing the save" do
+    # The count line model rejects negatives (quantity_on_hand >= 0). A negative
+    # parses fine as a number, so without a guard it would reach create! and
+    # raise RecordInvalid mid-transaction — Rails renders that as a generic 422
+    # error page, throwing away every count the user keyed in. It must instead
+    # be treated like any other bad entry: re-render in place, keep the rest.
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      notes: "Sunday morning count",
+      counts: {
+        @cream_membership.id => "4.5",
+        @egg_membership.id => "-3"
+      }
+    }
+
+    # Re-render in place, not a crash and not a redirect that discards the count.
+    assert_response :unprocessable_entity
+    assert_equal 0, InventoryCount.count
+
+    # The offending row is named so the user knows what to fix...
+    assert_select ".form-errors", text: /Eggs/
+    # ...the value they keyed in is shown back so they can correct it...
+    assert_select "input[name=?][value=?]", "counts[#{@egg_membership.id}]", "-3"
+    assert_select "input[name=?][aria-invalid=?]", "counts[#{@egg_membership.id}]", "true"
+    # ...their other valid count survives...
+    assert_select "input[name=?][value=?]", "counts[#{@cream_membership.id}]", "4.5"
+    # ...and so do the notes.
+    assert_select "textarea[name=notes]", text: "Sunday morning count"
+  end
+
+  test "a negative legacy count surfaces a recoverable alert instead of crashing" do
+    post inventory_counts_path, params: { counts: { @cream_cheese.id => "-2" } }
+
+    assert_redirected_to new_inventory_count_path
+    assert_equal "Each count must be a number of 0 or more.", flash[:alert]
+    assert_equal 0, InventoryCount.count
+  end
+
   test "counts list links each row to the count detail page" do
     post inventory_counts_path, params: {
       order_guide_id: @guide.id,
