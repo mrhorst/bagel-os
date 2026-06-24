@@ -1131,6 +1131,19 @@
   .page-heading p {
     overflow-wrap: anywhere;
   }
+  /* `.small` on a paragraph means "demoted helper text" — supporting copy that
+     should sit below the heading and field labels, not out-size them. The class
+     never carried a font-size, so every `<p class="muted small">` description
+     rendered at full body (14px) — larger than the 0.82rem field labels above
+     the inputs, inverting the heading → description → field hierarchy. Wire it
+     to the demoted-helper scale the app already uses elsewhere (0.86rem / 1.42,
+     e.g. the log-book section card and subpage headers) so panel/form
+     descriptions read as supporting text everywhere. Color is left to `.muted`;
+     `.button.small` (a different element, own font-size) is unaffected. */
+  p.small {
+    font-size: 0.86rem;
+    line-height: 1.42;
+  }
 
   /* ── Panels / Cards ───────────────────────────────────────────────── */
   .panel,
