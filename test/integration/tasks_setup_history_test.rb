@@ -128,6 +128,54 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
     assert_select "label", text: "End date", count: 0
   end
 
+  # The "Create a new list" builder card continues into the guided task form just
+  # like "Add to an existing list" — and must thread the same origin so a manager
+  # who began in Settings → Manage tasks lands back there, not on the dashboard.
+  test "create-a-new-list card threads the manage origin into list creation" do
+    TaskList.create!(name: "Opening", position: 1)
+
+    get setup_tasks_manage_tasks_path(origin: "manage")
+    assert_response :success
+    assert_select ".task-builder-menu a[href=?]",
+      new_tasks_manage_list_path(continue_to_task: "1", origin: "manage")
+  end
+
+  test "create-a-new-list card from the dashboard carries no origin" do
+    TaskList.create!(name: "Opening", position: 1)
+
+    get setup_tasks_manage_tasks_path
+    assert_response :success
+    assert_select ".task-builder-menu a[href=?]",
+      new_tasks_manage_list_path(continue_to_task: "1")
+  end
+
+  test "new list page preserves the manage origin on its back arrow and cancel" do
+    get new_tasks_manage_list_path(continue_to_task: "1", origin: "manage")
+
+    assert_response :success
+    assert_select "a.subpage-back[href=?]", setup_tasks_manage_tasks_path(origin: "manage")
+    assert_select ".form-footer a[href=?]", setup_tasks_manage_tasks_path(origin: "manage")
+    assert_select "input[type='hidden'][name='origin'][value=?]", "manage"
+  end
+
+  test "new list from the manage builder continues into the guided form returning to manage" do
+    post tasks_manage_lists_path, params: {
+      continue_to_task: "1",
+      origin: "manage",
+      task_list: { name: "Prep", position: 1 }
+    }
+
+    task_list = TaskList.sole
+    assert_redirected_to new_tasks_manage_task_path(task_list_id: task_list.id, flow: "guided", return_to: "manage")
+
+    follow_redirect!
+
+    assert_response :success
+    # Cancel + post-create redirect stay on the Manage tasks tree, not the dashboard.
+    assert_select ".task-wizard-actions a[href=?]", tasks_manage_tasks_path
+    assert_select ".task-wizard-actions a[href=?]", tasks_root_path, count: 0
+  end
+
   test "guided task creation returns to the dashboard" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       task_list = TaskList.create!(name: "Opening", position: 1)

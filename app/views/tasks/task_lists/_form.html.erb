@@ -1,6 +1,9 @@
 <%# locals: task_list:, url:, method:, submit_label: %>
 <%= form_with model: task_list, url: url, method: method, class: "stacked-form" do |form| %>
   <%= hidden_field_tag :continue_to_task, "1" if local_assigns[:continue_to_task] %>
+  <%# Carry the origin (Manage tasks vs dashboard) through creation so the
+      continue-to-task redirect returns the user to where they started. %>
+  <%= hidden_field_tag :origin, local_assigns[:origin] if local_assigns[:origin].present? %>
 
   <% if task_list.errors.any? %>
     <div class="form-errors" role="alert">

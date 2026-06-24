@@ -32,6 +32,7 @@ module Tasks
     def new
       @task_list = TaskList.new(position: TaskList.maximum(:position).to_i + 1)
       @continue_to_task = params[:continue_to_task] == "1"
+      @origin = params[:origin].presence
     end
 
     def create
@@ -43,6 +44,7 @@ module Tasks
         redirect_to after_create_path(@task_list), notice: "Task list created."
       else
         @continue_to_task = params[:continue_to_task] == "1"
+        @origin = params[:origin].presence
         render :new, status: :unprocessable_entity
       end
     end
@@ -112,9 +114,20 @@ module Tasks
       end
     end
 
+    # The "Create a new list" builder card continues straight into the guided
+    # task form. Carry the origin the card was reached from (Manage tasks vs the
+    # dashboard FAB) into that form's return_to, so the post-create redirect and
+    # Cancel land the user back where they started — same as the "Add to an
+    # existing list" card already does. Without this the continuation always
+    # hardcoded return_to=dashboard, stranding a manager who began in Settings →
+    # Manage tasks on the dashboard.
     def after_create_path(task_list)
       if params[:continue_to_task] == "1"
-        new_tasks_manage_task_path(task_list_id: task_list.id, flow: "guided", return_to: "dashboard")
+        new_tasks_manage_task_path(
+          task_list_id: task_list.id,
+          flow: "guided",
+          return_to: params[:origin] == "manage" ? "manage" : "dashboard"
+        )
       else
         tasks_manage_lists_path
       end

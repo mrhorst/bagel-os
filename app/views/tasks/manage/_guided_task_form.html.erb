@@ -56,7 +56,9 @@
       <%= form.select :task_list_id, options_from_collection_for_select(task_list_options, :id, :name, task.task_list_id), { include_blank: "Choose list" }, required: true %>
     </div>
     <div class="task-wizard-inline-action">
-      <%= link_to "Create a different list", new_tasks_manage_list_path(continue_to_task: "1"), class: "button" %>
+      <%# Preserve the wizard's origin so creating a list mid-flow returns the
+          user to where this wizard itself returns (Manage tasks vs dashboard). %>
+      <%= link_to "Create a different list", new_tasks_manage_list_path(continue_to_task: "1", origin: ("manage" if params[:return_to] == "manage")), class: "button" %>
     </div>
   </section>
 
