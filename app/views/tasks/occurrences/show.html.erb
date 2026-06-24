@@ -72,6 +72,9 @@
             controller's redirect_back branch reloads the page with the updated state
             and a flash, instead of a Turbo stream silently no-op-ing here. %>
         <%= form_with url: tasks_occurrence_completion_path(@occurrence), method: :delete, class: "stacked-form note-block", data: { turbo: false } do |form| %>
+          <%# Carry the back target through the full-page submit so the reloaded
+              page's arrow still points where the user came from, not the dashboard. %>
+          <%= hidden_field_tag :back, @back_path %>
           <%= form.label :undone_note, "Undo note" %>
           <%= form.text_field :undone_note, placeholder: "Optional undo note" %>
           <label class="check">
@@ -87,6 +90,9 @@
       <p class="empty-state">This task was missed and can no longer be completed.</p>
     <% else %>
       <%= form_with url: tasks_occurrence_completion_path(@occurrence), multipart: true, class: "stacked-form", data: { turbo: false } do |form| %>
+        <%# Carry the back target through the full-page submit so the reloaded
+            page's arrow still points where the user came from, not the dashboard. %>
+        <%= hidden_field_tag :back, @back_path %>
         <% if @occurrence.requires_photo_evidence? %>
           <div class="field">
             <%= form.label :photo, "Photo evidence" %>
