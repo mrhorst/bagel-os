@@ -48,6 +48,20 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_nil item.reload.primary_order_guide
   end
 
+  test "creating a guide whose name is already taken explains it in name terms" do
+    OrderGuide.create!(name: "Daily")
+
+    post order_guides_path, params: { order_guide: { name: "Daily" } }
+
+    # A manager retyping an existing guide name must get a clear, recoverable
+    # message — not the internal "Key has already been taken" that leaks the
+    # derived slug field they never see.
+    assert_redirected_to order_guides_path
+    assert_equal %(A guide named "Daily" already exists. Pick a different name.), flash[:alert]
+    assert_not_includes flash[:alert].to_s, "Key"
+    assert_equal 1, OrderGuide.where(name: "Daily").count
+  end
+
   test "archive button on the guides index guards with a confirmation" do
     guide = OrderGuide.create!(name: "Daily")
     item = InventoryItem.create!(name: "Eggs", key: "eggs")

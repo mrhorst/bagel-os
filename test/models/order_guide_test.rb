@@ -10,13 +10,34 @@ class OrderGuideTest < ActiveSupport::TestCase
     assert_equal "dairy", OrderGuide.create!(name: "Dairy").key
   end
 
-  test "name is required and key is unique" do
+  test "name is required and unique, with a name-anchored message (no leaked Key field)" do
     OrderGuide.create!(name: "Paper")
     duplicate = OrderGuide.new(name: "Paper")
 
     assert_not duplicate.valid?
-    assert_includes duplicate.errors[:key], "has already been taken"
-    assert_not OrderGuide.new.valid?
+    # The constraint lives on the internal `key` slug, but a person only ever
+    # typed a name — so the error must read in name terms, never "Key ...".
+    assert_includes duplicate.errors[:base], %(A guide named "Paper" already exists. Pick a different name.)
+    assert_empty duplicate.errors[:key]
+    assert_not_includes duplicate.errors.full_messages.to_sentence, "Key"
+  end
+
+  test "a differently-typed name that slugs to an existing key is rejected by name" do
+    OrderGuide.create!(name: "Paper")
+    # "paper!!" normalizes to the same key as "Paper"; the message names the
+    # guide that actually exists so the collision is understandable.
+    collision = OrderGuide.new(name: "paper!!")
+
+    assert_not collision.valid?
+    assert_includes collision.errors[:base], %(A guide named "Paper" already exists. Pick a different name.)
+  end
+
+  test "a blank guide reports only the missing name, not a leaked blank Key" do
+    blank = OrderGuide.new
+
+    assert_not blank.valid?
+    assert_includes blank.errors[:name], "can't be blank"
+    assert_empty blank.errors[:key]
   end
 
   test "named! is idempotent and reactivates an archived guide" do

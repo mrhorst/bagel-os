@@ -6,7 +6,7 @@ class OrderGuide < ApplicationRecord
   before_validation :assign_key
 
   validates :name, presence: true
-  validates :key, presence: true, uniqueness: true
+  validate :name_not_already_used
 
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:position, :name) }
@@ -64,6 +64,26 @@ class OrderGuide < ApplicationRecord
 
   def assign_key
     self.key = self.class.key_for(name) if key.blank? && name.present?
+  end
+
+  # `key` is an internal slug derived from `name` and already guarded by a
+  # unique database index. Surfacing its raw "Key has already been taken" /
+  # "Key can't be blank" validation errors to a user who only ever typed a
+  # *name* is confusing — they have no mental model for a "Key". Express the
+  # uniqueness constraint in name terms on :base (so the message renders
+  # without the attribute prefix) and let the `name` presence validation cover
+  # the blank case. Mirrors the friendly error handling the membership
+  # controllers already use. Checks the assigned `key` value (not a fresh
+  # slug) so this preserves the existing constraint exactly.
+  def name_not_already_used
+    return if key.blank?
+
+    clash = OrderGuide.where(key: key)
+    clash = clash.where.not(id: id) if persisted?
+    existing = clash.first
+    return unless existing
+
+    errors.add(:base, %(A guide named "#{existing.name}" already exists. Pick a different name.))
   end
 
   def self.next_position
