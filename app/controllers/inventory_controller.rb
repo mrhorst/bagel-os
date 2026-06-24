@@ -77,7 +77,16 @@ class InventoryController < ApplicationController
   private
 
   def create_guide_count
-    order_guide = OrderGuide.active.find(params[:order_guide_id])
+    order_guide = OrderGuide.active.find_by(id: params[:order_guide_id])
+    # The guide itself was deactivated while the sheet was open. There is no
+    # form to re-render against a guide that no longer exists, so this is the
+    # one count-loss case we can't avoid — name it plainly instead of leaking
+    # a RecordNotFound.
+    if order_guide.nil?
+      redirect_to new_inventory_count_path, alert: "That guide is no longer active. Pick an active guide to count."
+      return
+    end
+
     submitted_counts = submitted_count_values
 
     if submitted_counts.empty?
@@ -93,8 +102,20 @@ class InventoryController < ApplicationController
 
     memberships = order_guide.order_guide_memberships.active.counted.includes(:inventory_item).where(id: parsed_counts.keys)
     memberships_by_id = memberships.index_by { |membership| membership.id.to_s }
-    inventory_count = nil
 
+    # A row that was countable when the sheet loaded can stop being countable by
+    # the time it's saved — another admin removes it from the guide or switches
+    # it to order-only mid-count. Previously the fetch below raised KeyError, the
+    # rescue redirected to the bare guide picker, and the whole count the user
+    # walked the floor for was discarded. Treat it like any other recoverable
+    # entry: re-render in place keeping every count, so nothing is thrown away.
+    removed_ids = parsed_counts.keys - memberships_by_id.keys
+    if removed_ids.any?
+      rerender_removed_rows(order_guide, submitted_counts, removed_ids)
+      return
+    end
+
+    inventory_count = nil
     ActiveRecord::Base.transaction do
       inventory_count = InventoryCount.create!(
         order_guide: order_guide,
@@ -117,8 +138,6 @@ class InventoryController < ApplicationController
     end
 
     redirect_to inventory_shopping_list_path(order_guide_id: order_guide.id), notice: "Saved #{inventory_count.inventory_count_lines.count} #{order_guide.name} counts."
-  rescue ActiveRecord::RecordNotFound, KeyError
-    redirect_to new_inventory_count_path, alert: "Choose an active guide and countable guide rows."
   end
 
   def create_legacy_count
@@ -203,6 +222,32 @@ class InventoryController < ApplicationController
       else
         "One of the counts was not a valid number."
       end
+
+    render :new_count, status: :unprocessable_entity
+  end
+
+  # Re-render the count form when a submitted row is no longer countable (it was
+  # removed from the guide or switched to order-only after the sheet loaded).
+  # Keeps every count the user keyed in — the stale row simply no longer has a
+  # field, so the next save records the rest — instead of discarding the whole
+  # count and dropping the user back on the guide picker.
+  def rerender_removed_rows(order_guide, submitted_counts, removed_ids)
+    @order_guide = order_guide
+    @order_guides = OrderGuide.active.ordered
+    @memberships = counted_memberships_for(order_guide)
+    @submitted_counts = submitted_counts.transform_keys(&:to_s)
+
+    removed_names = OrderGuideMembership.where(id: removed_ids).includes(:inventory_item).map { |membership| membership.inventory_item.name }
+    subject =
+      if removed_names.any?
+        removed_names.to_sentence
+      elsif removed_ids.size == 1
+        "A guide row"
+      else
+        "Some guide rows"
+      end
+    verb = removed_ids.size == 1 ? "was" : "were"
+    @count_error = "#{subject} #{verb} removed from this guide while you were counting. Your other counts are still here — review and save again."
 
     render :new_count, status: :unprocessable_entity
   end
