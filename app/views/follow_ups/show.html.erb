@@ -24,7 +24,7 @@
   <% if @follow_up.description.present? %>
     <section class="follow-up-detail-section">
       <h2 class="follow-up-detail-section-title">Note</h2>
-      <p><%= simple_format(@follow_up.description) %></p>
+      <div><%= simple_format(@follow_up.description) %></div>
     </section>
   <% end %>
 
@@ -75,7 +75,7 @@
               <strong><%= note.author ? user_display_name(note.author) : "Unknown" %></strong>
               <span class="muted small"><%= note.created_at.strftime("%b %-d · %-l:%M %p") %></span>
             </div>
-            <p class="follow-up-note-body"><%= simple_format(note.body) %></p>
+            <div class="follow-up-note-body"><%= simple_format(note.body) %></div>
           </li>
         <% end %>
       </ol>
@@ -209,7 +209,7 @@
         <% end %>
       </p>
       <% if @follow_up.resolution_note.present? %>
-        <p><%= simple_format(@follow_up.resolution_note) %></p>
+        <div><%= simple_format(@follow_up.resolution_note) %></div>
       <% end %>
     </section>
 

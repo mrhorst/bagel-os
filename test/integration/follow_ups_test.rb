@@ -189,6 +189,30 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     assert_select ".follow-up-task-links a[href=?]", edit_tasks_manage_task_path(task), text: /Snake the toilet/
   end
 
+  test "free-text blocks wrap simple_format in a block container so its paragraphs nest validly" do
+    # simple_format emits its own <p>…</p>. Wrapping that in another <p> is invalid
+    # HTML — the browser (and Nokogiri) splits the nesting, leaving the styled
+    # container as an empty paragraph and dropping the text into an unstyled
+    # sibling, so `.follow-up-note-body p { margin: 0 }` never matches and a stray
+    # blank line renders above the text. The wrapper must be a block container.
+    follow_up = FollowUp.create!(title: "Walk-in warm", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one),
+                                 description: "Door left ajar overnight.",
+                                 status: "resolved", resolved_at: 1.hour.ago, resolved_by: users(:one),
+                                 resolved_via: "action_taken", resolution_note: "Latch adjusted.")
+    follow_up.notes.create!(body: "Checked at 2pm, still warm.", author: users(:one))
+
+    get follow_up_path(follow_up)
+    assert_response :success
+
+    # The note text must live INSIDE the styled container, not split into a sibling.
+    assert_select ".follow-up-note-body p", text: "Checked at 2pm, still warm."
+    # The container must not be a <p> (which can't legally hold simple_format's <p>).
+    assert_select "p.follow-up-note-body", count: 0
+    # The description and resolution-note blocks carry the same fix.
+    assert_select "div > p", text: "Door left ajar overnight."
+    assert_select ".follow-up-detail-resolved div > p", text: "Latch adjusted."
+  end
+
   test "employee without permission is redirected" do
     employee = users(:two)
     sign_in_as(employee)

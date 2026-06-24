@@ -242,6 +242,33 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_match "Freezer", response.body
   end
 
+  test "count detail page links forward to the guide buy list so the count-to-buy loop stays reachable" do
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      counts: { @cream_membership.id => "4.5" }
+    }
+    count = InventoryCount.last
+
+    get inventory_count_path(count)
+
+    assert_response :success
+    # Saving a count redirects to its guide's buy list; a count opened later
+    # from history must offer that same next step instead of dead-ending.
+    assert_select "a[href='#{inventory_shopping_list_path(order_guide_id: @guide.id)}']", text: "View buy list"
+  end
+
+  test "legacy count detail has no guide buy list link since it has no guide" do
+    post inventory_counts_path, params: { counts: { @cream_cheese.id => "3" } }
+    count = InventoryCount.last
+    assert_nil count.order_guide
+
+    get inventory_count_path(count)
+
+    assert_response :success
+    # No guide means no guide-specific buy list to link to.
+    assert_select "a", text: "View buy list", count: 0
+  end
+
   test "guide shopping list shows buy now setup not counted and order only sections" do
     post inventory_counts_path, params: {
       order_guide_id: @guide.id,

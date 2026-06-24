@@ -21,6 +21,13 @@
   </div>
 </div>
 
+<% if @order_guide.notes.present? %>
+  <div class="note-block">
+    <strong>Guide note</strong>
+    <%= simple_format(@order_guide.notes) %>
+  </div>
+<% end %>
+
 <section class="metric-grid">
   <div class="metric">
     <span>Active rows</span>
