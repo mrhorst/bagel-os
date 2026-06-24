@@ -10,7 +10,11 @@
     <% if Current.user.admin? %>
       <%= link_to "Manage tags", admin_tags_path, class: "button" %>
     <% end %>
-    <%= link_to "Add photos", new_photo_asset_path, class: "button primary" %>
+    <%# On mobile the floating action button (bottom of this view) is the
+        canonical "add" affordance, so this inline primary button is hidden
+        there to avoid a duplicate "Add photos" CTA; it stays on desktop,
+        which has no FAB. %>
+    <%= link_to "Add photos", new_photo_asset_path, class: "button primary hide-for-fab" %>
   </div>
 </section>
 
