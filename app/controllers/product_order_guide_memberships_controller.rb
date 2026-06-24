@@ -34,10 +34,21 @@ class ProductOrderGuideMembershipsController < ApplicationController
 
     redirect_to order_guide_path(guide), notice: "#{membership.inventory_item.name} added to #{guide.name}."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => error
-    redirect_to product_path(params[:product_id]), alert: error.message
+    redirect_to product_path(params[:product_id]), alert: membership_failure_message(error)
   end
 
   private
+
+  # Keep the failure feedback human. A missing/blank guide selection is the common
+  # mistake (the select defaults to its "Choose guide" prompt), so name the fix
+  # instead of leaking a raw "Couldn't find OrderGuide with 'id'=..." message —
+  # mirroring the friendly guard the sibling OrderGuideMembershipsController uses.
+  def membership_failure_message(error)
+    return "Choose a guide to add this product to." if product_membership_params[:order_guide_id].blank?
+    return "That guide is no longer available — pick an active guide." if error.is_a?(ActiveRecord::RecordNotFound)
+
+    error.message
+  end
 
   def product_membership_params
     params.require(:membership).permit(

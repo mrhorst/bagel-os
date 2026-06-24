@@ -146,7 +146,7 @@
         <div class="form-grid">
           <div class="field">
             <%= form.label :order_guide_id, "Guide" %>
-            <%= form.collection_select :order_guide_id, @order_guides, :id, :name, { prompt: "Choose guide" } %>
+            <%= form.collection_select :order_guide_id, @order_guides, :id, :name, { prompt: "Choose guide" }, { required: true } %>
           </div>
           <div class="field">
             <%= form.label :section_name, "Guide section" %>
