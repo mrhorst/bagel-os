@@ -63,6 +63,39 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on a past Log Book day returns to Log Book, not the hub" do
+    # A past, read-only day (opened from History, the date pager, a bookmark, or
+    # a post-save redirect) is still the Log Book index controller, so without a
+    # per-page override the layout's auto-chevron points at the module hub
+    # (Shift) — ejecting the user out of Log Book, unlike the settings/sections/
+    # history sub-views whose chevron returns to Log Book. It should go up exactly
+    # one level, to Log Book — the same target as the in-body "Back to today".
+    page.current_window.resize_to(414, 896)
+    visit log_book_path(date: Date.current - 3)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Log Book", chevron["aria-label"]
+    assert_equal log_book_path, URI(chevron[:href]).path
+
+    click_mobile_back_to log_book_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on today's Log Book still points at the Shift hub" do
+    # The override above is gated to past days: the live "today" index is the
+    # canonical top-level module page, so its parent really is the Shift hub.
+    # Guard against the gate over-reaching and rewriting the today chevron too.
+    page.current_window.resize_to(414, 896)
+    visit log_book_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Shift", chevron["aria-label"]
+    assert_equal shift_hub_path, URI(chevron[:href]).path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "the mobile back chevron on a new log section returns to Log Sections, not the hub" do
     # A level deeper than the Log Sections list: the new/edit forms set no
     # override either, so below 640px the auto-chevron points at the module hub
