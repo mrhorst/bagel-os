@@ -3451,25 +3451,6 @@
     overflow: visible;
   }
 
-  /* Mobile-first single-line summary that replaces full KPI tile grids. */
-  .stat-summary {
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    color: var(--ink-2);
-    font-size: 0.92rem;
-    margin: 0 0 12px;
-    padding: 10px 14px;
-  }
-  .stat-summary strong {
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-  }
-  .stat-summary-mobile-only {
-    display: none;
-  }
-
   .review-focus {
     display: grid;
     gap: 12px;
@@ -5712,13 +5693,6 @@
       white-space: normal;
     }
 
-    /* Mobile-only / desktop-only visibility toggles */
-    .stat-summary-mobile-only {
-      display: block;
-    }
-    .metric-grid-desktop-only {
-      display: none;
-    }
     /* Log Book's in-heading Settings link is the desktop path to the
        History/Settings overflow that only renders in the mobile header; hide
        it on mobile, where the ⋯ menu already provides it. */
