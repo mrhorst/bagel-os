@@ -38,7 +38,7 @@
     </div>
   <% end %>
 
-  <%= link_to new_tasks_manage_list_path(continue_to_task: "1"), class: "task-builder-card" do %>
+  <%= link_to new_tasks_manage_list_path(continue_to_task: "1", origin: ("manage" if from_manage)), class: "task-builder-card" do %>
     <span class="task-builder-card-icon" aria-hidden="true">#</span>
     <span>
       <strong>Create a new list</strong>
