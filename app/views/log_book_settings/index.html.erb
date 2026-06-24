@@ -18,7 +18,11 @@
     <h1>Log Book settings</h1>
     <p class="muted">Configure how the daily log book behaves.</p>
   </div>
-  <div class="actions">
+  <%# On mobile the header back chevron (mobile_left_action above) is the primary
+      "Back to Log Book" affordance, so this in-heading button is a duplicate
+      there — hide it on mobile via .log-book-heading-actions (the same pattern
+      the Log Book index uses) and keep it as the desktop back path. %>
+  <div class="actions log-book-heading-actions">
     <%= link_to "Back to Log Book", log_book_path, class: "button small" %>
   </div>
 </div>
