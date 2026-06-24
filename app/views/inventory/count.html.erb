@@ -17,7 +17,16 @@
     <h1><%= @count.order_guide ? "Count: #{@count.order_guide.name}" : "Legacy count" %></h1>
     <p>Counted <%= @count.counted_at.to_fs(:long) %>.</p>
   </div>
-  <%= link_to "Count history", inventory_counts_path, class: "button" %>
+  <div class="actions">
+    <%# A count exists to drive purchasing: saving one lands you on its guide's
+        buy list. A count opened later from history should offer the same next
+        step instead of dead-ending, so the count-to-buy loop stays reachable.
+        Legacy counts have no guide, so there is no guide-specific buy list. %>
+    <% if @count.order_guide %>
+      <%= link_to "View buy list", inventory_shopping_list_path(order_guide_id: @count.order_guide_id), class: "button primary" %>
+    <% end %>
+    <%= link_to "Count history", inventory_counts_path, class: "button" %>
+  </div>
 </div>
 
 <section class="metric-grid">
