@@ -1,9 +1,15 @@
 <% content_for :title, "New task" %>
 
+<%
+  # Preserve the entry point so backing out of the form returns to the same
+  # setup screen the user opened (which in turn returns to its own origin).
+  setup_back_path = params[:return_to] == "manage" ? setup_tasks_manage_tasks_path(origin: "manage") : setup_tasks_manage_tasks_path
+%>
+
 <%=
   render "tasks/subpage_header",
     title: "New task",
-    back_path: setup_tasks_manage_tasks_path,
+    back_path: setup_back_path,
     back_label: "Add task"
 %>
 

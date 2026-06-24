@@ -3,6 +3,69 @@ require "test_helper"
 class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
   include ActiveSupport::Testing::TimeHelpers
 
+  # "Add task" reaches the same setup screen from two places: the dashboard FAB
+  # and the Manage tasks list. The screen must return the user to whichever one
+  # they came from — mirroring the origin pattern already used for task lists
+  # (Tasks::TaskListsController#resolve_edit_back_target) — instead of always
+  # dumping them on the dashboard.
+  test "add task from the manage list returns the user to the manage list" do
+    TaskList.create!(name: "Opening", position: 1)
+
+    get tasks_manage_tasks_path
+    assert_response :success
+    # The Manage-list "Add task" button tags its origin so setup can come back here.
+    assert_select "a.button.primary[href=?]", setup_tasks_manage_tasks_path(origin: "manage")
+
+    get setup_tasks_manage_tasks_path(origin: "manage")
+    assert_response :success
+    # Back arrow lands on the Manage tasks list it came from, not the dashboard.
+    assert_select "a.subpage-back[href=?]", tasks_manage_tasks_path
+    assert_select "a.subpage-back[href=?]", tasks_root_path, count: 0
+    # "Add to an existing list" threads the manage return target through creation.
+    assert_select ".task-builder-menu a[href=?]",
+      new_tasks_manage_task_path(flow: "guided", return_to: "manage")
+  end
+
+  test "add task from the dashboard FAB still returns to the dashboard" do
+    TaskList.create!(name: "Opening", position: 1)
+
+    get setup_tasks_manage_tasks_path
+    assert_response :success
+    assert_select "a.subpage-back[href=?]", tasks_root_path
+    assert_select ".task-builder-menu a[href=?]",
+      new_tasks_manage_task_path(flow: "guided", return_to: "dashboard")
+  end
+
+  test "new task back arrow preserves the manage origin" do
+    task_list = TaskList.create!(name: "Opening", position: 1)
+
+    get new_tasks_manage_task_path(task_list_id: task_list.id, flow: "guided", return_to: "manage")
+    assert_response :success
+    assert_select "a.subpage-back[href=?]", setup_tasks_manage_tasks_path(origin: "manage")
+  end
+
+  test "guided task creation from the manage list returns to the manage list" do
+    travel_to Time.zone.local(2026, 5, 18, 9) do
+      task_list = TaskList.create!(name: "Opening", position: 1)
+
+      post tasks_manage_tasks_path, params: {
+        return_to: "manage",
+        task: {
+          task_list_id: task_list.id,
+          title: "Check display case",
+          recurrence_type: "daily",
+          starts_on: "2026-05-18",
+          due_time: "08:00",
+          weekdays: [ "" ],
+          requires_photo_evidence: "0"
+        }
+      }
+
+      assert_redirected_to tasks_manage_tasks_path
+      assert_equal "Check display case", Task.sole.title
+    end
+  end
+
   test "dashboard add button opens guided task setup menu" do
     travel_to Time.zone.local(2026, 5, 18, 9) do
       TaskList.create!(name: "Opening", position: 1)
