@@ -65,25 +65,44 @@ class LogBookSectionsController < ApplicationController
     permitted
   end
 
-  # Drop blank rows (user added then deleted via Stimulus, or hit Save with
-  # an empty row) and derive a stable key from the label when missing.
+  # Drop only the rows the user never touched — the seeded blank starter, or a
+  # row added then cleared. A row carrying any real content (a label, a unit, a
+  # non-default type) is kept even when its label is blank, so the model's
+  # "row N needs a label" validation fires and the partially-filled row is
+  # preserved on re-render. Stripping such rows here used to silently discard
+  # them: a manager who filled an input's unit but forgot its label got a
+  # "Log section created." toast and a section missing that input. Derive a
+  # stable key from the label when one is missing (kept blank-label rows carry
+  # no key — they can't save until the label is supplied anyway).
   def normalize_fields(raw_fields)
     used = []
     raw_fields.filter_map do |row|
       row = row.to_h.with_indifferent_access
-      label = row["label"].to_s.strip
-      next if label.blank?
+      next if row_blank?(row)
 
-      key = row["key"].to_s.strip.presence || slugify(label, used)
-      used << key
+      label = row["label"].to_s.strip
+      key = row["key"].to_s.strip.presence
+      key ||= slugify(label, used) if label.present?
+      used << key if key.present?
       {
-        "key"            => key,
+        "key"            => key.to_s,
         "label"          => label,
         "type"           => row["type"].presence || "number",
         "unit_label"     => row["unit_label"].to_s.strip,
         "value_decimals" => row["value_decimals"].to_i.clamp(0, 6)
       }
     end
+  end
+
+  # A row is discardable only when the user left it entirely untouched. Type
+  # ("number") and decimals (0) default to non-blank on a fresh row, so they
+  # can't signal intent — a label or a unit label is what marks a row as one
+  # the user meant to keep.
+  def row_blank?(row)
+    row["label"].to_s.strip.blank? &&
+      row["unit_label"].to_s.strip.blank? &&
+      row["type"].to_s.strip.presence.in?([ nil, "number" ]) &&
+      row["value_decimals"].to_i.zero?
   end
 
   def slugify(label, used)

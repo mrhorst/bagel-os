@@ -52,6 +52,52 @@ class LogBookSectionMultiInputTest < ApplicationSystemTestCase
     assert_equal %w[Plain], section.fields.map { |f| f["label"] }
   end
 
+  test "a partially-filled input row blocks the save instead of being silently dropped" do
+    visit new_log_book_section_path
+
+    fill_in "Section label", with: "Bagel counts"
+    select "Multi-input (grid)", from: "Input type"
+
+    # First input is complete; the second carries a unit but no label — a row
+    # the admin clearly meant to keep. It must not vanish under a success toast.
+    within first(".log-book-fields-row") do
+      find("input[name='log_book_section[fields][][label]']").set("Plain")
+    end
+    click_on "+ Add input"
+    within all(".log-book-fields-row").last do
+      find("input[name='log_book_section[fields][][unit_label]']").set("dozens")
+    end
+
+    click_on "Create section"
+
+    # The save is rejected with a row-specific message, the section is not
+    # created, and the half-filled row (with its unit) is preserved to fix.
+    assert_text "needs a label"
+    assert_equal 0, LogBookSection.where(title: "Bagel counts").count
+    assert_selector ".log-book-fields-row", count: 2
+    assert_equal "dozens", all("input[name='log_book_section[fields][][unit_label]']").last.value
+  end
+
+  test "a fully untouched extra input row is dropped so a valid section still saves" do
+    visit new_log_book_section_path
+
+    fill_in "Section label", with: "Bagels Left"
+    select "Multi-input (grid)", from: "Input type"
+    within first(".log-book-fields-row") do
+      find("input[name='log_book_section[fields][][label]']").set("Plain")
+    end
+    # Add a second row and leave it completely untouched — the seeded/empty
+    # starter pattern. It should drop silently, not block the save.
+    click_on "+ Add input"
+
+    click_on "Create section"
+
+    assert_text "Log section created."
+    section = LogBookSection.find_by(title: "Bagels Left")
+    assert section, "section should have been created"
+    assert_equal %w[Plain], section.fields.map { |f| f["label"] }
+  end
+
   test "editing an existing Multi-input section shows its real rows, no extra starter" do
     section = LogBookSection.create!(
       title: "Closing counts", section_type: "multi", position: 1,
