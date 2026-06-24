@@ -40,7 +40,9 @@ class LogBookSectionMultiInputTest < ApplicationSystemTestCase
 
     fill_in "Section label", with: "Bagels Left"
     select "Multi-input (grid)", from: "Input type"
-    fill_in "log_book_section[fields][][label]", with: "Plain"
+    within first(".log-book-fields-row") do
+      fill_in "Label", with: "Plain"
+    end
     click_on "Create section"
 
     assert_text "Log section created."
