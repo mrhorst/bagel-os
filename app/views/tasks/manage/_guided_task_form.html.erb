@@ -128,8 +128,12 @@
     </div>
   </section>
 
+  <%# Cancel honors the same origin the Back arrow and the post-create redirect
+      (Tasks::ManageController#after_create_path) already honor — return to the
+      Manage tasks list when the form was reached from there, not the dashboard. %>
+  <% cancel_path = params[:return_to] == "manage" ? tasks_manage_tasks_path : tasks_root_path %>
   <div class="task-wizard-actions">
-    <%= link_to "Cancel", tasks_root_path, class: "button" %>
+    <%= link_to "Cancel", cancel_path, class: "button" %>
     <button type="button" class="button" data-task-wizard-target="back" data-action="task-wizard#back">Back</button>
     <button type="button" class="button primary" data-task-wizard-target="next" data-action="task-wizard#next">Next</button>
     <%= form.submit submit_label, class: "button primary", data: { task_wizard_target: "submit" } %>
