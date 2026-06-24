@@ -41,7 +41,7 @@
         <% @sections.each do |section| %>
           <% usage_count = section.log_book_responses.count %>
           <tr>
-            <td data-label="Section">
+            <td class="row-heading" data-label="Section">
               <strong><%= section.title %></strong>
               <% if section.description.present? %>
                 <small><%= section.description %></small>
