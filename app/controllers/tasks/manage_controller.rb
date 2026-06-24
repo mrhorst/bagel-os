@@ -71,31 +71,39 @@ module Tasks
       @task_lists = TaskList.active.ordered
     end
 
-    # The edit page is reached from two trees, and the back arrow + post-save
+    # The edit page is reached from three trees, and the back arrow + post-save
     # redirect must return the user to the one they actually came from:
     #
-    #   • Settings → Manage tasks → Edit task         → back to the management index
-    #   • Work surface → occurrence detail → Edit task → back to that occurrence
+    #   • Settings → Manage tasks → Edit task          → back to the management index
+    #   • Work surface → occurrence detail → Edit task  → back to that occurrence
+    #   • Follow-up → "Tasks spawned" → the task        → back to that follow-up
     #
     # The occurrence's "Edit task" link carries origin=occurrence (+ the
-    # occurrence id) so this cross-tree jump resolves back to where it started
-    # instead of stranding the manager deep in Settings. Mirrors
-    # TaskListsController#resolve_edit_back_target and
+    # occurrence id); the follow-up's spawned-task link carries
+    # origin=follow_up (+ the follow_up id), so each cross-tree jump resolves
+    # back to where it started instead of stranding the manager deep in
+    # Settings. Mirrors TaskListsController#resolve_edit_back_target and
     # OccurrencesController#resolve_back_target.
     def resolve_edit_back_target(task)
-      occurrence = origin_occurrence(task)
-      if occurrence
+      if (occurrence = origin_occurrence(task))
         [ tasks_occurrence_path(occurrence), occurrence.snapshot_title ]
+      elsif (follow_up = origin_follow_up(task))
+        [ follow_up_path(follow_up), follow_up.title ]
       else
         [ tasks_manage_tasks_path, "Tasks" ]
       end
     end
 
-    # Saving from the work-surface occurrence returns the user there — the same
-    # place the back arrow resolves to — rather than the Settings index.
+    # Saving from a cross-tree entry returns the user there — the same place the
+    # back arrow resolves to — rather than the Settings index.
     def after_update_path(task)
-      occurrence = origin_occurrence(task)
-      occurrence ? tasks_occurrence_path(occurrence) : tasks_manage_tasks_path
+      if (occurrence = origin_occurrence(task))
+        tasks_occurrence_path(occurrence)
+      elsif (follow_up = origin_follow_up(task))
+        follow_up_path(follow_up)
+      else
+        tasks_manage_tasks_path
+      end
     end
 
     # Only honor origin=occurrence when the referenced occurrence really belongs
@@ -105,6 +113,15 @@ module Tasks
       return nil unless params[:origin] == "occurrence" && params[:occurrence_id].present?
 
       task.task_occurrences.find_by(id: params[:occurrence_id])
+    end
+
+    # Only honor origin=follow_up when the referenced follow-up actually spawned
+    # this task, so a hand-edited query string can't point the back target at an
+    # unrelated follow-up.
+    def origin_follow_up(task)
+      return nil unless params[:origin] == "follow_up" && params[:follow_up_id].present?
+
+      FollowUp.joins(:task_links).find_by(id: params[:follow_up_id], task_links: { task_id: task.id })
     end
 
     def task_params

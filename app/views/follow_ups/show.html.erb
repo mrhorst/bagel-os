@@ -103,8 +103,10 @@
         <% @follow_up.task_links.includes(task: :task_list).each do |link| %>
           <li>
             <%# Link the spawned task to its definition so you can reach what you
-                created — same destination every other task listing uses (_manage_row). %>
-            <%= link_to edit_tasks_manage_task_path(link.task), class: "follow-up-task-link" do %>
+                created — same destination every other task listing uses (_manage_row).
+                Carry origin=follow_up so the edit page's back arrow + post-save
+                redirect return here, not into the Settings management tree. %>
+            <%= link_to edit_tasks_manage_task_path(link.task, origin: "follow_up", follow_up_id: @follow_up.id), class: "follow-up-task-link" do %>
               <strong><%= link.task.title %></strong>
               <span class="muted small">· <%= link.link_kind.humanize %> · in <%= link.task.task_list.name %></span>
             <% end %>
