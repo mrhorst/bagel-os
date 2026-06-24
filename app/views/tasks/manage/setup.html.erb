@@ -1,16 +1,27 @@
 <% content_for :title, "Add task" %>
 
+<%
+  # Reached from two places: the dashboard FAB (default) and the Manage tasks
+  # list ("Add task", which tags origin=manage). Return the user to whichever
+  # one they came from — back arrow and post-create redirect alike — instead of
+  # always landing on the dashboard. Mirrors the origin pattern documented in
+  # Tasks::TaskListsController#resolve_edit_back_target.
+  from_manage = params[:origin] == "manage"
+  back_path   = from_manage ? tasks_manage_tasks_path : tasks_root_path
+  guided_return_to = from_manage ? "manage" : "dashboard"
+%>
+
 <%=
   render "tasks/subpage_header",
     title: "Add task",
     subtitle: "Choose where this work should live first.",
-    back_path: tasks_root_path,
+    back_path: back_path,
     back_label: "Tasks"
 %>
 
 <section class="task-builder-menu" aria-label="Task builder options">
   <% if @task_lists.any? %>
-    <%= link_to new_tasks_manage_task_path(flow: "guided", return_to: "dashboard"), class: "task-builder-card" do %>
+    <%= link_to new_tasks_manage_task_path(flow: "guided", return_to: guided_return_to), class: "task-builder-card" do %>
       <span class="task-builder-card-icon" aria-hidden="true">+</span>
       <span>
         <strong>Add to an existing list</strong>
