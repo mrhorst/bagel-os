@@ -42,11 +42,7 @@ module Tasks
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: [
-            turbo_stream.replace(
-              helpers.dom_id(occurrence),
-              partial: "tasks/dashboard/task_row",
-              locals: { occurrence: occurrence, monthly: occurrence.period_kind == "month" }
-            ),
+            row_stream(occurrence),
             turbo_stream.replace(
               "task_list_kpis_#{occurrence.task_list_id}",
               partial: "tasks/kpi_squares",
@@ -58,6 +54,29 @@ module Tasks
           ]
         end
         format.html { change_redirect(occurrence.id, notice: notice) }
+      end
+    end
+
+    # A completed monthly occurrence is filtered out of the focused list's
+    # "This month" section (TaskListsController#month_occurrences_for rejects
+    # completed) and never reappears until a new month — and the task_row
+    # partial only renders a completion state for daily rows (`!monthly`).
+    # Replacing a just-completed monthly row would therefore render a
+    # contradictory, still-tappable "Mark complete" circle beside its
+    # "Completed" badge (tapping it again raises "already completed"). Match
+    # the list's own filter — and the live-update morph — by REMOVING the row
+    # so the instant feedback agrees with the page's steady state. Daily rows
+    # keep the in-place replace: they show the completed circle and the morph
+    # relocates them into the Completed disclosure.
+    def row_stream(occurrence)
+      if occurrence.period_kind == "month" && occurrence.completed?
+        turbo_stream.remove(helpers.dom_id(occurrence))
+      else
+        turbo_stream.replace(
+          helpers.dom_id(occurrence),
+          partial: "tasks/dashboard/task_row",
+          locals: { occurrence: occurrence, monthly: occurrence.period_kind == "month" }
+        )
       end
     end
 
