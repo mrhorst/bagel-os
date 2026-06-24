@@ -19,7 +19,13 @@ class OrderGuideMembershipsController < ApplicationController
 
     redirect_to order_guide_path(order_guide), notice: "#{inventory_item.name} added to #{order_guide.name}."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => error
-    redirect_to order_guides_path, alert: error.message.presence || "Choose an active guide and inventory item."
+    alert =
+      if membership_inventory_item_id.blank?
+        "Choose an inventory item to add to this guide."
+      else
+        error.message.presence || "Choose an active guide and inventory item."
+      end
+    redirect_to guide_or_index_path(order_guide), alert: alert
   end
 
   def update
@@ -39,7 +45,7 @@ class OrderGuideMembershipsController < ApplicationController
 
     redirect_to order_guide_path(order_guide), notice: "#{membership.inventory_item.name} guide setup updated."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => error
-    redirect_to order_guides_path, alert: error.message
+    redirect_to guide_or_index_path(order_guide), alert: error.message.presence || "Could not update this guide row."
   end
 
   def destroy
@@ -52,6 +58,14 @@ class OrderGuideMembershipsController < ApplicationController
   end
 
   private
+
+  # Stay on the guide the user was editing when something fails, so a recoverable
+  # mistake (e.g. submitting without picking an item) doesn't bounce them off to
+  # the all-guides index and lose their place. Fall back to the index only when
+  # the guide itself could not be found.
+  def guide_or_index_path(order_guide)
+    order_guide ? order_guide_path(order_guide) : order_guides_path
+  end
 
   def membership_params
     return ActionController::Parameters.new.permit if params[:membership].blank?

@@ -146,6 +146,53 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_equal 1, guide.order_guide_memberships.where(inventory_item: item).count
   end
 
+  test "adding an item with no item chosen keeps the user on the guide, not the index" do
+    guide = OrderGuide.create!(name: "Daily")
+    InventoryItem.create!(name: "Eggs", key: "eggs")
+
+    post order_guide_memberships_path(guide), params: {
+      membership: {
+        inventory_item_id: "", # user forgot to pick an item
+        section_name: "Walk-in cooler",
+        expected_usage_quantity: "6"
+      }
+    }
+
+    # The failed add must return to the guide being edited — not bounce the
+    # user out to the all-guides index and lose their place.
+    assert_redirected_to order_guide_path(guide)
+    assert_equal "Choose an inventory item to add to this guide.", flash[:alert]
+    assert_equal 0, guide.order_guide_memberships.active.count
+  end
+
+  test "a failed add against a missing guide falls back to the index" do
+    item = InventoryItem.create!(name: "Eggs", key: "eggs")
+
+    post order_guide_memberships_path(order_guide_id: 0), params: {
+      membership: { inventory_item_id: item.id, section_name: "Dry storage" }
+    }
+
+    # No guide to return to, so the index is the only sensible destination.
+    assert_redirected_to order_guides_path
+    assert flash[:alert].present?
+  end
+
+  test "a failed inline row update keeps the user on the guide" do
+    guide = OrderGuide.create!(name: "Weekly")
+    item = InventoryItem.create!(name: "Bacon", key: "bacon")
+    membership = item.add_to_order_guide!(guide, tracking_mode: "counted")
+
+    # An invalid tracking_mode trips the model's inclusion validation, so
+    # update! raises — the same rescue path that used to bounce to the index.
+    patch order_guide_membership_path(guide, membership), params: {
+      membership: { section_name: "Freezer", tracking_mode: "nonsense" }
+    }
+
+    assert_redirected_to order_guide_path(guide)
+    assert flash[:alert].present?
+    assert_equal "counted", membership.reload.tracking_mode
+  end
+
   test "updates guide membership setup fields inline" do
     guide = OrderGuide.create!(name: "Weekly")
     item = InventoryItem.create!(name: "Bacon", key: "bacon")
