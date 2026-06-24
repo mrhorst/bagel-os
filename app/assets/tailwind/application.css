@@ -4082,6 +4082,7 @@
     color: var(--ink);
     display: block;
     font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
     font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.25;
