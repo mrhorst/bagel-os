@@ -90,10 +90,16 @@
 
 <section class="panel narrow">
   <h2>Create guide</h2>
-  <%= form_with model: OrderGuide.new, class: "stacked-form" do |form| %>
+  <%= form_with model: @new_order_guide, class: "stacked-form" do |form| %>
+    <% if @new_order_guide.errors.any? %>
+      <div class="flash flash-alert">
+        <strong><%= pluralize(@new_order_guide.errors.count, "error") %> kept this from saving:</strong>
+        <ul><% @new_order_guide.errors.full_messages.each { |message| %><li><%= message %></li><% } %></ul>
+      </div>
+    <% end %>
     <div class="field">
       <%= form.label :name, "Guide name" %>
-      <%= form.text_field :name, placeholder: "Daily, Every 2 weeks, Weekend Prep…" %>
+      <%= form.text_field :name, required: true, placeholder: "Daily, Every 2 weeks, Weekend Prep…" %>
     </div>
     <div class="field">
       <%= form.label :notes, "Notes" %>
