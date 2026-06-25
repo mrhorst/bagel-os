@@ -12,6 +12,19 @@ module TasksHelper
     tag.span(status.humanize, class: [ "badge", badge_class ])
   end
 
+  # Status left-rule for a history row. Mirrors the badge's severity so the
+  # whole row — not just the small far-left badge — carries the signal, using
+  # the same 2px inset left rule as .task-row-late / .warning-row elsewhere.
+  # Only the attention states get a rule; completed/open stay neutral so the
+  # rule reads as "needs a look", never a painted-per-status background.
+  def task_status_row_class(occurrence)
+    case occurrence.status
+    when "late" then "warning-row"
+    when "missed" then "danger-row"
+    else ""
+    end
+  end
+
   def task_due_label(occurrence)
     if occurrence.period_kind == "month"
       "This month"
