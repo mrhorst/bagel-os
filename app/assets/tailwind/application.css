@@ -1286,7 +1286,7 @@
     align-items: center;
     background: transparent;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     color: var(--ink-2);
     display: inline-flex;
     height: 36px;
@@ -1499,7 +1499,7 @@
   }
   .urgency-radios[hidden] { display: none; }
   .radio.radio-segmented {
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     flex: 1;
     justify-content: center;
