@@ -286,6 +286,7 @@
   .dashboard-metric-card strong,
   .dashboard-gap-summary strong,
   .dashboard-work-card strong,
+  .action-card span,
   td.numeric,
   th.numeric {
     font-variant-numeric: tabular-nums;
