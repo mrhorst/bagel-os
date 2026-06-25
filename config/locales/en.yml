@@ -29,3 +29,18 @@
 
 en:
   hello: "Hello world"
+
+  # Human attribute names for validation errors. Without these, Active Record
+  # humanizes the raw column name ("Position", "Section type", "Value decimals",
+  # "Fields") — but the Log Section form labels those same inputs differently
+  # ("Sort order", "Input type", "Decimal places", "Inputs"). A failed save then
+  # named a field the admin couldn't find on screen. Keep these in sync with the
+  # labels in app/views/log_book_sections/_form.html.erb.
+  activerecord:
+    attributes:
+      log_book_section:
+        title: "Section label"
+        section_type: "Input type"
+        position: "Sort order"
+        value_decimals: "Decimal places"
+        fields: "Inputs"
