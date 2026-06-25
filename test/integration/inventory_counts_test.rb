@@ -71,11 +71,26 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_equal "tub", line.unit
   end
 
-  test "rejects empty guide inventory count submissions" do
-    post inventory_counts_path, params: { order_guide_id: @guide.id, counts: { @cream_membership.id => "" } }
+  test "an empty guide inventory count re-renders the form keeping the notes instead of redirecting them away" do
+    # An empty submit is a recoverable mistake like any other on this form: the
+    # guide is still active, so the form can be kept. Redirecting to a fresh form
+    # used to silently drop the notes the user had already typed, inconsistent
+    # with the bad-number / negative / removed-row paths that all re-render in
+    # place. Re-render here too, preserving the note.
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      notes: "Sunday morning count",
+      counts: { @cream_membership.id => "" }
+    }
 
-    assert_redirected_to new_inventory_count_path(order_guide_id: @guide.id)
+    # Re-render in place (not a redirect that discards the typed notes).
+    assert_response :unprocessable_entity
     assert_equal 0, InventoryCount.count
+    # The user is told what to do, inline in the form...
+    assert_select ".form-errors", text: /Enter at least one count/
+    # ...and the note they already typed survives so they can add a count and
+    # save without retyping it.
+    assert_select "textarea[name=notes]", text: "Sunday morning count"
   end
 
   test "a count with one unparseable value re-renders the form keeping the other counts instead of dropping them" do
