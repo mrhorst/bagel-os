@@ -17,6 +17,7 @@
 
 <section class="panel narrow">
   <h2>Profile</h2>
+  <p class="muted small">Update the name and email address tied to your account.</p>
   <%= form_with model: @user, url: account_path, method: :patch, class: "stacked-form" do |form| %>
     <% if @user.errors.any? && (@user.errors[:name].any? || @user.errors[:email_address].any?) %>
       <div class="flash flash-alert">
