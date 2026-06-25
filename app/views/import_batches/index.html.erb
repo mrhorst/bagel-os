@@ -28,7 +28,7 @@
           <tr>
             <td data-label="File"><%= link_to batch.source_filename, batch %></td>
             <td data-label="Supplier"><%= batch.supplier.name %></td>
-            <td data-label="Status"><span class="badge"><%= batch.status %></span></td>
+            <td data-label="Status"><%= import_status_badge(batch) %></td>
             <td class="numeric" data-label="Rows"><%= batch.rows_processed %></td>
             <td class="numeric" data-label="Imported"><%= batch.rows_imported %></td>
             <td class="numeric" data-label="Failed"><%= batch.rows_failed %></td>
