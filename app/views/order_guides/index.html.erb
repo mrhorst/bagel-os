@@ -40,7 +40,7 @@
 <section class="panel">
   <div class="panel-heading">
     <div>
-      <h2>Named Guides</h2>
+      <h2>Named guides</h2>
       <p class="muted">Use practical names staff recognize, like Daily, Every 2 weeks, Cleaning Supplies, or Weekend Prep.</p>
     </div>
   </div>
@@ -89,7 +89,7 @@
 </section>
 
 <section class="panel narrow">
-  <h2>Create Guide</h2>
+  <h2>Create guide</h2>
   <%= form_with model: OrderGuide.new, class: "stacked-form" do |form| %>
     <div class="field">
       <%= form.label :name, "Guide name" %>
@@ -106,7 +106,7 @@
 <section class="panel">
   <div class="panel-heading">
     <div>
-      <h2>Items By Guide</h2>
+      <h2>Items by guide</h2>
       <p class="muted">Open a guide to review the full operating list, or use Inventory Items to change an item's primary guide.</p>
     </div>
     <%= link_to "Inventory items", inventory_items_path, class: "button small" %>
@@ -167,7 +167,7 @@
 <section class="panel">
   <div class="panel-heading">
     <div>
-      <h2>Receipt Products Not On Current Guides</h2>
+      <h2>Receipt products not on current guides</h2>
       <p class="muted">This is the list to review when deciding what should become an operating inventory item or guide membership.</p>
     </div>
   </div>
