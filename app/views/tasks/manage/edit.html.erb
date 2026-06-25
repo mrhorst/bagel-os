@@ -21,6 +21,7 @@
         task: @task,
         url: tasks_manage_task_path(@task, origin: origin, occurrence_id: occurrence_id, follow_up_id: follow_up_id),
         method: :patch,
+        cancel_path: @back_path,
         submit_label: "Save task" %>
 </section>
 

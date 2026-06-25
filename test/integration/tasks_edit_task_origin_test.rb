@@ -93,6 +93,38 @@ class TasksEditTaskOriginTest < ActionDispatch::IntegrationTest
     assert_equal follow_up.id.to_s, parsed["follow_up_id"]
   end
 
+  test "Cancel on the edit form returns to the originating occurrence, not Settings" do
+    occ = build_occurrence
+    task = occ.task
+
+    get edit_tasks_manage_task_path(task, origin: "occurrence", occurrence_id: occ.id)
+    assert_response :success
+    cancel = cancel_link(response.body)
+    assert cancel, "the edit form should offer a Cancel control"
+    assert_equal tasks_occurrence_path(occ), cancel["href"],
+      "Cancel must return to the originating occurrence, matching the back arrow and post-save redirect"
+  end
+
+  test "Cancel on the edit form returns to the originating follow-up, not Settings" do
+    follow_up, task = build_follow_up_with_task
+
+    get edit_tasks_manage_task_path(task, origin: "follow_up", follow_up_id: follow_up.id)
+    assert_response :success
+    cancel = cancel_link(response.body)
+    assert_equal follow_up_path(follow_up), cancel["href"],
+      "Cancel must return to the originating follow-up, matching the back arrow and post-save redirect"
+  end
+
+  test "Cancel on a Settings-tree edit keeps pointing at the management index" do
+    task = build_occurrence.task
+
+    get edit_tasks_manage_task_path(task)
+    assert_response :success
+    cancel = cancel_link(response.body)
+    assert_equal tasks_manage_tasks_path, cancel["href"],
+      "the Settings-tree edit page keeps Cancel pointing at the management index"
+  end
+
   test "editing a task from a follow-up returns to that follow-up, not Settings" do
     follow_up, task = build_follow_up_with_task
 
@@ -127,6 +159,10 @@ class TasksEditTaskOriginTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def cancel_link(html)
+    Nokogiri::HTML(html).css("a").find { |a| a.text.strip == "Cancel" }
+  end
 
   def build_follow_up_with_task
     follow_up = FollowUp.create!(
