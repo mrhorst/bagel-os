@@ -25,7 +25,11 @@
 <% if @follow_ups.any? %>
   <ul class="follow-ups-list">
     <% @follow_ups.each do |follow_up| %>
-      <%= link_to follow_up_path(follow_up), class: ["follow-up-card", "follow-up-card-#{follow_up.urgency}"] do %>
+      <%# Carry the active tab into the detail link so the page's "Back to
+          Follow-ups" affordance can return to the tab the user was browsing
+          (e.g. Resolved) instead of always dropping them on the default Open
+          tab — keeping their place, the way the rest of the app does. %>
+      <%= link_to follow_up_path(follow_up, scope: @scope), class: ["follow-up-card", "follow-up-card-#{follow_up.urgency}"] do %>
         <div class="follow-up-card-head">
           <h2><%= follow_up.title %></h2>
           <span class="<%= follow_up_urgency_badge_class(follow_up.urgency) %>"><%= follow_up.urgency.humanize %></span>
