@@ -90,7 +90,7 @@ class InventoryController < ApplicationController
     submitted_counts = submitted_count_values
 
     if submitted_counts.empty?
-      redirect_to new_inventory_count_path(order_guide_id: order_guide.id), alert: "Enter at least one count before saving."
+      rerender_empty_count(order_guide)
       return
     end
 
@@ -201,6 +201,22 @@ class InventoryController < ApplicationController
       invalid_ids << membership_id.to_s
     end
     [ parsed, invalid_ids ]
+  end
+
+  # Re-render the count form when nothing was entered, instead of redirecting to
+  # a fresh form that silently drops the notes the user typed. Every other
+  # recoverable problem on this form (bad number, negative, removed row) already
+  # re-renders in place to keep the user's input; an empty submit is no
+  # different — the guide is still active, so there is a form to keep, and the
+  # notes are the one thing worth preserving. Surfaces the same "enter a count"
+  # message inline (it persists in the form, unlike a flash) so the user can add
+  # a count and save without retyping their note.
+  def rerender_empty_count(order_guide)
+    @order_guide = order_guide
+    @order_guides = OrderGuide.active.ordered
+    @memberships = counted_memberships_for(order_guide)
+    @count_error = "Enter at least one count before saving."
+    render :new_count, status: :unprocessable_entity
   end
 
   # Re-render the count form instead of redirecting, so one bad entry doesn't
