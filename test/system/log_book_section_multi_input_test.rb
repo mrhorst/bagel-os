@@ -3,7 +3,7 @@ require "application_system_test_case"
 # A "Multi-input (grid)" Log Section needs at least one sub-input, but the
 # inputs list starts empty and only grows when the admin clicks "+ Add input".
 # So choosing the Multi-input type — or hitting the "must have at least one
-# input" validation error — used to leave the form showing an empty Inputs list
+# row" validation error — used to leave the form showing an empty Inputs list
 # with no row to fill: the error demanded an input the form never surfaced. The
 # form now seeds one blank starter row whenever a section has no inputs yet.
 class LogBookSectionMultiInputTest < ApplicationSystemTestCase
@@ -29,7 +29,7 @@ class LogBookSectionMultiInputTest < ApplicationSystemTestCase
     click_on "Create section"
 
     # The error must come with a row the user can act on, not an empty list.
-    assert_text "must have at least one input"
+    assert_text "Inputs must have at least one row"
     assert_selector ".log-book-fields-row", minimum: 1
     assert_equal "Bagels Left", find_field("Section label").value
     assert_equal 0, LogBookSection.where(title: "Bagels Left").count
@@ -72,7 +72,7 @@ class LogBookSectionMultiInputTest < ApplicationSystemTestCase
 
     # The save is rejected with a row-specific message, the section is not
     # created, and the half-filled row (with its unit) is preserved to fix.
-    assert_text "needs a label"
+    assert_text "Inputs row 2 needs a label"
     assert_equal 0, LogBookSection.where(title: "Bagel counts").count
     assert_selector ".log-book-fields-row", count: 2
     assert_equal "dozens", all("input[name='log_book_section[fields][][unit_label]']").last.value

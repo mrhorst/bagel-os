@@ -36,7 +36,7 @@ class LogBookSection < ApplicationRecord
 
   def fields_shape
     return unless multi?
-    return errors.add(:fields, "must have at least one input") if fields.empty?
+    return errors.add(:fields, "must have at least one row") if fields.empty?
 
     fields.each_with_index do |entry, idx|
       label = entry["label"].to_s.strip
@@ -47,6 +47,6 @@ class LogBookSection < ApplicationRecord
 
     # Keys must be unique within a section so value_grid lookups stay sane.
     keys = fields.map { |f| f["key"].to_s }.reject(&:blank?)
-    errors.add(:fields, "labels must be unique") if keys.uniq.length != keys.length
+    errors.add(:fields, "must have unique labels") if keys.uniq.length != keys.length
   end
 end
