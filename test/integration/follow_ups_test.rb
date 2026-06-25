@@ -42,6 +42,36 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     assert_select ".follow-up-card h2", text: "Old issue"
   end
 
+  test "browsing the resolved tab and opening an item returns Back to the resolved tab, not Open" do
+    # A manager auditing the Resolved archive taps an item, reads it, and taps
+    # "Back to Follow-ups". The detail page's back affordance must return them to
+    # the tab they were on (Resolved) instead of dumping them on the default Open
+    # tab and losing their place. The tab is carried as ?scope= through the card
+    # link into the detail page's back href.
+    seed_follow_ups
+    resolved = FollowUp.resolved.first
+
+    # The resolved-tab card links into the detail page carrying the active tab.
+    get follow_ups_path(scope: "resolved")
+    assert_response :success
+    assert_select ".follow-up-card[href=?]", follow_up_path(resolved, scope: "resolved")
+
+    # Reached with that scope, the back affordance points back at the Resolved tab.
+    get follow_up_path(resolved, scope: "resolved")
+    assert_response :success
+    assert_select "a.mobile-header-back[href=?]", follow_ups_path(scope: "resolved")
+  end
+
+  test "Back from a detail page reached without a tab falls through to the default list" do
+    # A deep link / bookmark with no scope must still produce a valid Back target
+    # (the default Open list), not a malformed href.
+    follow_up = FollowUp.create!(title: "Door squeaks", urgency: "normal", opened_at: 1.hour.ago, opened_by: users(:one))
+
+    get follow_up_path(follow_up)
+    assert_response :success
+    assert_select "a.mobile-header-back[href=?]", follow_ups_path
+  end
+
   test "resolving updates the record" do
     follow_up = FollowUp.create!(title: "Door squeaks", urgency: "normal", opened_at: 1.hour.ago, opened_by: users(:one))
 

@@ -1,7 +1,10 @@
 <% content_for :title, @follow_up.title %>
 
 <% content_for :mobile_left_action do %>
-  <%= link_to follow_ups_path, class: "mobile-header-back", aria: { label: "Back to Follow-ups" } do %>
+  <%# Honor the tab the user came from (carried as ?scope=) so Back returns them
+      to the Open or Resolved list they were browsing, not always the Open tab.
+      Absent/blank scope falls through to the default Open list. %>
+  <%= link_to follow_ups_path(scope: params[:scope].presence), class: "mobile-header-back", aria: { label: "Back to Follow-ups" } do %>
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
       <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
