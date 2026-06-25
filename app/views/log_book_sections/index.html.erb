@@ -18,8 +18,13 @@
     <h1>Log Sections</h1>
     <p>Choose what appears in the daily Log Book. Archiving hides a section from new days; old entries keep their values.</p>
   </div>
+  <%# On mobile the top-left chevron (mobile_left_action above) is the primary
+      "Back to Log Book" affordance, so this in-heading back button is a duplicate
+      there — hide it on mobile via .log-book-heading-actions (the same pattern
+      Log Book settings uses) and keep it as the desktop back path. "New section"
+      stays visible at every width. %>
   <div class="actions">
-    <%= link_to "Back to Log Book", log_book_path, class: "button small" %>
+    <%= link_to "Back to Log Book", log_book_path, class: "button small log-book-heading-actions" %>
     <%= link_to "New section", new_log_book_section_path, class: "button primary small" %>
   </div>
 </div>
