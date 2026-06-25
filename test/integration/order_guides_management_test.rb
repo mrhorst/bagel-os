@@ -29,7 +29,7 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a", text: "CSV example"
     assert_no_match "Import current PDFs", response.body
-    assert_select "h2", text: "Items By Guide"
+    assert_select "h2", text: "Items by guide"
     assert_match "Cream Cheese", response.body
 
     get order_guide_path(guide)
