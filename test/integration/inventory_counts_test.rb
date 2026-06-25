@@ -41,7 +41,7 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     get inventory_path
 
     assert_response :success
-    assert_select "h2", text: "Guide Workflows"
+    assert_select "h2", text: "Guide workflows"
     assert_match "Weekly", response.body
     assert_select "a[href='#{new_inventory_count_path(order_guide_id: @guide.id)}']", text: "Count"
     assert_select "a[href='#{inventory_shopping_list_path(order_guide_id: @guide.id)}']", text: "Buy list"
