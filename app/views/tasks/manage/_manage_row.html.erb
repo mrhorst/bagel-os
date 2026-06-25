@@ -1,4 +1,5 @@
-<%# locals: task: %>
+<%# locals: task:, show_list: (defaults true; pass false when rows are already grouped by list) %>
+<% show_list = local_assigns.fetch(:show_list, true) %>
 <%= link_to edit_tasks_manage_task_path(task), class: "manage-row #{'manage-row-archived' unless task.active?}" do %>
   <div class="manage-row-main">
     <div class="manage-row-title">
@@ -11,8 +12,7 @@
       <% end %>
     </div>
     <p class="muted small tnum">
-      <%= task_recurrence_label(task) %>
-      · <%= task.task_list.name %>
+      <%= task_recurrence_label(task) %><% if show_list %> · <%= task.task_list.name %><% end %>
     </p>
   </div>
   <svg class="manage-row-arrow" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">

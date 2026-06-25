@@ -28,7 +28,7 @@
         <span class="muted small tnum"><%= pluralize(tasks.size, "task") %></span>
       </header>
       <% tasks.each do |task| %>
-        <%= render "manage_row", task: task %>
+        <%= render "manage_row", task: task, show_list: false %>
       <% end %>
     <% end %>
   </section>
