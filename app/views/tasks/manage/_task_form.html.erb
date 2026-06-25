@@ -61,7 +61,10 @@
     </div>
   </div>
 
-  <details class="form-disclosure">
+  <%# Open a disclosure when it holds a field that failed validation, so the
+      error banner never names a field (e.g. "Sort order") that's collapsed out
+      of sight. Mirrors the wizard reopening the step that holds the error. %>
+  <details class="form-disclosure"<%= " open".html_safe if task.errors.include?(:instructions) %>>
     <summary>Instructions for staff</summary>
     <div class="field">
       <%= form.label :instructions, class: "sr-only" %>
@@ -69,7 +72,7 @@
     </div>
   </details>
 
-  <details class="form-disclosure">
+  <details class="form-disclosure"<%= " open".html_safe if task.errors.include?(:position) || task.errors.include?(:requires_photo_evidence) %>>
     <summary>More options</summary>
     <label class="check">
       <%= form.check_box :requires_photo_evidence %>
