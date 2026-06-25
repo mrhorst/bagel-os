@@ -287,6 +287,39 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_nil item.reload.primary_order_guide
   end
 
+  test "archived guide show page is read-only and hides affordances that dead-end" do
+    guide = OrderGuide.create!(name: "Daily")
+    item = InventoryItem.create!(name: "Eggs", key: "eggs")
+    item.add_to_order_guide!(guide, tracking_mode: "counted")
+
+    # While active, the guide offers its action affordances.
+    get order_guide_path(guide)
+    assert_response :success
+    assert_select "a", text: "Start count"
+    assert_select "a", text: "Buy list"
+    assert_select "h2", text: "Add Existing Operating Item"
+
+    delete order_guide_path(guide)
+    assert_not guide.reload.active?
+
+    # The index still links "View items" into an archived guide, so its show
+    # page must not present controls that dead-end. "Start count" and "Buy list"
+    # route to OrderGuide.active.find (inventory_controller.rb) and 404 on an
+    # archived guide; the "Add Existing Operating Item" form POSTs to a
+    # controller that rejects an archived guide with a raw RecordNotFound. None
+    # of them should render once the guide is archived.
+    get order_guide_path(guide)
+    assert_response :success
+    assert_select "a", text: "Start count", count: 0
+    assert_select "a", text: "Buy list", count: 0
+    assert_select "h2", text: "Add Existing Operating Item", count: 0
+    assert_select "form[action=?]", order_guide_memberships_path(guide), count: 0
+
+    # ...and it says plainly that it is archived, while keeping the way back.
+    assert_match "This guide is archived", response.body
+    assert_select "a", text: "All guides"
+  end
+
   test "changing primary guide from master inventory reactivates membership" do
     guide = OrderGuide.create!(name: "Every 2 weeks")
     item = InventoryItem.create!(name: "Napkins", key: "napkins")
