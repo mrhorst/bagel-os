@@ -31,9 +31,16 @@
         <% end %>
       </div>
     <% else %>
+      <%# Don't claim the whole list is complete when open monthly tasks still
+          sit in the "This month" section below — scope the message to today's
+          daily/weekly work so the page doesn't contradict itself. %>
       <p class="empty-state">
         <strong>All done for today.</strong>
-        <span>Every task on this list is complete.</span>
+        <span>
+          <%= @monthly_occurrences.any? ?
+                "Daily and weekly tasks are complete — monthly tasks are below." :
+                "Every task on this list is complete." %>
+        </span>
       </p>
     <% end %>
 
@@ -56,10 +63,21 @@
       </details>
     <% end %>
   <% else %>
-    <p class="empty-state">
-      <strong>Nothing on this list today.</strong>
-      <span>Daily and weekly tasks for this list will appear here when they're due.</span>
-    </p>
+    <%# No daily/weekly tasks are due today. If the list still has monthly tasks
+        (rendered in the "This month" section below), say so instead of the
+        absolute "Nothing on this list today" — which would contradict the
+        tasks shown right beneath this message. %>
+    <% if @monthly_occurrences.any? %>
+      <p class="empty-state">
+        <strong>No daily or weekly tasks due today.</strong>
+        <span>This list's monthly tasks are below.</span>
+      </p>
+    <% else %>
+      <p class="empty-state">
+        <strong>Nothing on this list today.</strong>
+        <span>Daily and weekly tasks for this list will appear here when they're due.</span>
+      </p>
+    <% end %>
   <% end %>
 </section>
 
