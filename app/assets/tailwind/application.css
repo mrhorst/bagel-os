@@ -1132,6 +1132,20 @@
   .page-heading p {
     overflow-wrap: anywhere;
   }
+  /* Keep the header's action cluster on one line so a long title/description
+     can't squeeze it until the primary action wraps onto its own row. When the
+     row wraps, the lone primary lands at flex-start — bottom-left, the weakest
+     slot — beneath the secondary buttons, inverting the primary-last →
+     primary-rightmost convention (e.g. Photo library's "Collections" /
+     "Manage tags" / orange "Add photos"). Holding the cluster at its natural
+     width keeps every header action on one line with the primary rightmost;
+     the text block absorbs the shrink (it has min-width:0 above and breaks
+     anywhere). Mirrors the `.panel-heading .button` flex-shrink guard below.
+     Only bites in the >900px row layout — under that `.page-heading` stacks to
+     a column and `.hero-actions` goes full-width, so wrapping is moot. */
+  .page-heading > .hero-actions {
+    flex-shrink: 0;
+  }
   /* `.small` on a paragraph means "demoted helper text" — supporting copy that
      should sit below the heading and field labels, not out-size them. The class
      never carried a font-size, so every `<p class="muted small">` description
