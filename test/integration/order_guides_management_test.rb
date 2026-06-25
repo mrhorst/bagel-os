@@ -252,6 +252,29 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_equal BigDecimal("3"), membership.target_after_order
   end
 
+  test "updating guide row setup keeps the item's ordering note" do
+    # The inline "Update" form on a guide row edits section/tracking/usage/buffer
+    # but carries no notes field, while the note is shown to staff on the buy
+    # list (inventory/shopping_list). Saving the row must not erase that note.
+    guide = OrderGuide.create!(name: "Weekly")
+    item = InventoryItem.create!(name: "Bacon", key: "bacon")
+    membership = item.add_to_order_guide!(guide, tracking_mode: "counted", notes: "Order in full cases only.")
+    assert_equal "Order in full cases only.", membership.notes
+
+    patch order_guide_membership_path(guide, membership), params: {
+      membership: {
+        section_name: "Freezer",
+        tracking_mode: "counted",
+        expected_usage_quantity: "2",
+        buffer_quantity: "1"
+      }
+    }
+
+    assert_redirected_to order_guide_path(guide)
+    assert_equal "Order in full cases only.", membership.reload.notes
+    assert_equal "Freezer", membership.order_guide_section.name
+  end
+
   test "removing primary item from guide leaves item without primary guide" do
     guide = OrderGuide.create!(name: "Weekly")
     item = InventoryItem.create!(name: "Coffee beans", key: "coffee-beans")
