@@ -15,11 +15,20 @@
     <p>Count, order, and setup items for this operating guide.</p>
   </div>
   <div class="actions">
-    <%= link_to "Start count", new_inventory_count_path(order_guide_id: @order_guide.id), class: "button primary" %>
-    <%= link_to "Buy list", inventory_shopping_list_path(order_guide_id: @order_guide.id), class: "button" %>
+    <% if @order_guide.active? %>
+      <%= link_to "Start count", new_inventory_count_path(order_guide_id: @order_guide.id), class: "button primary" %>
+      <%= link_to "Buy list", inventory_shopping_list_path(order_guide_id: @order_guide.id), class: "button" %>
+    <% end %>
     <%= link_to "All guides", order_guides_path, class: "button" %>
   </div>
 </div>
+
+<% unless @order_guide.active? %>
+  <div class="note-block">
+    <strong>Archived guide</strong>
+    <p>This guide is archived, so counting, the buy list, and adding items are turned off. It stays here for reference.</p>
+  </div>
+<% end %>
 
 <% if @order_guide.notes.present? %>
   <div class="note-block">
@@ -47,6 +56,7 @@
   </div>
 </section>
 
+<% if @order_guide.active? %>
 <section class="panel">
   <div class="panel-heading">
     <div>
@@ -89,6 +99,7 @@
     <p class="field-hint">Every active inventory item is already on this guide.</p>
   <% end %>
 </section>
+<% end %>
 
 <% grouped_memberships = @memberships.group_by(&:order_guide_section) %>
 <% @sections.each do |section| %>
@@ -121,6 +132,10 @@
 
 <% if @memberships.empty? %>
   <section class="panel">
-    <p class="empty-state">No operating items are assigned to this guide yet. Add an existing inventory item above, or add a receipt product from its product page.</p>
+    <% if @order_guide.active? %>
+      <p class="empty-state">No operating items are assigned to this guide yet. Add an existing inventory item above, or add a receipt product from its product page.</p>
+    <% else %>
+      <p class="empty-state">This guide is archived and has no active items.</p>
+    <% end %>
   </section>
 <% end %>
