@@ -10,17 +10,26 @@
 
 <article class="panel">
   <%= form_with url: products_path, method: :get, class: "filters", data: { controller: "auto-submit-form", action: "submit->auto-submit-form#submit", auto_submit_form: true, async_frame: "products", auto_submit_form_async_frame_value: "products" } do |form| %>
-    <%= form.search_field :q, value: params[:q], placeholder: "Search products", "aria-label": "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
-    <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, { "aria-label": "Filter by category", data: { action: "change->auto-submit-form#queueChange" } } %>
-    <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] }, { "aria-label": "Filter by supplier", data: { action: "change->auto-submit-form#queueChange" } } %>
-    <label>
-      Sort by
-      <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] }, { "aria-label": "Sort products", data: { action: "change->auto-submit-form#queueChange" } } %>
-    </label>
-    <label>
-      Per page
+    <div class="field">
+      <%= form.label :q, "Search" %>
+      <%= form.search_field :q, value: params[:q], placeholder: "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
+    </div>
+    <div class="field">
+      <%= form.label :category_id, "Category" %>
+      <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, { data: { action: "change->auto-submit-form#queueChange" } } %>
+    </div>
+    <div class="field">
+      <%= form.label :supplier_id, "Supplier" %>
+      <%= form.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "All suppliers", selected: params[:supplier_id] }, { data: { action: "change->auto-submit-form#queueChange" } } %>
+    </div>
+    <div class="field">
+      <%= form.label :sort, "Sort by" %>
+      <%= form.select :sort, [["Name", "name"], ["Total spend", "total_spend"], ["Purchase frequency", "purchase_frequency"], ["Latest purchase date", "latest_purchase_date"], ["Highest price increase", "highest_price_increase"], ["Category", "category"]], { selected: params[:sort] }, { data: { action: "change->auto-submit-form#queueChange" } } %>
+    </div>
+    <div class="field">
+      <%= form.label :per_page, "Per page" %>
       <%= form.select :per_page, [[25, 25], [50, 50], [100, 100]], { selected: @per_page }, data: { action: "change->auto-submit-form#queueChange" } %>
-    </label>
+    </div>
     <label class="check"><%= form.check_box :needs_review, { checked: params[:needs_review] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Needs review</label>
     <label class="check"><%= form.check_box :no_standard_unit_price, { checked: params[:no_standard_unit_price] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> No standard unit price</label>
     <label class="check"><%= form.check_box :missing_category, { checked: params[:missing_category] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Missing category</label>
