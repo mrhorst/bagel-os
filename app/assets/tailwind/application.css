@@ -1181,6 +1181,14 @@
   .panel-heading p {
     margin: 0;
   }
+  /* Keep a heading's action button at its natural width so a long title/subtitle
+     can't squeeze it until its label wraps (e.g. "All guides" breaking to two
+     lines). The text block absorbs the shrink instead. Only bites in the >900px
+     row layout — below that the heading stacks to a column and the button goes
+     full-width, so flex-shrink is moot. */
+  .panel-heading .button {
+    flex-shrink: 0;
+  }
 
   /* ── KPI / Metric tiles — ONE component, tone modifiers ───────────── */
   .metric-grid {
