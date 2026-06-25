@@ -3425,6 +3425,12 @@
     background: var(--surface-2);
     box-shadow: inset 2px 0 0 var(--warn);
   }
+  /* Danger row: the red counterpart to .warning-row for missed/failed states —
+     still a 2px left rule, never a painted row background. */
+  .danger-row {
+    background: var(--surface-2);
+    box-shadow: inset 2px 0 0 var(--danger);
+  }
   tr:target {
     background: var(--info-soft);
   }

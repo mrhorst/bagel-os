@@ -51,7 +51,7 @@
       </thead>
       <tbody>
         <% @occurrences.each do |occurrence| %>
-          <tr>
+          <tr class="<%= task_status_row_class(occurrence) %>">
             <td data-label="Status"><%= task_status_badge(occurrence) %></td>
             <td class="row-heading" data-label="Task">
               <strong><%= occurrence.snapshot_title %></strong>
