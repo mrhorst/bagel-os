@@ -19,6 +19,18 @@ module PurchasingHelper
     end
   end
 
+  # Status chip for an import batch. A failed import must not read the same as a
+  # successful one, so the badge carries the status's meaning through colour
+  # (the sanctioned semantic badge classes), not a neutral grey for everything.
+  # pending/skipped stay neutral — neither success nor error.
+  def import_status_badge(batch)
+    variant = case batch.status
+    when "imported" then "badge-ok"
+    when "failed"   then "badge-danger"
+    end
+    tag.span(batch.status.humanize, class: [ "badge", variant ].compact.join(" "))
+  end
+
   def tracking_mode_label(membership)
     membership.order_only? ? "Order only" : "Counted"
   end
