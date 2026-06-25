@@ -75,4 +75,32 @@ class ProductOrderGuideMembershipsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "select[name='membership[order_guide_id]'][required]"
   end
+
+  test "a failed add from the order-guides index keeps the user on the index, not a product page" do
+    product = @supplier.products.create!(canonical_name: "Olives", needs_review: false)
+
+    # The same "Add to guide" form lives on the order-guides index gap list
+    # ("Receipt Products Not On Current Guides"). A recoverable mistake there
+    # (forgetting to pick a guide) must not yank the user — mid-way through
+    # clearing the gap list — onto a product page they never asked to see.
+    post product_order_guide_memberships_path(product),
+      params: { membership: { order_guide_id: "", section_name: "Dry" } },
+      headers: { "HTTP_REFERER" => order_guides_url }
+
+    assert_redirected_to order_guides_url
+    assert_equal "Choose a guide to add this product to.", flash[:alert]
+    assert_empty product.inventory_items
+  end
+
+  test "a failed add from the product page stays on the product page" do
+    product = @supplier.products.create!(canonical_name: "Capers", needs_review: false)
+
+    post product_order_guide_memberships_path(product),
+      params: { membership: { order_guide_id: "", section_name: "Dry" } },
+      headers: { "HTTP_REFERER" => product_url(product) }
+
+    assert_redirected_to product_url(product)
+    assert_equal "Choose a guide to add this product to.", flash[:alert]
+    assert_empty product.inventory_items
+  end
 end

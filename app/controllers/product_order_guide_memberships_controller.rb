@@ -34,7 +34,15 @@ class ProductOrderGuideMembershipsController < ApplicationController
 
     redirect_to order_guide_path(guide), notice: "#{membership.inventory_item.name} added to #{guide.name}."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => error
-    redirect_to product_path(params[:product_id]), alert: membership_failure_message(error)
+    # This "Add to guide" form is rendered from two places: the product show
+    # page AND the order-guides index gap list ("Receipt Products Not On Current
+    # Guides"). On failure, return the user to the page they were actually on —
+    # a recoverable mistake (e.g. forgetting to pick a guide) shouldn't bounce
+    # someone working the index gap list onto a product page they never asked to
+    # see. Fall back to the product page when there's no usable referrer. This
+    # mirrors the sibling OrderGuideMembershipsController, which deliberately
+    # stays on the originating page so the user doesn't lose their place.
+    redirect_back fallback_location: product_path(params[:product_id]), alert: membership_failure_message(error)
   end
 
   private
