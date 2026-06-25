@@ -34,13 +34,17 @@ class OrderGuideMembershipsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       section = order_guide.section_named!(membership_params[:section_name])
-      membership.update!(
+      attributes = {
         order_guide_section: section,
         tracking_mode: membership_params[:tracking_mode].presence || membership.tracking_mode,
         expected_usage_quantity: membership_params[:expected_usage_quantity],
-        buffer_quantity: membership_params[:buffer_quantity],
-        notes: membership_params[:notes]
-      )
+        buffer_quantity: membership_params[:buffer_quantity]
+      }
+      # The inline row form edits setup fields only and carries no notes input;
+      # the note is shown to staff on the buy list, so don't erase it on save.
+      # Update notes only when the submitted form actually includes the field.
+      attributes[:notes] = membership_params[:notes] if membership_params.key?(:notes)
+      membership.update!(attributes)
     end
 
     redirect_to order_guide_path(order_guide), notice: "#{membership.inventory_item.name} guide setup updated."
