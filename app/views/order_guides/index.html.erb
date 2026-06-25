@@ -202,7 +202,7 @@
             <td data-label="Add to guide">
               <% if @order_guides.active.any? %>
                 <%= form_with url: product_order_guide_memberships_path(row.product), scope: :membership, class: "guide-gap-form" do |form| %>
-                  <%= form.collection_select :order_guide_id, @order_guides.select(&:active?), :id, :name, { prompt: "Guide" }, { class: "compact-select" } %>
+                  <%= form.collection_select :order_guide_id, @order_guides.select(&:active?), :id, :name, { prompt: "Guide" }, { class: "compact-select", required: true } %>
                   <%= form.text_field :section_name, placeholder: "Section", class: "compact-input" %>
                   <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]], {}, { class: "compact-select" } %>
                   <%= form.submit "Add", class: "button small" %>
