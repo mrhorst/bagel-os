@@ -21,8 +21,8 @@ class OrderGuidesController < ApplicationController
   ].freeze
 
   def index
-    @order_guides = OrderGuide.ordered.includes(:order_guide_sections, order_guide_memberships: [ :order_guide_section, { inventory_item: [ :inventory_section, :product ] } ])
-    @missing_products = Purchasing::InventoryGapAnalyzer.new.missing_products(limit: 40)
+    load_guides_index
+    @new_order_guide = OrderGuide.new
   end
 
   def show
@@ -42,13 +42,20 @@ class OrderGuidesController < ApplicationController
   end
 
   def create
-    guide = OrderGuide.new(order_guide_params)
-    guide.position = OrderGuide.maximum(:position).to_i + 1
+    @new_order_guide = OrderGuide.new(order_guide_params)
+    @new_order_guide.position = OrderGuide.maximum(:position).to_i + 1
 
-    if guide.save
+    if @new_order_guide.save
       redirect_to order_guides_path, notice: "Order guide created."
     else
-      redirect_to order_guides_path, alert: guide.errors.full_messages.to_sentence
+      # Re-render the index in place (instead of redirecting to a fresh form)
+      # so a recoverable name problem — a duplicate or blank name — doesn't
+      # discard the notes the manager typed. The create form repopulates from
+      # @new_order_guide and surfaces the errors inline, matching the in-place
+      # recovery the rest of the app already uses for failed creates (collections,
+      # inventory counts) rather than a flash that drops the user's input.
+      load_guides_index
+      render :index, status: :unprocessable_entity
     end
   end
 
@@ -79,6 +86,11 @@ class OrderGuidesController < ApplicationController
   end
 
   private
+
+  def load_guides_index
+    @order_guides = OrderGuide.ordered.includes(:order_guide_sections, order_guide_memberships: [ :order_guide_section, { inventory_item: [ :inventory_section, :product ] } ])
+    @missing_products = Purchasing::InventoryGapAnalyzer.new.missing_products(limit: 40)
+  end
 
   def order_guide_params
     params.require(:order_guide).permit(:name, :notes, :active)

@@ -48,18 +48,37 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_nil item.reload.primary_order_guide
   end
 
-  test "creating a guide whose name is already taken explains it in name terms" do
+  test "creating a guide whose name is already taken explains it in name terms and keeps the typed notes" do
     OrderGuide.create!(name: "Daily")
 
-    post order_guides_path, params: { order_guide: { name: "Daily" } }
+    post order_guides_path, params: {
+      order_guide: { name: "Daily", notes: "Count before the morning order; ask about par levels." }
+    }
 
     # A manager retyping an existing guide name must get a clear, recoverable
     # message — not the internal "Key has already been taken" that leaks the
-    # derived slug field they never see.
-    assert_redirected_to order_guides_path
-    assert_equal %(A guide named "Daily" already exists. Pick a different name.), flash[:alert]
-    assert_not_includes flash[:alert].to_s, "Key"
+    # derived slug field they never see — and must not lose the notes they
+    # typed. Re-render the form in place (like the rest of the app's failed
+    # creates) instead of redirecting to a fresh, empty form.
+    assert_response :unprocessable_entity
+    assert_select ".flash-alert", text: /A guide named "Daily" already exists\. Pick a different name\./
+    assert_not_includes response.body, "Key has already been taken"
+    assert_select "textarea[name=?]", "order_guide[notes]",
+      text: "Count before the morning order; ask about par levels."
+    assert_select "input[name=?][value=?]", "order_guide[name]", "Daily"
     assert_equal 1, OrderGuide.where(name: "Daily").count
+  end
+
+  test "creating a guide with a blank name re-renders with the error and keeps the typed notes" do
+    post order_guides_path, params: {
+      order_guide: { name: "", notes: "Weekend prep — confirm the delivery window with the opener." }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select ".flash-alert", text: /Name can't be blank/
+    assert_select "textarea[name=?]", "order_guide[notes]",
+      text: "Weekend prep — confirm the delivery window with the opener."
+    assert_not OrderGuide.exists?(name: "")
   end
 
   test "archive button on the guides index guards with a confirmation" do
