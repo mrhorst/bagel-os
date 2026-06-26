@@ -2791,6 +2791,15 @@
     text-transform: uppercase;
     color: var(--ink-muted);
   }
+  /* The trailing per-group count ("3 tasks") is supporting metadata, so it must
+     not out-size the section label it annotates. The `small` class on its <span>
+     never lands a size (only `p.small` carries one — see the note by `p.small`),
+     so the count was inheriting full body size and rendering visibly larger than
+     the 0.78rem label beside it, inverting the header's hierarchy. Pin it to the
+     label's scale so the two read as peers on their shared baseline. */
+  .manage-stack-group-header span {
+    font-size: 0.78rem;
+  }
 
   .manage-row {
     align-items: center;
