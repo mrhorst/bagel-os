@@ -5214,7 +5214,10 @@
   .tasks-completed-disclosure-count {
     background: var(--surface-3);
     border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
+    /* Rounded-rect, not a pill: pills are reserved for tags + bottom-tab
+       badges. This count chip matches the canonical .home-surface-card-count
+       (and the sibling .badge chips beside it on this screen). */
+    border-radius: var(--radius-sm);
     color: var(--ink-2);
     font-size: 0.78rem;
     padding: 1px 8px;
