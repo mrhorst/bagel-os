@@ -44,3 +44,20 @@ en:
         position: "Sort order"
         value_decimals: "Decimal places"
         fields: "Inputs"
+      # Same rule for the task editor: a failed save humanized the raw columns
+      # ("One time on", "Position", "Weekdays"), but the form labels them "Date",
+      # "Sort order", and "Weekly days" — so the error named fields the manager
+      # couldn't find. Keep these in sync with the labels in
+      # app/views/tasks/manage/_task_form.html.erb and _guided_task_form.html.erb.
+      task:
+        title: "Task name"
+        task_list_id: "Task list"
+        recurrence_type: "Repeats"
+        due_time: "Due time"
+        one_time_on: "Date"
+        starts_on: "Start date"
+        ends_on: "End date"
+        weekdays: "Weekly days"
+        instructions: "Instructions"
+        position: "Sort order"
+        requires_photo_evidence: "Require one completion photo"
