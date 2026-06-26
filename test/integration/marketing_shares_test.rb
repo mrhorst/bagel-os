@@ -35,17 +35,31 @@ class MarketingSharesTest < ActionDispatch::IntegrationTest
     assert_select "a.photo-card", 1
   end
 
-  test "a revoked token 404s" do
+  test "a revoked token 404s with a friendly, branded unavailable page" do
     share = collections(:summer).shares.create!
     share.revoke!
 
     get shared_collection_path(share.token)
     assert_response :not_found
+    # Not a blank 404 body: the external viewer is told the link is gone and
+    # what to do next, on the public-shell layout.
+    assert_select "h1", /no longer available/i
+    assert_select ".empty-state"
+    assert_select ".public-footer"
   end
 
-  test "an unknown token 404s" do
+  test "an unknown token 404s with the friendly unavailable page" do
     get shared_collection_path("nope-not-a-real-token")
     assert_response :not_found
+    assert_select "h1", /no longer available/i
+  end
+
+  test "an expired token 404s with the friendly unavailable page" do
+    share = collections(:summer).shares.create!(expires_at: 1.day.ago)
+
+    get shared_collection_path(share.token)
+    assert_response :not_found
+    assert_select "h1", /no longer available/i
   end
 
   test "the public download returns a zip without a login" do
