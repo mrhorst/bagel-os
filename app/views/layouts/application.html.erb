@@ -97,8 +97,12 @@
           <div class="mobile-header-left">
             <% if content_for?(:mobile_left_action) %>
               <%= yield :mobile_left_action %>
-            <% elsif on_module_page? && current_hub_def %>
-              <%# Auto back-chevron to the module's parent hub. %>
+            <% elsif current_user && on_module_page? && current_hub_def %>
+              <%# Auto back-chevron to the module's parent hub. Gated on an
+                  authenticated user: the logged-out sign-in and reset-password
+                  pages live in the account module (sessions/passwords), so
+                  without this they render a "Back to More" chevron that just
+                  bounces back through the auth wall. %>
               <%= link_to send(current_hub_def[:path_helper]), class: "mobile-header-back", aria: { label: "Back to #{current_hub_def[:label]}" } do %>
                 <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                   <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
