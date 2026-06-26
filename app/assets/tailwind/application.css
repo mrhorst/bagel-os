@@ -4597,7 +4597,14 @@
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
   .settings-card {
-    align-items: flex-start;
+    /* Center the icon + text block so they line up with the trailing chevron
+       (::after is align-self:center) and follow the iOS settings-row pattern.
+       In a stretched grid row a shorter card — e.g. a "History" card with no
+       .settings-card-count line beside a "Sections"/"Tasks" card that has one —
+       would otherwise top-align and strand its content above a dead gap while
+       the chevron floated mid-card; centering keeps every row item on one
+       optical line and balances the card. */
+    align-items: center;
     background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
