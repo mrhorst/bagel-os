@@ -4664,7 +4664,7 @@
     color: inherit;
     display: grid;
     gap: 12px;
-    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr);
     min-height: 112px;
     /* Right padding reserves the gutter for the trailing disclosure chevron so
        descriptions never run under it; applied to all cards (link + disabled)
@@ -4716,18 +4716,24 @@
     border-color: var(--line);
     transform: none;
   }
+  /* Same icon-tile atom as the sibling chooser screens (.settings-card-icon on
+     the nav hubs and Log Book settings): a 36px bordered --surface-3 square.
+     Without the border the glyph tile read as a flat, low-contrast blob next to
+     the crisp bordered tiles those siblings show for the same "pick a route"
+     pattern. */
   .task-builder-card-icon {
     align-items: center;
     background: var(--surface-3);
+    border: 1px solid var(--line-2);
     border-radius: var(--radius-md);
     color: var(--ink);
     display: flex;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 800;
-    height: 40px;
+    height: 36px;
     justify-content: center;
     line-height: 1;
-    width: 40px;
+    width: 36px;
   }
   .task-builder-card strong {
     display: block;
