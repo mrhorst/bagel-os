@@ -20,7 +20,7 @@
 <% if @pending_count.zero? %>
   <article class="panel empty-state">
     <strong>Nothing pending.</strong>
-    <p>The queue is empty — new conflicts appear here when receipt imports can't auto-resolve a product or unit.</p>
+    <span>The queue is empty — new conflicts appear here when receipt imports can't auto-resolve a product or unit.</span>
   </article>
 <% elsif @view == "focus" %>
   <section class="review-focus" aria-label="Current review">
