@@ -48,7 +48,7 @@ class TasksWizardErrorStepTest < ApplicationSystemTestCase
 
     select "Prep", from: "Task list"
     # Jump to the last step via the step nav, skipping the title (step 2).
-    find("button.task-wizard-step[data-task-wizard-index-param='4']").click
+    jump_to_wizard_step(4)
     assert_text "Final options"
 
     click_on "Create task"
@@ -77,5 +77,26 @@ class TasksWizardErrorStepTest < ApplicationSystemTestCase
     assert_no_text "kept this task from saving"
     assert_equal 1, Task.count
     assert_equal "Wipe counters", Task.last.title
+  end
+
+  private
+
+  # Click a wizard step-nav button and confirm the jump took effect.
+  #
+  # Headless Chrome intermittently drops a click (the same flake the
+  # `resubmit` / `fill_in` fallbacks in ApplicationSystemTestCase exist for),
+  # and on a cold load the wizard's Stimulus controller may not have connected
+  # yet when the nav is first clicked. Either way the jump silently no-ops and
+  # the page stays on step 1 — the exact intermittent CI failure this guards.
+  # The controller marks the active step with aria-current="step"; if that
+  # didn't appear, click again once it's had time to connect. goTo is
+  # idempotent, so the re-click is safe.
+  def jump_to_wizard_step(index)
+    selector = "button.task-wizard-step[data-task-wizard-index-param='#{index}']"
+    find(selector).click
+    return if has_selector?("#{selector}[aria-current='step']", wait: 2)
+
+    find(selector).click
+    assert_selector "#{selector}[aria-current='step']"
   end
 end
