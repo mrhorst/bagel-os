@@ -1451,6 +1451,18 @@
   .decision-card.log-book-section-card .decision-card-body {
     padding: 14px 0 8px;
   }
+  /* Section titles ("General Log", "Maintenance", "Follow-ups") are nested
+     INSIDE the "Today's entry" panel, so they must read as children of it —
+     yet the inherited `.decision-card-body h2` (1.1rem) out-sized the panel's
+     own `.block-panel-header h2` (the base 1.05rem), an upside-down hierarchy
+     where the child heading was larger than its parent. Step them one notch
+     below the panel header so the ladder descends cleanly: H1 → "Today's
+     entry" (1.05rem) → section title (1rem) → helper (0.86rem) → field label.
+     Scoped to the log-book section card; the shared `.decision-card-body h2`
+     used elsewhere is untouched. */
+  .decision-card.log-book-section-card .decision-card-body h2 {
+    font-size: 1rem;
+  }
   /* The section's helper sentence ("Anything important from today's shift.")
      is supporting text, not content — demote it to match the panel's own
      `.block-panel-header p` helper above it (muted + 0.86rem) so the heading →
