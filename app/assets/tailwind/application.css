@@ -2051,8 +2051,20 @@
      becomes the heaviest element in every row. Match the sibling primary-guide
      <select> floor (180px) so longer guide names ("Cleaning Supplies") still
      fit and the two inline controls stay one consistent size. Mobile re-stacks
-     it full-width below. */
-  .inline-guide-form .compact-input {
+     it full-width below.
+
+     The `input` qualifier is load-bearing: the base
+     `input:not([type='checkbox']):not([type='radio'])` rule (specificity 0,2,1)
+     outranks a bare `.compact-input` (0,1,0), so the field silently ignored its
+     compact min-height/padding and rendered at the full 40px — 10px taller than
+     the 30px Save/Archive buttons beside it, leaving the row's control cluster
+     ragged. (`.compact-select` is unaffected: the base `select` selector is only
+     0,0,1, so the class already wins there.) Qualifying with `input` lifts this
+     to 0,2,1 — a tie the later source order wins — so the documented compact
+     height actually applies and the field lines up with its sibling buttons. */
+  .inline-guide-form input.compact-input {
+    min-height: 32px;
+    padding: 5px 8px;
     width: 180px;
   }
   /* The primary-guide <select> must show its full selected value. The custom
