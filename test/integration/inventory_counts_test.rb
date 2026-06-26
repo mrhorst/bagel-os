@@ -299,7 +299,7 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Weekly Buy List"
-    assert_select "h2", text: "Buy Now"
+    assert_select "h2", text: "Buy now"
     assert_match "Cream Cheese", response.body
     assert_match "Napkins", response.body
     assert_match "Eggs", response.body

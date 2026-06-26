@@ -30,7 +30,7 @@
 
 <% if @order_guide.blank? %>
   <section class="panel">
-    <h2>Choose Guide</h2>
+    <h2>Choose guide</h2>
     <% if @order_guides.any? %>
       <div class="action-grid">
         <% @order_guides.each do |guide| %>
@@ -46,7 +46,7 @@
   </section>
 <% else %>
   <section class="panel">
-    <h2>Buy Now</h2>
+    <h2>Buy now</h2>
     <% if @buy_now.any? %>
       <table>
         <thead>
@@ -80,7 +80,7 @@
 
   <section class="grid two">
     <div class="panel">
-      <h2>Setup Needed</h2>
+      <h2>Setup needed</h2>
       <% if @setup_needed.any? %>
         <table>
           <thead>
@@ -107,7 +107,7 @@
     </div>
 
     <div class="panel">
-      <h2>Not Counted Yet</h2>
+      <h2>Not counted yet</h2>
       <% if @not_counted.any? %>
         <div class="pill-list">
           <% @not_counted.first(80).each do |row| %>
@@ -121,7 +121,7 @@
   </section>
 
   <section class="panel">
-    <h2>Order Only</h2>
+    <h2>Order only</h2>
     <% if @order_only.any? %>
       <table>
         <thead>
