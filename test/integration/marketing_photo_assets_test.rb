@@ -156,6 +156,28 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
     assert_redirected_to photo_assets_path
   end
 
+  test "the mobile back-chevron on a photo returns to the library, not the hub above it" do
+    sign_in_as(users(:one))
+    asset = create_asset
+
+    get photo_asset_path(asset)
+    assert_response :success
+    # The mobile header chevron is the primary back affordance on a phone. It
+    # must return to the Photo library the photo was opened from — matching the
+    # on-page "Back to library" button — not overshoot to the More hub.
+    assert_select "a.mobile-header-back[href=?]", photo_assets_path
+    assert_select "a.mobile-header-back[href=?]", more_hub_path, count: 0
+  end
+
+  test "the mobile back-chevron on the add-photos page returns to the library, not the hub above it" do
+    sign_in_as(users(:one))
+
+    get new_photo_asset_path
+    assert_response :success
+    assert_select "a.mobile-header-back[href=?]", photo_assets_path
+    assert_select "a.mobile-header-back[href=?]", more_hub_path, count: 0
+  end
+
   private
 
   def sample_upload
