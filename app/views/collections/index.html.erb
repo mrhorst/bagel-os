@@ -7,7 +7,11 @@
   </div>
   <div class="hero-actions">
     <%= link_to "Back to library", photo_assets_path, class: "button" %>
-    <%= link_to "New collection", new_collection_path, class: "button primary" %>
+    <%# On mobile the floating action button (bottom of this view) is the
+        canonical "add" affordance, so this inline primary button is hidden
+        there to avoid a duplicate "New collection" CTA; it stays on desktop,
+        which has no FAB. Mirrors the Photo library sibling. %>
+    <%= link_to "New collection", new_collection_path, class: "button primary hide-for-fab" %>
   </div>
 </section>
 
