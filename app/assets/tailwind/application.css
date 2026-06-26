@@ -814,7 +814,10 @@
   }
   .follow-ups-tab-count {
     background: color-mix(in oklch, var(--ink) 12%, transparent);
-    border-radius: 999px;
+    /* Count chip is a rounded-rect, not a pill: pills are reserved for tags and
+       the bottom-tab badges (see the .tag-pill note below). Matches the
+       canonical count-chip shape used by .home-surface-card-count. */
+    border-radius: var(--radius-sm);
     font-size: 0.8rem;
     font-weight: 600;
     padding: 1px 8px;
