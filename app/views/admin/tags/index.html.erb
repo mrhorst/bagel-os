@@ -1,5 +1,20 @@
 <% content_for :title, "Marketing tags" %>
 
+<%# Marketing tags isn't a registered nav module, so the mobile header's auto
+    back-chevron never fires here — and on mobile this page is only reachable via
+    "Manage tags" in the photo library. Without this override the screen renders
+    no header back affordance at all (its own new/edit children point "Tags" back
+    here, but the index would strand the user), so mirror the library chevron its
+    siblings use to send the manager one level up to the library. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to photo_assets_path, class: "mobile-header-back", aria: { label: "Back to library" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Library</span>
+  <% end %>
+<% end %>
+
 <section class="page-heading">
   <div>
     <h1>Marketing tags</h1>
