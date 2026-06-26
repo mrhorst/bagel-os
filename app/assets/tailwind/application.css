@@ -2053,6 +2053,35 @@
     min-width: 180px;
   }
 
+  /* Master Inventory renders one independent <table> per storage location, so
+     each table auto-sized its columns to its own rows — the Guide, Receipt
+     product, Pack, Latest price and Status columns landed at a different
+     x-position in every group, and the page read as four mismatched grids
+     instead of one inventory sheet you can scan straight down. Pin a shared
+     column template so every section aligns down the page. Desktop only: the
+     widths sit on the <th>, and the mobile `.responsive-table` rules hide the
+     thead and switch the table to display:block (which ignores table-layout),
+     so the stacked card view is untouched. */
+  .inventory-section-table {
+    table-layout: fixed;
+  }
+  /* Guide carries the select + Save control (floored ~240px); the three
+     short-data columns get just enough for their headers; Item and Receipt
+     product are left to split the remainder equally — the two text columns
+     stay the widest while every section lines up on the same column axes. */
+  .inventory-section-table th:nth-child(2) {
+    width: 280px;
+  } /* Guide (select + Save) */
+  .inventory-section-table th:nth-child(4) {
+    width: 14%;
+  } /* Pack / count note */
+  .inventory-section-table th:nth-child(5) {
+    width: 11%;
+  } /* Latest price */
+  .inventory-section-table th:nth-child(6) {
+    width: 9%;
+  } /* Status */
+
   .guide-gap-form,
   .guide-row-form {
     align-items: center;
