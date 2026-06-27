@@ -18,7 +18,10 @@
     <p>Group photos into campaigns or albums — a seasonal shoot, an Instagram set, the new menu. A photo can live in several at once.</p>
   </div>
   <div class="hero-actions">
-    <%= link_to "Back to library", photo_assets_path, class: "button" %>
+    <%# On mobile the top-bar "Library" back chevron (the :mobile_left_action
+        defined above) is the back affordance, so hide this duplicate inline
+        button there; it stays on desktop, which has no mobile header. %>
+    <%= link_to "Back to library", photo_assets_path, class: "button hide-for-fab" %>
     <%# On mobile the floating action button (bottom of this view) is the
         canonical "add" affordance, so this inline primary button is hidden
         there to avoid a duplicate "New collection" CTA; it stays on desktop,
