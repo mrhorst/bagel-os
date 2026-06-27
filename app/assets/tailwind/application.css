@@ -2986,6 +2986,21 @@
     vertical-align: middle;
   }
 
+  /* Task history: the short, fixed-format columns ("Front of house",
+     "Jun 26, 2026", "Due 11:59 PM") were wrapping to two lines in every row
+     because the seven-column auto layout starved them — doubling row height and
+     wrecking the table's scan rhythm. Keep them on one line and let the Task
+     name (.row-heading), which legitimately wraps, absorb the width so each row
+     reads as one scannable line. Scoped to data-labelled cells, so the sibling
+     .history-table on the occurrence page (no data-labels) is untouched; on
+     mobile the .responsive-table stacked cards give each value its own
+     full-width line, so a single line is the natural layout there too. */
+  .history-table td[data-label="List"],
+  .history-table td[data-label="Period"],
+  .history-table td[data-label="Due"] {
+    white-space: nowrap;
+  }
+
   /* ── Segmented control ────────────────────────────────────────────── */
   .segmented {
     display: flex;
