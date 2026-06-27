@@ -133,6 +133,24 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a failed note re-renders the page in place with the error shown, instead of redirecting away" do
+    follow_up = FollowUp.create!(title: "Door squeaks", urgency: "normal", opened_at: 1.hour.ago, opened_by: users(:one))
+
+    # A whitespace-only body slips past the textarea's HTML5 `required` but fails
+    # the model's presence validation. Rather than bouncing the reviewer to a
+    # fresh page with a detached banner (dropping what they typed), the note form
+    # should recover in place the way the spawn-task form on this same page does.
+    assert_no_difference -> { follow_up.notes.count } do
+      post follow_up_notes_path(follow_up), params: { follow_up_note: { body: "   \n  " } }
+    end
+
+    # Re-rendered in place (not redirected away), with the error inline by the form.
+    assert_response :unprocessable_entity
+    assert_select "form.follow-up-note-form .form-errors", text: /blank/i
+    # The note thread and the rest of the detail page still render.
+    assert_select "h1", text: "Door squeaks"
+  end
+
   test "assign sets the assignee" do
     follow_up = FollowUp.create!(title: "Walk-in warm", urgency: "urgent", opened_at: 1.hour.ago, opened_by: users(:one))
     patch assign_follow_up_path(follow_up), params: { assigned_to_id: users(:two).id }

@@ -87,10 +87,22 @@
     <% end %>
 
     <% unless @follow_up.resolved? %>
+      <%# @note_errors/@note_body are set only when a note submission failed: show
+          the error inline and keep what was typed, rather than dropping it. %>
       <%= form_with url: follow_up_notes_path(@follow_up), class: "follow-up-note-form" do |f| %>
+        <% if @note_errors %>
+          <div class="form-errors" role="alert">
+            <strong><%= pluralize(@note_errors.count, "error") %> kept this note from saving:</strong>
+            <ul>
+              <% @note_errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
         <div class="field">
           <%= label_tag "follow_up_note[body]", "Add a note" %>
-          <%= text_area_tag "follow_up_note[body]", nil, rows: 2, required: true %>
+          <%= text_area_tag "follow_up_note[body]", @note_body, rows: 2, required: true %>
         </div>
         <div class="follow-up-note-form-footer">
           <%= submit_tag "Post note", class: "button small" %>
