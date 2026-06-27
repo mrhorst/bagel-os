@@ -36,7 +36,7 @@
         <tr>
           <th>Section</th>
           <th>Type</th>
-          <th>Sort</th>
+          <th class="numeric">Sort</th>
           <th>Status</th>
           <th class="numeric">Used in</th>
           <th></th>
@@ -53,7 +53,7 @@
               <% end %>
             </td>
             <td data-label="Type"><%= section.section_type.humanize %></td>
-            <td data-label="Sort"><%= section.position %></td>
+            <td class="numeric" data-label="Sort"><%= section.position %></td>
             <td data-label="Status"><%= section.active? ? "Active" : "Archived" %></td>
             <td class="numeric" data-label="Used in">
               <%= pluralize(usage_count, "entry") %>
