@@ -112,4 +112,27 @@ class LogBookSectionMultiInputTest < ApplicationSystemTestCase
     # Two saved inputs render two rows — the empty-list starter must not add a third.
     assert_selector ".log-book-fields-row", count: 2
   end
+
+  test "the section's last input row cannot be removed into an empty list" do
+    visit new_log_book_section_path
+
+    select "Multi-input (grid)", from: "Input type"
+
+    # One starter row, and its remove (×) is hidden — deleting the only input
+    # would strand the section with the empty Inputs list (no row to fill) that
+    # the seeded starter row exists to prevent.
+    assert_selector ".log-book-fields-row", count: 1
+    assert_no_selector ".log-book-fields-row-remove", visible: true
+
+    # A second row makes both rows removable.
+    click_on "+ Add input"
+    assert_selector ".log-book-fields-row", count: 2
+    assert_selector ".log-book-fields-row-remove", count: 2, visible: true
+
+    # Removing one drops back to a single row — never zero — and the lone row's
+    # × hides again, so the list can't be emptied from the UI.
+    first(".log-book-fields-row-remove", visible: true).click
+    assert_selector ".log-book-fields-row", count: 1
+    assert_no_selector ".log-book-fields-row-remove", visible: true
+  end
 end
