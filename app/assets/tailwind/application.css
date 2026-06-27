@@ -846,7 +846,12 @@
   }
   .follow-up-card:hover { background: color-mix(in oklch, var(--surface-3) 60%, var(--surface-2)); }
   .follow-up-card-head {
-    align-items: center;
+    /* Baseline-align the title and its trailing urgency badge — the same
+       convention as .task-card-title / .manage-stack-group-header. With
+       `center`, a title that wraps to two lines (the common case on mobile)
+       floated the badge to the vertical middle of the block, detaching it from
+       the first line it labels; baseline keeps the badge tracking that line. */
+    align-items: baseline;
     display: flex;
     gap: 10px;
     justify-content: space-between;
