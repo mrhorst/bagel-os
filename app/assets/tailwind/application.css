@@ -1192,6 +1192,17 @@
     border-radius: var(--radius-md);
     padding: 14px;
   }
+  /* The card title links to the guide, but a card heading is a heading, not a
+     link — keep it dark ink like every other panel/card title (and like the
+     same guide name in the "Named guides" table above) instead of falling
+     through to the blue link colour. The adjacent "Open" button carries the
+     affordance, so the title stays clickable without competing for it. */
+  .guide-card h3 a {
+    color: inherit;
+  }
+  .guide-card h3 a:hover {
+    text-decoration: none;
+  }
 
   .panel-heading,
   .review-main {
