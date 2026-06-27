@@ -21,7 +21,7 @@
         <tr>
           <td class="row-heading" data-label="Report"><%= report.humanize %> <code><%= report %>.csv</code></td>
           <td data-label="Description"><%= report_description(report) %></td>
-          <td class="numeric" data-label=""><%= link_to "Download", report_path(report), class: "button" %></td>
+          <td class="numeric"><%= link_to "Download", report_path(report), class: "button" %></td>
         </tr>
       <% end %>
     </tbody>
