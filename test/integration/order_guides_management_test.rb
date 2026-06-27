@@ -339,6 +339,35 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "All guides"
   end
 
+  test "each inline primary-guide select on master inventory has a unique, label-associated id" do
+    # The form partial renders once per item, so the select must carry an
+    # item-scoped id. A shared id="order_guide_id" across rows is invalid HTML
+    # (duplicate ids) and breaks the sr-only label: <label for="order_guide_id">
+    # only ever points at the first select, leaving every other guide control
+    # unlabeled for assistive tech.
+    guide = OrderGuide.create!(name: "Weekly")
+    section = InventorySection.create!(name: "Dairy", position: 1)
+    %w[Milk Cream Butter].each_with_index do |name, i|
+      InventoryItem.create!(name: name, key: name.downcase, inventory_section: section, position: i + 1)
+    end
+
+    get inventory_items_path
+    assert_response :success
+
+    select_ids = css_select("select.compact-select").map { |node| node["id"] }
+    assert_operator select_ids.size, :>=, 3, "expected one guide select per item"
+    assert_equal select_ids.size, select_ids.uniq.size, "guide select ids must be unique per row"
+
+    # Every select must still post the value the controller reads.
+    assert select_ids.size == css_select("select[name='order_guide_id']").size
+
+    # ...and each one must be reachable from a label that names it.
+    label_targets = css_select("label.sr-only").map { |node| node["for"] }
+    select_ids.each do |id|
+      assert_includes label_targets, id, "select ##{id} has no associated label"
+    end
+  end
+
   test "changing primary guide from master inventory reactivates membership" do
     guide = OrderGuide.create!(name: "Every 2 weeks")
     item = InventoryItem.create!(name: "Napkins", key: "napkins")
