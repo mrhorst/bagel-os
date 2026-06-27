@@ -60,5 +60,11 @@
   <article class="panel empty-state">
     <strong>No tags yet.</strong>
     <span>Add the first one to start filing photos.</span>
+    <%# Put the primary action where attention lands on the empty first-run
+        screen, matching the embedded empty-state CTA on Follow-ups, the Photo
+        library, and Tasks. hide-for-fab keeps it desktop-only: on mobile the
+        page-heading "New tag" button already renders full-width at the top, so
+        an inline copy here would be a duplicate CTA. %>
+    <%= link_to "New tag", new_admin_tag_path, class: "button primary hide-for-fab" %>
   </article>
 <% end %>
