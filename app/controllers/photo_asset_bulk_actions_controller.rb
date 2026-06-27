@@ -68,6 +68,7 @@ class PhotoAssetBulkActionsController < ApplicationController
     return [ :alert, "Choose a collection." ] if collection.nil?
 
     next_position = (collection.collection_memberships.maximum(:position) || 0)
+    added = 0
     assets.find_each do |asset|
       membership = collection.collection_memberships.find_or_initialize_by(photo_asset: asset)
       next unless membership.new_record?
@@ -75,8 +76,17 @@ class PhotoAssetBulkActionsController < ApplicationController
       membership.added_by = Current.user
       membership.position = (next_position += 1)
       membership.save!
+      added += 1
     end
-    [ :notice, "Added #{pluralize_photos(assets.count)} to #{collection.name}." ]
+
+    # Report what actually changed, not how many were selected: photos already
+    # in the collection are skipped above, so counting the whole selection would
+    # claim a fresh add that never happened.
+    if added.zero?
+      [ :notice, "Those photos are already in #{collection.name}." ]
+    else
+      [ :notice, "Added #{pluralize_photos(added)} to #{collection.name}." ]
+    end
   end
 
   def pluralize_photos(count)

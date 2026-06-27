@@ -70,6 +70,30 @@ class PhotoAssetBulkActionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "adding to a collection reports the number actually added, not the number selected" do
+    sign_in_as(users(:one))
+    already_in, fresh = create_asset, create_asset
+    collections(:summer).collection_memberships.create!(photo_asset: already_in)
+
+    post bulk_actions_photo_assets_path, params: { bulk_action: "add_to_collection", collection_id: collections(:summer).id, photo_asset_ids: [ already_in.id, fresh.id ] }
+
+    # Only `fresh` is a new membership; the notice must count that one, not both.
+    assert_nil flash[:alert]
+    assert_match(/Added 1 photo to/, flash[:notice])
+  end
+
+  test "adding only already-present photos says so instead of claiming a fresh add" do
+    sign_in_as(users(:one))
+    asset = create_asset
+    collections(:summer).collection_memberships.create!(photo_asset: asset)
+
+    post bulk_actions_photo_assets_path, params: { bulk_action: "add_to_collection", collection_id: collections(:summer).id, photo_asset_ids: [ asset.id ] }
+
+    assert_nil flash[:alert]
+    assert_no_match(/Added 1 photo/, flash[:notice])
+    assert_match(/already in/, flash[:notice])
+  end
+
   test "applying with no tag chosen warns via alert, not a success notice" do
     sign_in_as(users(:one))
     asset = create_asset
