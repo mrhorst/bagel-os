@@ -53,6 +53,10 @@ Use the default five-label triage vocabulary. See `docs/agents/triage-labels.md`
 
 This is a single-context Rails app with root `CONTEXT.md` and ADRs in `docs/adr/`. See `docs/agents/domain.md`.
 
+### Agent CLI
+
+`bin/agent` gives agents read-only, JSON access to domain data (tasks, inventory gaps, prices, reviews) without scraping HTML. See `docs/agents/agent-cli.md`.
+
 ### Production observability & self-healing
 
 A scheduled error-triage routine watches production (raw logs and/or a self-hosted GlitchTip) and turns real errors into fix PRs that `pr-watcher` merges. See `docs/deployment/observability.md` and `docs/agents/error-triage-routine.md`.
