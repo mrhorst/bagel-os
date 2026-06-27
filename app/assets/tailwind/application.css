@@ -684,7 +684,12 @@
   .topbar-account-name {
     font-size: 0.85rem;
     font-weight: 500;
-    max-width: 14ch;
+    /* Cap only pathologically long names/emails. The earlier 14ch cut a
+       standard-length email (e.g. "name@example.com") mid-string even though
+       the topbar has ample free width, so the user's own identifier read as
+       truncated for no reason; 24ch fits typical emails and still ellipsizes
+       the genuinely long ones. */
+    max-width: 24ch;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
