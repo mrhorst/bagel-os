@@ -11,6 +11,8 @@ module Agents
         "  --date YYYY-MM-DD   Report for a past day instead of today",
         "  --list <name>       Only occurrences whose list name matches (case-insensitive)"
       )
+      param :date, type: "date", desc: "Report for a past day instead of today"
+      param :list, desc: "Only occurrences whose list name matches (case-insensitive)"
 
       def call
         operating_day = operating_day_for_date

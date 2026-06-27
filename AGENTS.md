@@ -55,7 +55,7 @@ This is a single-context Rails app with root `CONTEXT.md` and ADRs in `docs/adr/
 
 ### Agent CLI
 
-`bin/agent` gives agents read-only, JSON access to domain data (tasks, inventory gaps, prices, reviews) without scraping HTML. See `docs/agents/agent-cli.md`.
+`bin/agent` gives agents JSON access to domain data (tasks, inventory gaps, prices, reviews) and a few guarded write actions (complete/undo tasks) for voice-driven flows. Start with `bin/agent schema`. See `docs/agents/agent-cli.md`.
 
 ### Production observability & self-healing
 

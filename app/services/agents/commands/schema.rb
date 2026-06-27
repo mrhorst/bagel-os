@@ -1,0 +1,28 @@
+module Agents
+  module Commands
+    # The machine-readable command catalog. An agent reads this once to learn
+    # what it can do, then maps a transcribed voice request to a command name
+    # and arguments. `mutates` flags which commands change state so the agent
+    # can confirm before acting (and prefer --dry-run when unsure).
+    class Schema < Command
+      command "schema"
+      summary "Machine-readable catalog of every command (for mapping intent)"
+
+      def call
+        {
+          envelope: {
+            success: "stdout: { ok: true, command, generated_at, data }",
+            failure: "stderr + exit 1: { ok: false, command, error: { type, message } }",
+            error_types: %w[unknown_command usage_error not_found ambiguous error],
+            money: "decimal values are JSON strings to avoid float rounding"
+          },
+          global_options: [
+            { name: "compact", type: "boolean", desc: "Single-line JSON" },
+            { name: "dry-run", type: "boolean", desc: "On mutating commands, resolve and report what would happen without writing" }
+          ],
+          commands: Cli::REGISTRY.map(&:to_schema)
+        }
+      end
+    end
+  end
+end

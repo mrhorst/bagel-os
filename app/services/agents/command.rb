@@ -16,6 +16,18 @@ module Agents
     # Raised when a looked-up record does not exist.
     class NotFoundError < StandardError; end
 
+    # Raised when a fuzzy reference (e.g. --task "cheese") matches more than one
+    # record. Carries the candidates so the CLI can hand them back and the agent
+    # can ask the user which one — rather than guessing.
+    class AmbiguousError < StandardError
+      attr_reader :candidates
+
+      def initialize(message, candidates:)
+        super(message)
+        @candidates = candidates
+      end
+    end
+
     class << self
       def command(name = nil)
         @command = name if name
@@ -30,6 +42,31 @@ module Agents
       def usage(*lines)
         @usage = lines unless lines.empty?
         @usage || []
+      end
+
+      # Declares this command changes state. Read commands omit it.
+      def mutates!
+        @mutates = true
+      end
+
+      def mutates?
+        @mutates == true
+      end
+
+      # Structured parameter metadata, surfaced by `bin/agent schema` so an
+      # agent can translate transcribed intent into a valid invocation.
+      #   param :query, positional: true, required: true, desc: "..."
+      #   param :limit, type: "integer", desc: "..."
+      def param(name, type: "string", required: false, positional: false, desc: nil)
+        params << { name: name.to_s, type: type, required: required, positional: positional, desc: desc }
+      end
+
+      def params
+        @params ||= []
+      end
+
+      def to_schema
+        { command: command, summary: summary, mutates: mutates?, params: params }
       end
     end
 

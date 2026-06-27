@@ -9,6 +9,7 @@ module Agents
         "Options:",
         "  --limit N   Cap the number of reviews returned (default 50)"
       )
+      param :limit, type: "integer", desc: "Cap the number of reviews returned (default 50)"
 
       def call
         limit = options.integer("limit", 50)

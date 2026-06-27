@@ -34,9 +34,11 @@ Failures print an envelope to **stderr** and exit non-zero (status `1`):
 }
 ```
 
-Error `type` is one of `unknown_command`, `usage_error`, `not_found`, `error`.
-This split (data on stdout, errors on stderr, exit codes) lets a caller pipe
-stdout straight into a JSON parser and branch on the exit status.
+Error `type` is one of `unknown_command`, `usage_error`, `not_found`,
+`ambiguous`, `error`. An `ambiguous` error also carries a `candidates` array
+(see "Voice workflow" below). This split (data on stdout, errors on stderr,
+exit codes) lets a caller pipe stdout straight into a JSON parser and branch on
+the exit status.
 
 Money and decimal values serialize as **strings** so consumers never inherit
 float rounding error on prices.
@@ -46,12 +48,14 @@ float rounding error on prices.
 | Option        | Effect                              |
 | ------------- | ----------------------------------- |
 | `--compact`   | Single-line JSON instead of pretty  |
+| `--dry-run`   | On a mutating command, resolve and report what *would* happen without writing |
 | `--help`, `-h`| Print a command's usage and exit 0  |
 
-## Commands
+## Read commands
 
 | Command                | What it returns |
 | ---------------------- | --------------- |
+| `schema`               | Machine-readable catalog of every command, its params, and a `mutates` flag. The first thing a voice agent reads. |
 | `tasks:today`          | Late/open/completed/missed counts and the actionable occurrences for today. `--date YYYY-MM-DD` for a past day, `--list <name>` to filter by list. |
 | `tasks:history`        | Recent task completions. `--days N` (default 7), `--limit N` (default 100), `--include-undone`. |
 | `inventory:gaps`       | Purchased products not covered by any order guide. `--limit N` (default 25). |
@@ -60,16 +64,50 @@ float rounding error on prices.
 | `products:search`      | Products matching a name or raw alias. `--limit N` (default 25). |
 | `reviews:pending`      | Open normalization reviews awaiting a human decision. `--limit N` (default 50). |
 | `purchasing:dashboard` | Top-line purchasing KPIs: spend, counts, category/supplier breakdown. |
+| `staff:list`           | Users a completion can be attributed to (resolve "complete as Maria"). |
+
+## Mutating commands
+
+These change state and are flagged `mutates: true` in `schema`. Both accept
+`--dry-run` to preview the resolution first.
+
+| Command          | What it does |
+| ---------------- | ------------ |
+| `tasks:complete` | Completes a task occurrence via `Tasks::CompleteOccurrence`. Target with `--occurrence <id>` or `--task <fuzzy title>`; attribute with `--user <email\|name\|id>` (required); optional `--notes`. Photo-required tasks are refused (no image to attach from a CLI). |
+| `tasks:undo`     | Undoes today's completion of an occurrence (`Tasks::UndoCompletion`). Same targeting/attribution; optional `--note`. |
 
 Run `bin/agent help <command>` for per-command options.
 
+## Voice workflow
+
+The intended loop for a transcribed voice request — e.g. *"mark sweep front of
+house done, this is Maria"*:
+
+1. **Learn the surface.** `bin/agent schema` once — the agent now knows every
+   command, its params, and which ones mutate.
+2. **Read for context.** `bin/agent tasks:today` (and `staff:list` to resolve
+   the speaker) so the agent acts on the right record at the right place.
+3. **Resolve, don't guess.** Pass the spoken phrase as `--task "sweep front"`.
+   Fuzzy targeting matches it against *today's actual occurrences*. If it's
+   ambiguous the command fails with `type: "ambiguous"` and a `candidates`
+   list — the agent asks the user which one rather than picking blindly.
+4. **Confirm then commit.** `--dry-run` returns the resolved target so the
+   agent can read it back ("I'll mark *Sweep front of house* done as Maria —
+   ok?"); drop the flag to execute.
+
+Every domain guard still applies because the commands call the same services
+the UI does: already-completed, missed-window, photo-required, and the
+same-operating-day undo rule are all enforced server-side, not in the CLI.
+
 ## Design notes
 
-- **Read-only by design.** Commands are side-effect free so an agent can call
-  them freely while reasoning. `tasks:today` is the one exception worth knowing:
-  it runs `OccurrenceBuilder` to materialize the day's occurrences, exactly as
-  the Tasks dashboard does — that is the established read path, not a mutation of
-  domain decisions.
+- **Reads are side-effect free; writes go through the real services.** Read
+  commands let an agent reason freely. The two mutating commands
+  (`tasks:complete`, `tasks:undo`) call the same `Tasks::*` services the
+  controllers use, so domain guards can't be bypassed from the CLI. They are
+  flagged `mutates: true` in `schema` and support `--dry-run`. (Note: even some
+  reads run `OccurrenceBuilder` to materialize a day's occurrences, exactly as
+  the dashboard does — an established read path, not a domain mutation.)
 - **Reuse over reinvention.** Each command wraps an existing service or model
   scope (`Purchasing::InventoryGapAnalyzer`, `PriceObservation.spikes`,
   `Tasks::TaskMetrics`, …) so the CLI and the UI can't drift apart.

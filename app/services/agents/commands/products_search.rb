@@ -11,6 +11,8 @@ module Agents
         "Options:",
         "  --limit N   Cap the number of products returned (default 25)"
       )
+      param :query, positional: true, required: true, desc: "Name or raw alias to search for"
+      param :limit, type: "integer", desc: "Cap the number of products returned (default 25)"
 
       def call
         query = options.positional(0)

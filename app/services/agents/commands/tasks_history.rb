@@ -11,6 +11,9 @@ module Agents
         "  --limit N       Cap the number of completions returned (default 100)",
         "  --include-undone  Include undone completions (default: active only)"
       )
+      param :days, type: "integer", desc: "How many days back to include (default 7)"
+      param :limit, type: "integer", desc: "Cap the number of completions returned (default 100)"
+      param :"include-undone", type: "boolean", desc: "Include undone completions"
 
       def call
         days = options.integer("days", 7)

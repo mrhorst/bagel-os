@@ -11,6 +11,8 @@ module Agents
         "Options:",
         "  --id N   Resolve by product id instead of a name query"
       )
+      param :name, positional: true, desc: "Product name query (or use --id)"
+      param :id, type: "integer", desc: "Resolve by product id instead of a name query"
 
       def call
         product = ProductLookup.resolve(id: options.value("id"), query: options.positional(0))

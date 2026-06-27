@@ -16,6 +16,7 @@ module Agents
     # here (rather than scanning) keeps the surface explicit and lets Zeitwerk
     # autoload each command on reference.
     REGISTRY = [
+      Commands::Schema,
       Commands::TasksToday,
       Commands::TasksHistory,
       Commands::InventoryGaps,
@@ -23,7 +24,10 @@ module Agents
       Commands::PriceProduct,
       Commands::ProductsSearch,
       Commands::ReviewsPending,
-      Commands::PurchasingDashboard
+      Commands::PurchasingDashboard,
+      Commands::StaffList,
+      Commands::TasksComplete,
+      Commands::TasksUndo
     ].freeze
 
     def self.run(argv, out: $stdout, err: $stderr)
@@ -61,6 +65,8 @@ module Agents
       fail!(name, "usage_error", e.message)
     rescue Command::NotFoundError => e
       fail!(name, "not_found", e.message)
+    rescue Command::AmbiguousError => e
+      fail!(name, "ambiguous", e.message, details: { candidates: e.candidates })
     rescue => e
       fail!(name, "error", "#{e.class}: #{e.message}")
     end
@@ -87,8 +93,10 @@ module Agents
       @out.puts(json)
     end
 
-    def fail!(name, type, message)
-      payload = { ok: false, command: name, error: { type: type, message: message } }
+    def fail!(name, type, message, details: nil)
+      error = { type: type, message: message }
+      error.merge!(details) if details
+      payload = { ok: false, command: name, error: error }
       @err.puts(JSON.pretty_generate(payload))
       1
     end
