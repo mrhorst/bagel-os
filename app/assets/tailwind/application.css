@@ -1488,6 +1488,12 @@
     min-height: 64px;
     width: 100%;
     box-sizing: border-box;
+    /* The field auto-grows with its content (field-sizing: content, capped at
+       max-height), so the native drag-resize handle is redundant — and on a
+       width:100% field its horizontal axis is meaningless. Drop it so the
+       textarea self-manages its height and the bottom-right grip stops
+       cluttering the stacked daily-entry form. */
+    resize: none;
   }
 
   /* Per-section error highlight on the log book entry form */
