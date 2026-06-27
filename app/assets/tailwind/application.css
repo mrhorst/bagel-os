@@ -1999,6 +1999,21 @@
   }
   .guide-workflow-card .button-row .button:last-child {
     grid-column: 1 / -1;
+    /* "Setup" is per-guide configuration — opened far less often than the two
+       everyday operational actions (Count / Buy list) paired above it — yet the
+       full-width row (kept so it never orphans) was handing the lowest-frequency
+       action the largest, heaviest button on the card. Drop its fill so it stops
+       popping off the --surface-3 card the way the two filled actions do and
+       recedes to a quiet outline button; visual weight now tracks how often the
+       action is used. The label stays --ink-2 (AA on --surface-3, where
+       --ink-muted would fail) so it remains clearly legible, and hover restores
+       the filled state so the affordance is unmistakable on interaction. */
+    background: transparent;
+    color: var(--ink-2);
+  }
+  .guide-workflow-card .button-row .button:last-child:hover {
+    background: var(--surface-2);
+    color: var(--ink);
   }
 
   /* ── Forms ────────────────────────────────────────────────────────── */
