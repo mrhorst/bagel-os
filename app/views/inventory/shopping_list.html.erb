@@ -23,7 +23,11 @@
       <%= link_to "Start count", new_inventory_count_path(order_guide_id: @order_guide.id), class: "button primary" %>
       <%= link_to "Guide setup", order_guide_path(@order_guide), class: "button" %>
     <% else %>
-      <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
+      <%# No guide chosen yet → the screen's sole job is picking a guide (the
+          cards below), so this is a cross-flow shortcut, not the primary action.
+          Keep it a secondary button so the accent stays reserved for a screen's
+          one primary action (matches the sibling New Count screen's header). %>
+      <%= link_to "New count", new_inventory_count_path, class: "button" %>
     <% end %>
   </div>
 </div>
