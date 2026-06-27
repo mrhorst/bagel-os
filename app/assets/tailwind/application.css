@@ -3042,6 +3042,16 @@
     white-space: nowrap;
   }
 
+  /* The "Not completed" placeholder is two short words that still wrapped to two
+     lines in every incomplete row (the dominant case), starved by the same
+     seven-column layout. Keep just the placeholder on one line; the genuinely
+     long "Completed by … at …" summary is plain text (not .muted), so completed
+     rows stay free to wrap and are unaffected. Desktop table only — the mobile
+     stacked card already gives the value its own full-width line. */
+  .history-table td[data-label="Completion"] .muted {
+    white-space: nowrap;
+  }
+
   /* ── Segmented control ────────────────────────────────────────────── */
   .segmented {
     display: flex;
