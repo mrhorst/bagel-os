@@ -26,11 +26,13 @@
       <%= label_tag "photo_asset_camera_photo", "Take a photo" %>
       <%= file_field_tag "photo_asset[camera_photo]", id: "photo_asset_camera_photo",
             accept: "image/*", capture: "environment" %>
+      <p class="field-hint">On a phone this opens the camera, one shot at a time.</p>
     </div>
     <div class="field">
       <%= label_tag "photo_asset_photos", "Or choose from your library" %>
       <%= file_field_tag "photo_asset[photos][]", id: "photo_asset_photos",
             accept: "image/*", multiple: true %>
+      <p class="field-hint">Pick one or more images you already have. You can use both fields together.</p>
     </div>
     <%= form.submit "Add to library", class: "button primary" %>
   <% end %>
