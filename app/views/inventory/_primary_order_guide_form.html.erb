@@ -1,10 +1,17 @@
+<%# This partial renders once per inventory item, so the select needs an
+    item-scoped id. Without it every row emits the same id="order_guide_id"
+    (collection_select derives the id from the attribute name), producing
+    dozens of duplicate ids on /inventory/items and on a product's show page —
+    invalid HTML, and the sr-only label only ever associates with the FIRST
+    select, leaving every other guide control unlabeled for assistive tech. %>
+<% field_id = "primary_order_guide_#{item.id}" %>
 <%= form_with url: inventory_item_primary_order_guide_path(item), method: :patch, class: "inline-guide-form" do |form| %>
-  <%= form.label :order_guide_id, "Primary guide", class: "sr-only" %>
+  <%= form.label :order_guide_id, "Primary guide", for: field_id, class: "sr-only" %>
   <%= form.collection_select :order_guide_id,
     order_guides,
     :id,
     :name,
     { include_blank: "No primary guide", selected: item.primary_order_guide&.id },
-    { class: "compact-select" } %>
+    { id: field_id, class: "compact-select" } %>
   <%= form.submit "Save", class: "button small" %>
 <% end %>
