@@ -46,6 +46,7 @@
       </div>
     <% else %>
       <p class="empty-state">Create an order guide before generating a shopping list.</p>
+      <%= link_to "Create order guide", order_guides_path, class: "button primary" %>
     <% end %>
   </section>
 <% else %>
