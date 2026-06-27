@@ -1956,8 +1956,22 @@
     background: var(--ink);
   }
 
+  /* The three guide actions (Count / Buy list / Setup) overflow a narrow guide
+     card and wrap 2-then-1 under the base .button-row flex, orphaning "Setup" on
+     its own line as if the layout had broken. Lay them out deliberately instead:
+     the two operational actions pair on the first row, and the lower-frequency
+     "Setup" (configuration) spans the row beneath them — a stable two-tier footer
+     at every card width, in both the desktop two-up grid and the full-width
+     mobile card. Scoped to guide cards, so the shared .button-row elsewhere is
+     untouched. */
   .guide-workflow-card .button-row {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 1fr 1fr;
     margin-top: 12px;
+  }
+  .guide-workflow-card .button-row .button:last-child {
+    grid-column: 1 / -1;
   }
 
   /* ── Forms ────────────────────────────────────────────────────────── */
