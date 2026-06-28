@@ -140,6 +140,18 @@
                       action: "change->log-book-autosave#queue input->log-book-autosave#queue" } do %>
           <%= hidden_field_tag :operating_date, @operating_date.iso8601 %>
 
+          <%# Shown by log_book_autosave_controller only when an unsaved draft
+              from a failed save is still kept in this browser. The kept copy is
+              never auto-applied (it could clobber a newer entry saved elsewhere)
+              and is preserved until the user restores it or a save succeeds — so
+              a failed-save entry is recoverable instead of write-only. %>
+          <div class="log-book-draft-recovery" data-log-book-autosave-target="recovery" role="status" hidden>
+            <p>Unsaved work from a failed save is still kept in this browser.</p>
+            <button type="button" class="button small" data-action="log-book-autosave#restoreDraft">
+              Restore unsaved work
+            </button>
+          </div>
+
           <% @sections.each do |section| %>
             <%= render "log_book/section_card",
                   section: section,

@@ -1529,6 +1529,24 @@
   .log-book-save-status-error { color: var(--danger-fg); }
   .log-book-save-status-idle { color: var(--ink-muted); }
 
+  .log-book-draft-recovery {
+    align-items: center;
+    background: var(--danger-soft);
+    border: 1px solid color-mix(in oklch, var(--danger) 24%, transparent);
+    border-radius: var(--radius-md);
+    box-shadow: inset 2px 0 0 var(--danger);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+  }
+  .log-book-draft-recovery p {
+    color: var(--ink);
+    margin: 0;
+  }
+
   /* Visually distinct from .check (which is a checkbox). A radio inside a
      label gets a slightly tighter feel and a subtle border treatment so the
      user can tell at a glance that only one in the group is selectable. */
