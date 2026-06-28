@@ -54,6 +54,12 @@
   <article class="panel empty-state">
     <strong>No collections yet.</strong>
     <span>Create one to group a campaign or shoot — a seasonal set, an album, the new menu.</span>
+    <%# Put the primary action where attention lands on the empty first-run
+        screen, matching the embedded empty-state CTA on the Photo library
+        sibling (and Follow-ups, Tasks, Products). hide-for-fab keeps it
+        desktop-only (desktop has no FAB), so mobile still surfaces a single
+        "New collection" CTA via the FAB below. %>
+    <%= link_to "New collection", new_collection_path, class: "button primary hide-for-fab" %>
   </article>
 <% end %>
 
