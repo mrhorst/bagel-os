@@ -2167,12 +2167,16 @@
   /* Guide carries the select + Save control (floored ~240px); the three
      short-data columns get just enough for their headers; Item and Receipt
      product are left to split the remainder equally — the two text columns
-     stay the widest while every section lines up on the same column axes. */
+     stay the widest while every section lines up on the same column axes.
+     "Pack / count note" is the longest of the three short headers, so it needs
+     a touch more room than the others to keep its label on a single line —
+     otherwise it wraps to two lines and drops below the single-line headers
+     beside it, breaking the header row's shared top baseline. */
   .inventory-section-table th:nth-child(2) {
     width: 280px;
   } /* Guide (select + Save) */
   .inventory-section-table th:nth-child(4) {
-    width: 14%;
+    width: 16%;
   } /* Pack / count note */
   .inventory-section-table th:nth-child(5) {
     width: 11%;
