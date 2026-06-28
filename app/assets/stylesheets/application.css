@@ -460,6 +460,13 @@ textarea {
   min-width: 220px;
 }
 
+.inline-form-error {
+  color: #b3261e;
+  font-size: 0.82rem;
+  margin: 6px 0 0;
+  max-width: 220px;
+}
+
 .compact-input,
 .compact-select {
   min-height: 34px;

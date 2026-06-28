@@ -2096,6 +2096,12 @@
     gap: 8px;
     min-width: 220px;
   }
+  .inline-form-error {
+    color: var(--danger-fg);
+    font-size: 0.82rem;
+    margin: 6px 0 0;
+    max-width: 220px;
+  }
   .compact-input,
   .compact-select {
     min-height: 32px;

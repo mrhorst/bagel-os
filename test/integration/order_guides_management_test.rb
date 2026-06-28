@@ -69,6 +69,23 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_equal 1, OrderGuide.where(name: "Daily").count
   end
 
+  test "renaming a guide onto another guide's name is blocked in place, not silently duplicated" do
+    OrderGuide.create!(name: "Daily")
+    weekly = OrderGuide.create!(name: "Weekly")
+
+    patch order_guide_path(weekly), params: { order_guide: { name: "Daily" } }
+
+    # The rename must be rejected with the same recoverable message the create
+    # form gives — not silently succeed and leave two "Daily" guides. The index
+    # re-renders in place with the attempted name and an inline error.
+    assert_response :unprocessable_entity
+    assert_select ".inline-form-error", text: /A guide named "Daily" already exists\. Pick a different name\./
+    assert_select "form[action=?] input[name=?][value=?]",
+      order_guide_path(weekly), "order_guide[name]", "Daily"
+    assert_equal "Weekly", weekly.reload.name
+    assert_equal 1, OrderGuide.where(name: "Daily").count
+  end
+
   test "creating a guide with a blank name re-renders with the error and keeps the typed notes" do
     post order_guides_path, params: {
       order_guide: { name: "", notes: "Weekend prep — confirm the delivery window with the opener." }
