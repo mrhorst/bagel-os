@@ -26,7 +26,15 @@
   <section class="review-focus" aria-label="Current review">
     <div class="review-focus-progress">
       <span><strong>Review <%= @position %></strong> of <%= @pending_count %></span>
-      <%= button_to "Skip", skip_normalization_review_path(@current_review), method: :patch, class: "button small" %>
+      <%# Skip only makes sense when there's another review to rotate to. With a
+          single pending review, skipping wraps straight back to the same card
+          (pending.where.not(id: skipped).first falls back to pending.first in
+          the controller), so the button is a no-op whose "it'll come back
+          around at the end of the queue" flash misleads. Gate it on the same
+          @pending_count > 1 the "Show all" link already uses. %>
+      <% if @pending_count > 1 %>
+        <%= button_to "Skip", skip_normalization_review_path(@current_review), method: :patch, class: "button small" %>
+      <% end %>
     </div>
     <%= render "review_card", review: @current_review, products: @products, categories: @categories %>
   </section>

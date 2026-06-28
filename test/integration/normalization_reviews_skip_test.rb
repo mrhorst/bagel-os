@@ -38,4 +38,28 @@ class NormalizationReviewsSkipTest < ActionDispatch::IntegrationTest
       "otherwise the page reloads (the same card, when it's the only pending review) with no feedback."
     assert_equal "pending", @review.reload.status
   end
+
+  test "focus mode hides Skip when it is the only pending review" do
+    # With a single pending review there is nothing to skip to: the controller
+    # wraps straight back to the same card (pending.where.not(id:…).first falls
+    # back to pending.first), so the button is a no-op whose flash claims the
+    # row will "come back around at the end of the queue" when it never left.
+    # It must not be offered — same gate the "Show all" link already uses.
+    get normalization_reviews_path
+
+    assert_select ".review-focus-progress", 1
+    assert_select ".review-focus-progress button", text: "Skip", count: 0,
+      message: "Skip must not render when it is the only pending review — it can only re-show the same card."
+  end
+
+  test "focus mode offers Skip when more than one review is pending" do
+    @line_item.normalization_reviews.create!(
+      issue_type: "unit_parse",
+      description: "Needs unit review."
+    )
+    get normalization_reviews_path
+
+    assert_select ".review-focus-progress button", text: "Skip",
+      message: "Skip should be available once there is another review to rotate to."
+  end
 end
