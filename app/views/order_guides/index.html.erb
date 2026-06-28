@@ -13,7 +13,13 @@
     <p>Named operating lists for purchasing, counted inventory, and staff ordering workflows.</p>
   </div>
   <div class="actions">
-    <%= link_to "CSV example", csv_example_order_guides_path, class: "button small" %>
+    <%# Fetch-and-share via download_controller so a same-window attachment nav
+        can't strand an installed PWA on a chrome-less page. target=_blank is the
+        no-JS fallback. See download_controller.js. %>
+    <%= link_to "CSV example", csv_example_order_guides_path,
+          class: "button small", target: "_blank", rel: "noopener",
+          data: { controller: "download", action: "download#save",
+                  download_filename_value: "order-guide-import-example.csv" } %>
     <%= link_to "Inventory", inventory_path, class: "button small" %>
   </div>
 </div>
@@ -65,10 +71,18 @@
             <td data-label="Status"><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
             <td data-label="Items"><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
             <td data-label="Rename">
-              <%= form_with model: guide, class: "inline-guide-form" do |form| %>
+              <%# When a rename is rejected (e.g. a duplicate name) the controller
+                  re-renders this index with the failed guide in @order_guide; use
+                  it for this row so the field keeps the attempted name and the
+                  error shows inline instead of the fresh stored value. %>
+              <% rename_guide = (@order_guide if @order_guide&.id == guide.id) || guide %>
+              <%= form_with model: rename_guide, class: "inline-guide-form" do |form| %>
                 <%= form.label :name, "Guide name", class: "sr-only" %>
-                <%= form.text_field :name, value: guide.name, class: "compact-input" %>
+                <%= form.text_field :name, value: rename_guide.name, class: "compact-input" %>
                 <%= form.submit "Save", class: "button small" %>
+              <% end %>
+              <% if rename_guide.errors.any? %>
+                <p class="inline-form-error" role="alert"><%= rename_guide.errors.full_messages.to_sentence %></p>
               <% end %>
             </td>
             <td data-label="Archive">

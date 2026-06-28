@@ -93,4 +93,4 @@ To verify recurring tasks are loaded by Solid Queue, check the production queue 
 
 ## Failure Behavior
 
-If the agent gateway is unavailable or returns invalid JSON, the app keeps working and falls back to the deterministic task briefing. The dashboard will still show an AI recommendation panel when a saved briefing exists.
+If the agent gateway is unavailable or returns invalid JSON, the app keeps working and falls back to the deterministic task briefing. The Tasks dashboard will still show the briefing when a saved one exists. (The home dashboard no longer surfaces an AI recommendation panel.)

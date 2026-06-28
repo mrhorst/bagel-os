@@ -1,0 +1,23 @@
+<% content_for :title, "New recipe" %>
+
+<%# The layout's auto back-chevron points a module page at its hub (Stock); send
+    it up one level to the recipes index this form is reached from instead. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to recipes_path, class: "mobile-header-back", aria: { label: "Back to recipes" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Recipes</span>
+  <% end %>
+<% end %>
+
+<section class="page-heading">
+  <div>
+    <h1>New recipe</h1>
+    <p>Name the recipe — you'll add ingredient lines from it next.</p>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= render "form", recipe: @recipe %>
+</article>
