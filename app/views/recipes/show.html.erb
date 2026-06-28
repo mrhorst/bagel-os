@@ -48,6 +48,7 @@
           <th>Ingredient</th>
           <th>Amount</th>
           <th>Unit</th>
+          <th class="numeric">Est. cost</th>
           <th>Edit</th>
           <th>Remove</th>
         </tr>
@@ -58,6 +59,7 @@
               invalid instance so the row keeps the typed values and shows the
               error instead of reverting. %>
           <% row = (@editing_ingredient if @editing_ingredient&.id == ingredient.id) || ingredient %>
+          <% line_cost = @costing.cost_for(ingredient) %>
           <tr>
             <td class="row-heading" data-label="Ingredient">
               <%= ingredient.display_name %>
@@ -65,6 +67,15 @@
             </td>
             <td data-label="Amount" class="tnum"><%= compact_decimal(ingredient.quantity) %></td>
             <td data-label="Unit"><%= ingredient.unit.presence || "—" %></td>
+            <td data-label="Est. cost" class="numeric">
+              <% if line_cost&.costed? %>
+                <span class="tnum"><%= money(line_cost.cost) %></span>
+              <% else %>
+                <%# Never invent a number — say why the line can't be costed. %>
+                <span class="badge">Uncertain</span>
+                <p class="muted small"><%= line_cost&.reason %></p>
+              <% end %>
+            </td>
             <td data-label="Edit">
               <%= render "recipes/ingredient_form",
                     recipe: @recipe, ingredient: row, inventory_items: @inventory_items, submit_label: "Save" %>
@@ -79,6 +90,26 @@
     </table>
   <% else %>
     <p class="empty-state">No ingredients yet. Add the first line below.</p>
+  <% end %>
+
+  <% if @ingredients.any? %>
+    <div class="recipe-cost-summary">
+      <% if @costing.complete? %>
+        <div class="recipe-cost-total">
+          <span>Total estimated cost</span>
+          <strong class="tnum"><%= money(@costing.total) %></strong>
+        </div>
+        <p class="muted small">Based on the latest comparable unit price for each ingredient. Estimate only — actual cost varies with pack size, yield, and waste.</p>
+      <% elsif @costing.costed_lines.any? %>
+        <div class="recipe-cost-total">
+          <span>Estimated so far<span class="muted"> (<%= @costing.costed_lines.size %> of <%= @costing.total_lines %> lines)</span></span>
+          <strong class="tnum"><%= money(@costing.subtotal) %></strong>
+        </div>
+        <p class="muted small">No full recipe total yet — <%= pluralize(@costing.total_lines - @costing.costed_lines.size, "line") %> can't be costed. See the reason on each uncertain line above.</p>
+      <% else %>
+        <p class="muted">No cost estimate yet — none of these lines can be costed from existing price data. See the reason on each line above.</p>
+      <% end %>
+    </div>
   <% end %>
 </section>
 

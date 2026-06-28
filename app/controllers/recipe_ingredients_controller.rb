@@ -40,9 +40,10 @@ class RecipeIngredientsController < ApplicationController
   end
 
   def render_recipe_with_errors
-    @ingredients = @recipe.recipe_ingredients.ordered.includes(:inventory_item)
+    @ingredients = @recipe.recipe_ingredients.ordered.includes(inventory_item: { product: :price_observations })
     @new_ingredient ||= @recipe.recipe_ingredients.build
     @inventory_items = InventoryItem.active.ordered
+    @costing = Purchasing::RecipeCosting.new(@recipe)
     render "recipes/show", status: :unprocessable_entity
   end
 

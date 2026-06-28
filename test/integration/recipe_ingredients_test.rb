@@ -81,4 +81,47 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Ingredients"
     assert_select "h2", text: "Add ingredient"
   end
+
+  test "the show page shows a total when every line is costed and flags uncertain ones" do
+    @flour.update!(product: priced_product("Flour stock", price: 2, unit: "lb"))
+    @recipe.recipe_ingredients.create!(inventory_item: @flour, quantity: 5, unit: "lb")
+
+    get recipe_path(@recipe)
+    assert_response :success
+    # 5 lb * $2.00 = $10.00, and a complete total is shown.
+    assert_select ".recipe-cost-total strong", text: /\$10\.00/
+
+    # Add a free-text line with no price source — the total becomes a partial and
+    # the line is flagged uncertain with a reason instead of an invented number.
+    @recipe.recipe_ingredients.create!(name: "Pinch of malt", quantity: 1, unit: "pinch")
+
+    get recipe_path(@recipe)
+    assert_response :success
+    assert_select ".recipe-cost-summary", text: /can't be costed/
+    assert_select "td", text: /Not linked to an inventory item/
+  end
+
+  private
+
+  def priced_product(name, price:, unit:)
+    product = Supplier.primary.products.create!(canonical_name: name)
+    batch = Supplier.primary.import_batches.create!(
+      source_filename: "c.csv", file_checksum: SecureRandom.hex(8),
+      status: "imported", imported_at: Time.current, rows_processed: 1, rows_imported: 1
+    )
+    receipt = Supplier.primary.receipts.create!(
+      import_batch: batch, receipt_number: "R-#{SecureRandom.hex(4)}",
+      purchased_at: Time.current, subtotal: 1, tax: 0, total: 1
+    )
+    line = receipt.receipt_line_items.create!(
+      supplier: Supplier.primary, import_batch: batch, line_number: 1, line_type: "item",
+      raw_name: "x", row_checksum: SecureRandom.hex(16)
+    )
+    PriceObservation.create!(
+      product: product, receipt_line_item: line, supplier: Supplier.primary,
+      observed_at: Time.current, source_filename: "c.csv",
+      standard_unit_price: price, standard_unit: unit
+    )
+    product
+  end
 end

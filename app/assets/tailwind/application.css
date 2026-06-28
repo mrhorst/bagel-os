@@ -2129,6 +2129,20 @@
   .inline-ingredient-form .compact-input {
     width: 110px;
   }
+  .recipe-cost-summary {
+    border-top: 1px solid var(--line);
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+  .recipe-cost-total {
+    align-items: baseline;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+  .recipe-cost-total strong {
+    font-size: 1.2rem;
+  }
   .compact-input,
   .compact-select {
     min-height: 32px;

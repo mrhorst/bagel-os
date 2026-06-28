@@ -43,9 +43,10 @@ class RecipesController < ApplicationController
   end
 
   def load_ingredient_form_data
-    @ingredients = @recipe.recipe_ingredients.ordered.includes(:inventory_item)
+    @ingredients = @recipe.recipe_ingredients.ordered.includes(inventory_item: { product: :price_observations })
     @new_ingredient ||= @recipe.recipe_ingredients.build
     @inventory_items = InventoryItem.active.ordered
+    @costing = Purchasing::RecipeCosting.new(@recipe)
   end
 
   def recipe_params
