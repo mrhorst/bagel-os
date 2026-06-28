@@ -178,6 +178,22 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
     assert_select "a.mobile-header-back[href=?]", more_hub_path, count: 0
   end
 
+  test "the add-photos page offers a desktop-visible way back to the library, not only the mobile chevron" do
+    sign_in_as(users(:one))
+
+    get new_photo_asset_path
+    assert_response :success
+    # The mobile-screen-header chevron is display:none on desktop, so the form
+    # itself must carry an in-content escape (matching collections, products,
+    # and admin tags). Assert a link back to the library exists OUTSIDE the
+    # mobile header and the global sidebar — i.e. a genuine page-level affordance.
+    body = Nokogiri::HTML(@response.body)
+    body.css(".mobile-screen-header").remove
+    body.css(".app-sidebar").remove
+    assert body.css("a[href='#{photo_assets_path}']").any?,
+      "expected an in-content Back/Cancel link to the library on the add-photos page"
+  end
+
   private
 
   def sample_upload
