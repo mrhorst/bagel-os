@@ -73,7 +73,15 @@ namespace :qa do
     { slug: "follow-ups", label: "Follow-ups → open a flagged item → back",
       entry: "/follow-ups", drill: [ "a[href*='/follow-ups/']" ] },
     { slug: "imports", label: "Imports → open a receipt batch → back",
-      entry: "/import_batches", drill: [ "a[href*='/import_batches/']:not([href*='/new'])" ] }
+      entry: "/import_batches", drill: [ "a[href*='/import_batches/']:not([href*='/new'])" ] },
+    # Recipes → recipe → edit → back. Exclude the "New recipe" link and the
+    # mobile FAB (both /recipes/new) — they render before the recipe table, so a
+    # bare a[href*='/recipes/'] would drill into the new-recipe form instead of a
+    # real recipe and never reach the show page's "Back to recipes" arrow this
+    # flow is named to test. The second drill (a[href$='/edit']) then opens the
+    # recipe's Edit page so its "Back to recipe" arrow is exercised too.
+    { slug: "recipes-edit", label: "Recipes → recipe → edit → back to recipe → back",
+      entry: "/recipes", drill: [ "a[href*='/recipes/']:not([href$='/edit']):not([href$='/new'])", "a[href$='/edit']" ] }
   ].freeze
 
   VIEWPORT = [ 414, 896 ].freeze # mobile — where the back affordance is the primary nav
