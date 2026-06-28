@@ -1,7 +1,7 @@
 module ProductsHelper
   # The catalog-narrowing params on the products index. `sort` and `per_page`
   # are presentation preferences, not filters, so clearing filters keeps them.
-  PRODUCT_FILTER_KEYS = %w[q category_id supplier_id needs_review no_standard_unit_price missing_category].freeze
+  PRODUCT_FILTER_KEYS = %w[q category_id supplier_id needs_review no_standard_unit_price missing_category show_hidden].freeze
 
   # True when the products list is narrowed by any search/filter. The three
   # checkboxes submit "0" when unticked (they carry a hidden "0" companion), so

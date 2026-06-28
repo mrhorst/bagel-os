@@ -4,6 +4,7 @@ class User < ApplicationRecord
     log_book
     follow_ups
     inventory
+    recipes
     order_guides
     products
     normalization_reviews

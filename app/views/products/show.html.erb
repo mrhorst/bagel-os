@@ -33,6 +33,16 @@
   action: link_to("Edit product", edit_product_path(@product), class: "button primary"),
   class_name: "product-page-header" %>
 
+<% unless @product.active? %>
+  <%# A hidden product is dropped from the catalog and search, but a direct link
+      still reaches this page — say so plainly so it doesn't look like a normal,
+      visible product. %>
+  <div class="review-callout" role="status">
+    <strong>Hidden from catalog</strong>
+    <p>This product is hidden from the purchasing catalog and search. Re-check "Visible in purchase catalog" on Edit to show it again.</p>
+  </div>
+<% end %>
+
 <%= render "shared/blocks/metric_grid",
   label: "Key purchasing and pricing facts",
   columns: "eight",

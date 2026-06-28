@@ -329,57 +329,6 @@ input[type="submit"].primary {
   max-width: 780px;
 }
 
-.home-ai-recommendation {
-  align-items: center;
-  background: #fff;
-  border: 1px solid #ddd8cf;
-  border-radius: 8px;
-  box-shadow: inset 2px 0 0 #175f73, 0 1px 2px rgba(17, 52, 63, 0.06);
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  margin-bottom: 18px;
-  padding: 16px;
-}
-
-.home-ai-recommendation-main {
-  min-width: 0;
-}
-
-.home-ai-recommendation-tag {
-  background: #e8eef0;
-  border: 1px solid #c8d9de;
-  border-radius: 999px;
-  color: #175f73;
-  display: inline-flex;
-  font-size: 0.72rem;
-  font-weight: 800;
-  margin-bottom: 8px;
-  padding: 3px 9px;
-  text-transform: uppercase;
-}
-
-.home-ai-recommendation h2 {
-  color: #17252b;
-  font-size: 1.1rem;
-  line-height: 1.25;
-  margin: 0 0 6px;
-}
-
-.home-ai-recommendation p {
-  color: #3f4b54;
-  line-height: 1.45;
-  margin: 0;
-  max-width: 82ch;
-}
-
-.home-ai-recommendation-time {
-  color: #66727c;
-  display: block;
-  font-size: 0.82rem;
-  margin-top: 10px;
-}
-
 .eyebrow {
   color: #f0b18f !important;
   font-size: 0.82rem;
@@ -509,6 +458,13 @@ textarea {
   display: flex;
   gap: 8px;
   min-width: 220px;
+}
+
+.inline-form-error {
+  color: #b3261e;
+  font-size: 0.82rem;
+  margin: 6px 0 0;
+  max-width: 220px;
 }
 
 .compact-input,
@@ -1337,6 +1293,46 @@ input[type="submit"].primary.button-success {
   justify-content: flex-start;
 }
 
+.task-wizard-review {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.task-wizard-review > div {
+  border-bottom: 1px solid #e3ded5;
+  display: grid;
+  gap: 2px;
+  padding-bottom: 8px;
+}
+
+.task-wizard-review > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.task-wizard-review dt {
+  color: #5f6b66;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.task-wizard-review dd {
+  color: #17252b;
+  margin: 0;
+}
+
+.task-wizard-review-empty {
+  color: #5f6b66;
+}
+
+.task-wizard-subhead {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 6px 0 0;
+}
+
 .task-wizard-actions {
   align-items: center;
   display: flex;
@@ -1700,7 +1696,6 @@ tr:target {
   .page-heading,
   .panel-heading,
   .review-main,
-  .home-ai-recommendation,
   .hero-panel {
     align-items: stretch;
     flex-direction: column;

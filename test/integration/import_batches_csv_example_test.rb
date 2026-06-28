@@ -32,9 +32,15 @@ class ImportBatchesCsvExampleTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the upload page links to the csv example" do
+  test "the upload page links to the csv example with the PWA-safe download pattern" do
     get new_import_batch_path
 
-    assert_select "a[href='#{csv_example_import_batches_path}']", minimum: 1
+    # A same-window attachment nav strands an installed PWA on a chrome-less
+    # page, so the example link must route through download_controller with a
+    # target=_blank no-JS fallback.
+    assert_select(
+      %(a[href="#{csv_example_import_batches_path}"][data-controller~="download"][data-action~="download#save"][target="_blank"][rel="noopener"][data-download-filename-value="receipt-import-example.csv"]),
+      count: 1
+    )
   end
 end

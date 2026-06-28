@@ -73,12 +73,21 @@ class OrderGuide < ApplicationRecord
   # uniqueness constraint in name terms on :base (so the message renders
   # without the attribute prefix) and let the `name` presence validation cover
   # the blank case. Mirrors the friendly error handling the membership
-  # controllers already use. Checks the assigned `key` value (not a fresh
-  # slug) so this preserves the existing constraint exactly.
+  # controllers already use.
+  #
+  # Compare the key the *current name* implies (`key_for(name)`), not the stored
+  # `key`. On a rename the stored key is deliberately left stale to keep import
+  # lineage stable (`assign_key` only runs when key is blank, and `named!` keys
+  # imports off the original slug), so checking the stored key would let a rename
+  # to an existing guide's name slip through — the index would then show two
+  # identically-named guides. Checking the implied key blocks that collision the
+  # same way create does, while leaving the stored key — and idempotency —
+  # untouched.
   def name_not_already_used
-    return if key.blank?
+    implied_key = self.class.key_for(name)
+    return if implied_key.blank?
 
-    clash = OrderGuide.where(key: key)
+    clash = OrderGuide.where(key: implied_key)
     clash = clash.where.not(id: id) if persisted?
     existing = clash.first
     return unless existing

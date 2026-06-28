@@ -156,6 +156,39 @@ class ReceiptLineItemsEditTest < ActionDispatch::IntegrationTest
     assert unit_line.needs_review?
   end
 
+  test "a unit line flagged for price can be resolved from the edit page (no dead-end)" do
+    # A unit-kind line flagged for review but carrying a price review (the kind
+    # the importer now emits, #172) must show the resolve UI — not the
+    # contradictory "No pending review issues" note with no way to clear it.
+    line = create_receipt_line!(
+      receipt_number: "PRICE-FLAG-1",
+      source_filename: "price-flag-1.csv",
+      raw_quantity: "1",
+      raw_case_quantity: "0",
+      line_total: 0,
+      needs_review: true
+    )
+    review = line.normalization_reviews.create!(
+      product: @product,
+      issue_type: "price",
+      description: Purchasing::ReceiptLineNormalizer::PRICE_REVIEW,
+      status: "pending"
+    )
+
+    get edit_receipt_line_item_path(line)
+    assert_response :success
+    assert_select ".review-decision-list h3", text: "Review this line"
+    assert_select ".resolved-note", text: /No pending review issues/, count: 0
+
+    patch resolve_normalization_review_path(review), params: {
+      review_status: "resolved",
+      resolution_notes: "Verified from receipt line edit."
+    }
+
+    assert_equal "resolved", review.reload.status
+    assert_not line.reload.needs_review?
+  end
+
   private
 
   def create_receipt_line!(receipt_number:, source_filename:, raw_quantity:, raw_case_quantity:, line_total:, needs_review:)

@@ -1,0 +1,51 @@
+<% content_for :title, "Recipes" %>
+
+<section class="page-heading">
+  <div>
+    <h1>Recipes</h1>
+    <p>House recipes that tie your inventory items together — the basis for menu and recipe costing.</p>
+  </div>
+  <div class="hero-actions">
+    <%# On mobile the floating action button below is the canonical "add"
+        affordance, so this inline primary button is hidden there to avoid a
+        duplicate CTA; it stays on desktop, which has no FAB. %>
+    <%= link_to "New recipe", new_recipe_path, class: "button primary hide-for-fab" %>
+  </div>
+</section>
+
+<% if @recipes.any? %>
+  <section class="panel">
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          <th>Recipe</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @recipes.each do |recipe| %>
+          <tr>
+            <td class="row-heading" data-label="Recipe">
+              <%= link_to recipe.name, recipe_path(recipe) %>
+              <% unless recipe.active? %><span class="badge">Archived</span><% end %>
+            </td>
+            <td data-label="Status"><span class="badge <%= "badge-ok" if recipe.active? %>"><%= recipe.active? ? "Active" : "Archived" %></span></td>
+            <td data-label=""><%= link_to "View", recipe_path(recipe), class: "button small" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% else %>
+  <article class="panel empty-state">
+    <strong>No recipes yet.</strong>
+    <span>Add your first house recipe — like a bagel dough or a cream cheese spread.</span>
+    <%# Put the primary action where attention lands on the empty first-run
+        screen, matching the embedded empty-state CTA used across the app.
+        hide-for-fab keeps it desktop-only; mobile uses the FAB below. %>
+    <%= link_to "New recipe", new_recipe_path, class: "button primary hide-for-fab" %>
+  </article>
+<% end %>
+
+<%= mobile_fab_button new_recipe_path, label: "New recipe" %>

@@ -65,7 +65,15 @@
         </label>
       <% end %>
     <% else %>
-      <%= form_with url: tasks_occurrence_completion_path(occurrence), class: "task-checkbox-form" do |form| %>
+      <%# A monthly completion removes the row from the focused list with no
+          in-list undo (completed monthly tasks are filtered out, per #178) — so
+          a single-tap mis-tap on this right-edge circle silently disappears the
+          task with no on-screen trace. Guard the monthly circle with a
+          confirmation, mirroring the undo circle above. Daily completions stay a
+          single tap: they leave an undoable "Completed" row, so a mis-tap there
+          is obvious and trivially reversible. %>
+      <%= form_with url: tasks_occurrence_completion_path(occurrence), class: "task-checkbox-form",
+            data: (monthly ? { turbo_confirm: "Mark #{occurrence.snapshot_title} done for this month?" } : {}) do |form| %>
         <%= form.button "", type: "submit",
               class: "task-checkbox task-checkbox-open",
               aria: { label: "Mark complete" },

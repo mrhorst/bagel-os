@@ -166,6 +166,53 @@ class ReceiptLineNormalizerTest < ActiveSupport::TestCase
     assert_equal BigDecimal("4.0"), result.calculated[:standard_unit_price]
   end
 
+  test "a clean-parse item line with no derivable price emits a resolvable price intent" do
+    # A $0.00 / comp line parses cleanly but has no comparable price, so it is
+    # flagged for review. Without a matching intent the flag would be stuck with
+    # nothing to resolve on the edit page (#172).
+    result = normalize(
+      raw_name: "EGGS XLG LS GRD A 15DZ",
+      raw_quantity: "1",
+      line_total: BigDecimal("0")
+    )
+
+    assert result.needs_review?
+    assert_nil result.calculated[:standard_unit_price]
+    assert_nil result.calculated[:inner_unit_price]
+    assert_includes result.review_intents.map(&:issue_type), "price"
+  end
+
+  test "a non-item, non-coupon row emits a resolvable adjustment intent" do
+    result = normalize(
+      line_type: "adjustment",
+      raw_name: "FUEL SURCHARGE",
+      raw_quantity: "0",
+      line_total: BigDecimal("5.00")
+    )
+
+    assert result.needs_review?
+    assert_includes result.review_intents.map(&:issue_type), "adjustment"
+  end
+
+  test "every line flagged for review emits at least one resolvable intent" do
+    # The rest of the app assumes the invariant needs_review ⟺ a pending review
+    # exists; a flagged line with zero intents becomes an unresolvable dead-end.
+    cases = [
+      { raw_name: "EGGS XLG LS GRD A 15DZ", raw_quantity: "1", line_total: BigDecimal("0") },           # price only
+      { line_type: "adjustment", raw_name: "FUEL SURCHARGE", raw_quantity: "0", line_total: BigDecimal("5.00") }, # adjustment
+      { line_type: "coupon", raw_name: "$2 OFF", raw_quantity: "1", line_total: BigDecimal("-2.00") },   # coupon
+      { raw_name: "PD MUSH SLICED WHT 6-20OZ", raw_quantity: "1", line_total: BigDecimal("10.00") }      # unit parse
+    ]
+
+    cases.each do |attrs|
+      result = normalize(**attrs)
+      next unless result.needs_review?
+
+      assert result.review_intents.any?,
+        "#{attrs[:raw_name]} is flagged for review but emits no resolvable intent"
+    end
+  end
+
   private
 
   def normalize(line_type: "item", raw_name:, raw_quantity:, line_total:, raw_case_quantity: "0", product: nil, supplier: nil)

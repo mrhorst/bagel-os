@@ -40,6 +40,29 @@ class OrderGuideTest < ActiveSupport::TestCase
     assert_empty blank.errors[:key]
   end
 
+  test "renaming a guide onto another guide's name is rejected by name" do
+    OrderGuide.create!(name: "Daily")
+    weekly = OrderGuide.create!(name: "Weekly")
+
+    # The stored key stays "weekly", but the *new* name implies key "daily",
+    # which another guide already owns — so the rename must be blocked rather
+    # than silently producing two "Daily" guides.
+    weekly.name = "Daily"
+
+    assert_not weekly.valid?
+    assert_includes weekly.errors[:base], %(A guide named "Daily" already exists. Pick a different name.)
+  end
+
+  test "renaming a guide to a genuinely new name still succeeds and keeps the stable key" do
+    weekly = OrderGuide.create!(name: "Weekly")
+
+    assert weekly.update(name: "Morning")
+    # The import-lineage key is intentionally left untouched on rename so a later
+    # import of guide-type "Weekly" still flows into this same record.
+    assert_equal "weekly", weekly.reload.key
+    assert_equal "Morning", weekly.name
+  end
+
   test "named! is idempotent and reactivates an archived guide" do
     first = OrderGuide.named!("Frozen")
     again = OrderGuide.named!("Frozen")

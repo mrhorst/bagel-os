@@ -40,6 +40,9 @@ module Purchasing
       product_profile_reader.chart_mode(observations, requested: requested)
     end
 
+    # The Master products CSV is the complete receipt-backed history of record,
+    # so it intentionally still includes products hidden from the in-app catalog
+    # (active: false) — hiding only narrows the in-app browse/search, not exports.
     def master_product_rows
       Product.includes(:supplier, :product_category, :product_aliases, :price_observations).by_name.map do |product|
         stats = price_stats(product)
@@ -78,6 +81,7 @@ module Purchasing
 
     def filtered_products(params)
       products = Product.all
+      products = filter_by_visibility(products, params)
       products = filter_by_category(products, params)
       products = filter_by_supplier(products, params)
       products = filter_by_review_state(products, params)
@@ -85,6 +89,16 @@ module Purchasing
       products = filter_by_price_spike(products, params)
       products = filter_by_search(products, params)
       products
+    end
+
+    # The catalog hides products a manager unchecked "Visible in purchase
+    # catalog" on (active: false), so it reads as the current purchasing list,
+    # not the full receipt-backed history. "Show hidden" brings them back so a
+    # hidden product is never stranded.
+    def filter_by_visibility(products, params)
+      return products if params[:show_hidden] == "1"
+
+      products.active
     end
 
     def filter_by_category(products, params)
