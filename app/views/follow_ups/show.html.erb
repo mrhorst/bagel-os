@@ -12,6 +12,21 @@
   <% end %>
 <% end %>
 
+<%# Desktop-visible back to the Follow-ups list. The chevron above lives in the
+    mobile-only header (.mobile-screen-header, display:none on desktop), so on a
+    wide screen the only way back to the list was clicking the already-active
+    "Follow-ups" sidebar item. Mirror the chevron's destination — including the
+    ?scope= tab the user came from — so the arrow returns them to the Open or
+    Resolved list they were browsing. .subpage-back is hidden on mobile, so this
+    never doubles up with the chevron. %>
+<%= link_to follow_ups_path(scope: params[:scope].presence), class: "subpage-back",
+            aria: { label: "Back to Follow-ups" } do %>
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+    <path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <span>Follow-ups</span>
+<% end %>
+
 <article class="follow-up-detail">
   <header class="follow-up-detail-head">
     <span class="<%= follow_up_urgency_badge_class(@follow_up.urgency) %>"><%= @follow_up.urgency.humanize %></span>
