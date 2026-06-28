@@ -6006,6 +6006,15 @@
       margin-bottom: 2px;
       text-transform: uppercase;
     }
+    /* An action-only cell is sometimes coded as `<td data-label="">` (e.g. the
+       Edit/View column on admin/users, admin/tags, recipes). The empty value
+       still matches the generator above, so it emits a stray empty uppercase
+       label box — a ~2px gap with no text — above the cell's button. Suppress
+       the pseudo-element when there's nothing to label so the action stacks
+       flush, matching sibling tables (e.g. reports) that omit data-label. */
+    .responsive-table td[data-label=""]::before {
+      content: none;
+    }
     /* The row's primary identifier becomes the card's heading on mobile,
        so each stacked card reads as its name ("Eggs") instead of a labeled
        field ("ITEM / Eggs"): drop the redundant column label and give the
