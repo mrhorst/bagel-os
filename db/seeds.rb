@@ -220,5 +220,17 @@ if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
     line.needs_review  = attrs.fetch(:needs_review)
     line.row_checksum  = "demo-receipt-0001-line-#{attrs.fetch(:line_number)}"
     line.save!
+
+    # Keep the invariant the app assumes — needs_review ⟺ a pending review
+    # exists — so a flagged demo line is actually resolvable from the edit page
+    # rather than a dead-end (#172). The demo line carries no derivable
+    # comparable price, so a "price" review is the right thing to resolve.
+    if line.needs_review? && line.normalization_reviews.pending.none?
+      line.normalization_reviews.create!(
+        issue_type: "price",
+        status: "pending",
+        description: Purchasing::ReceiptLineNormalizer::PRICE_REVIEW
+      )
+    end
   end
 end
