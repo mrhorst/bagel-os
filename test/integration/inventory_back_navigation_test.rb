@@ -63,4 +63,12 @@ class InventoryBackNavigationTest < ActionDispatch::IntegrationTest
       "expected an in-content link back to Inventory on the counts history"
     assert_select "a.mobile-header-back[href=?]", inventory_path
   end
+
+  test "the master inventory page offers a desktop-visible way back to Inventory" do
+    get inventory_items_path
+    assert_response :success
+    assert in_content_links_to(inventory_path).any?,
+      "expected an in-content link back to Inventory on the master inventory page"
+    assert_select "a.mobile-header-back[href=?]", inventory_path
+  end
 end
