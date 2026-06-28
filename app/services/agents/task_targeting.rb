@@ -61,10 +61,15 @@ module Agents
     end
 
     # Resolve the attributed user from --user, accepting an id, exact email, or
-    # case-insensitive name.
-    def resolve_user(options)
+    # case-insensitive name. With no --user, falls back to `default` (the
+    # logged-in user) so attribution is implicit once you've authenticated.
+    def resolve_user(options, default: nil)
       raw = options.value("user")
-      raise Command::UsageError, "Provide --user <email|name|id> for attribution" if raw.blank?
+      if raw.blank?
+        return default if default
+
+        raise Command::UsageError, "Provide --user <email|name|id> for attribution"
+      end
 
       if raw.match?(/\A\d+\z/)
         return User.find_by(id: raw) || (raise Command::NotFoundError, "No user with id #{raw}")

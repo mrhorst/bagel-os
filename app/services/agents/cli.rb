@@ -16,6 +16,9 @@ module Agents
     # here (rather than scanning) keeps the surface explicit and lets Zeitwerk
     # autoload each command on reference.
     REGISTRY = [
+      Commands::Login,
+      Commands::Logout,
+      Commands::Whoami,
       Commands::Schema,
       Commands::TasksToday,
       Commands::TasksHistory,
@@ -63,11 +66,17 @@ module Agents
       options = Options.parse(tokens)
       return print_command_help(command_class) && 0 if options.help?
 
+      if command_class.requires_auth? && !authenticate!
+        return fail!(name, "unauthenticated", "Not authenticated. Run `bin/agent login --email <you>` first.")
+      end
+
       data = command_class.new(options).call
       emit(envelope(name, data), compact: options.flag?("compact"))
       0
     rescue Command::UsageError => e
       fail!(name, "usage_error", e.message)
+    rescue Command::AuthenticationError => e
+      fail!(name, "unauthenticated", e.message)
     rescue Command::NotFoundError => e
       fail!(name, "not_found", e.message)
     rescue Command::AmbiguousError => e
@@ -77,6 +86,17 @@ module Agents
     end
 
     private
+
+    # Resolve the stored token to a live Session and bind it to Current for the
+    # command run (the seam tenancy will extend). Returns false when there's no
+    # valid session.
+    def authenticate!
+      session = Authentication.resolve_session(CredentialStore.new.read_token)
+      return false unless session
+
+      Current.session = session
+      true
+    end
 
     def lookup(name)
       return nil if name.nil?

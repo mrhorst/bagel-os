@@ -1,15 +1,45 @@
 # Agent CLI (`bin/agent`)
 
-A read-only, JSON-emitting command line that lets an agent (AI or human)
-query Bagel OS domain data without scraping HTML. This is the first slice of
-the "LLM assistant that answers through structured database queries, not raw
-CSV/PDF scraping" direction in `CONTEXT.md`.
+A JSON-emitting command line that lets an agent (AI or human) read and act on
+Bagel OS domain data without scraping HTML — the first slice of the "LLM
+assistant that answers through structured database queries" direction in
+`CONTEXT.md`.
 
 ```sh
-bin/agent help                       # list commands
-bin/agent tasks:today                # pretty JSON
+bin/agent login --email you@example.com   # authenticate first
+bin/agent tasks:today                      # pretty JSON
 bin/agent price:product "house blend" --compact
 ```
+
+## Authentication
+
+Domain commands require an authenticated session — having the project checked
+out grants no data access on its own (this matters now and more so once the app
+is multi-tenant). Auth reuses the web app's primitives: `User.authenticate_by`
+verifies credentials and a `Session` row is the unit of access. The CLI signs
+the session id into a bearer token (Rails' message verifier) and stores it
+**outside the repo**, in `~/.config/bagel-os/credentials.json` (mode 0600).
+
+```sh
+bin/agent login --email you@example.com    # prompts for password
+bin/agent whoami                           # who am I? (never errors)
+bin/agent logout                           # revoke session + delete token
+```
+
+Token resolution order:
+
+1. `BAGEL_AGENT_TOKEN` env var — for agents/automation; `login --print-token`
+   emits a token to put here, no file needed.
+2. the credentials file written by `login`.
+
+Password resolution for `login`: `--password`, else `BAGEL_AGENT_PASSWORD`,
+else an interactive prompt (preferred — keeps it out of shell history). The
+config dir can be relocated with `BAGEL_OS_CONFIG_DIR`.
+
+`help`, `schema`, `login`, `logout`, and `whoami` are the only commands that
+run unauthenticated. Everything else returns `type: "unauthenticated"` (exit 1)
+until you log in. The authenticated user is bound to `Current.session` for the
+command run — the seam multi-tenancy will extend to scope data by tenant.
 
 ## Contract
 
@@ -34,8 +64,8 @@ Failures print an envelope to **stderr** and exit non-zero (status `1`):
 }
 ```
 
-Error `type` is one of `unknown_command`, `usage_error`, `not_found`,
-`ambiguous`, `error`. An `ambiguous` error also carries a `candidates` array
+Error `type` is one of `unknown_command`, `unauthenticated`, `usage_error`,
+`not_found`, `ambiguous`, `error`. An `ambiguous` error also carries a `candidates` array
 (see "Voice workflow" below). This split (data on stdout, errors on stderr,
 exit codes) lets a caller pipe stdout straight into a JSON parser and branch on
 the exit status.
@@ -78,7 +108,7 @@ These change state and are flagged `mutates: true` in `schema`. Both accept
 | `tasks:create-list` | Creates a task list (key auto-derived from `--name`). Optional `--position`, `--notes`, `--display-start/--display-end`. |
 | `tasks:create`      | Creates a task in a list. `--list <name\|id>` and `--title` required; `--recurrence one_time\|daily\|weekly\|monthly` (default daily) with the schedule it needs (`--due-time`, `--starts-on`, `--weekdays`, `--one-time-on`); optional `--instructions`, `--requires-photo`. Materializes the task's occurrences on save. |
 | `inventory:add-item`| Adds an inventory item (key auto-derived from `--name`). `--section` is matched by name and created if new. Optional `--guide-frequency`, `--category`, `--count-unit`, `--pack-size`, `--par`, `--notes`. Units/pack sizes are never guessed — set only when passed. |
-| `tasks:complete`    | Completes a task occurrence via `Tasks::CompleteOccurrence`. Target with `--occurrence <id>` or `--task <fuzzy title>`; attribute with `--user <email\|name\|id>` (required); optional `--notes`. Photo-required tasks are refused (no image to attach from a CLI). |
+| `tasks:complete`    | Completes a task occurrence via `Tasks::CompleteOccurrence`. Target with `--occurrence <id>` or `--task <fuzzy title>`; attribution defaults to the logged-in user (`--user <email\|name\|id>` to override); optional `--notes`. Photo-required tasks are refused (no image to attach from a CLI). |
 | `tasks:undo`        | Undoes today's completion of an occurrence (`Tasks::UndoCompletion`). Same targeting/attribution; optional `--note`. |
 
 Run `bin/agent help <command>` for per-command options.
@@ -88,8 +118,10 @@ Run `bin/agent help <command>` for per-command options.
 The intended loop for a transcribed voice request — e.g. *"mark sweep front of
 house done, this is Maria"*:
 
+0. **Authenticate.** `bin/agent login` once (or set `BAGEL_AGENT_TOKEN`); every
+   domain command is gated until then.
 1. **Learn the surface.** `bin/agent schema` once — the agent now knows every
-   command, its params, and which ones mutate.
+   command, its params, which ones mutate, and which need auth.
 2. **Read for context.** `bin/agent tasks:today` (and `staff:list` to resolve
    the speaker) so the agent acts on the right record at the right place.
 3. **Resolve, don't guess.** Pass the spoken phrase as `--task "sweep front"`.
@@ -117,10 +149,11 @@ same-operating-day undo rule are all enforced server-side, not in the CLI.
   scope (`Purchasing::InventoryGapAnalyzer`, `PriceObservation.spikes`,
   `Tasks::TaskMetrics`, …) so the CLI and the UI can't drift apart.
 - **Where the code lives.** `bin/agent` boots Rails and calls `Agents::Cli`.
-  The dispatcher, base `Command`, and `Options` parser sit under
-  `app/services/agents/`; one class per command under
-  `app/services/agents/commands/`. Add a command by creating the class and
-  appending it to `Agents::Cli::REGISTRY`.
+  The dispatcher, base `Command`, `Options` parser, `Authentication`, and
+  `CredentialStore` sit under `app/services/agents/`; one class per command
+  under `app/services/agents/commands/`. Add a command by creating the class and
+  appending it to `Agents::Cli::REGISTRY` (it requires auth unless it calls
+  `skip_auth!`).
 
 ## Not yet available
 

@@ -8,6 +8,7 @@ require_relative "../config/environment"
 require "rails/test_help"
 require_relative "test_helpers/session_test_helper"
 require_relative "test_helpers/push_notification_test_helper"
+require_relative "test_helpers/agent_cli_test_helper"
 require "json"
 
 if ENV["CRAP_COVERAGE_OUTPUT"].to_s != ""

@@ -16,6 +16,9 @@ module Agents
     # Raised when a looked-up record does not exist.
     class NotFoundError < StandardError; end
 
+    # Raised for credential/session failures (bad login, no active session).
+    class AuthenticationError < StandardError; end
+
     # Raised when a fuzzy reference (e.g. --task "cheese") matches more than one
     # record. Carries the candidates so the CLI can hand them back and the agent
     # can ask the user which one — rather than guessing.
@@ -53,6 +56,16 @@ module Agents
         @mutates == true
       end
 
+      # Opt a command out of the authentication gate (login, schema, etc.).
+      # Every other command requires an authenticated session.
+      def skip_auth!
+        @skip_auth = true
+      end
+
+      def requires_auth?
+        @skip_auth != true
+      end
+
       # Structured parameter metadata, surfaced by `bin/agent schema` so an
       # agent can translate transcribed intent into a valid invocation.
       #   param :query, positional: true, required: true, desc: "..."
@@ -66,7 +79,7 @@ module Agents
       end
 
       def to_schema
-        { command: command, summary: summary, mutates: mutates?, params: params }
+        { command: command, summary: summary, mutates: mutates?, requires_auth: requires_auth?, params: params }
       end
     end
 

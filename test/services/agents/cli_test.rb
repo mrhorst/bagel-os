@@ -2,23 +2,24 @@ require "test_helper"
 
 module Agents
   class CliTest < ActiveSupport::TestCase
-    # Run the CLI with captured streams and return [exit_status, parsed_stdout,
-    # raw_stderr]. parsed_stdout is nil when stdout was not JSON (e.g. help text).
-    def run_cli(*argv)
+    include AgentCliTestHelper
+
+    # Most commands require authentication; sign in once so these tests focus on
+    # dispatch/output rather than the auth gate (covered in AuthenticationTest).
+    setup { authenticate_agent!(User.create!(email_address: "cli@example.com", name: "CLI", password: "password123", role: :admin)) }
+    teardown { deauthenticate_agent! }
+
+    # Capture the raw stdout/stderr strings too (some assertions check help text,
+    # which isn't JSON).
+    def run_cli_raw(*argv)
       out = StringIO.new
       err = StringIO.new
       status = Agents::Cli.run(argv, out: out, err: err)
-      stdout = out.string
-      parsed = begin
-        JSON.parse(stdout)
-      rescue JSON::ParserError
-        nil
-      end
-      [ status, parsed, err.string, stdout ]
+      [ status, out.string, err.string ]
     end
 
     test "bare invocation prints help listing every registered command and exits 0" do
-      status, _json, _err, stdout = run_cli
+      status, stdout, = run_cli_raw
       assert_equal 0, status
       Agents::Cli::REGISTRY.each do |command_class|
         assert_includes stdout, command_class.command
@@ -26,14 +27,14 @@ module Agents
     end
 
     test "help <command> prints that command's usage" do
-      status, _json, _err, stdout = run_cli("help", "price:product")
+      status, stdout, = run_cli_raw("help", "price:product")
       assert_equal 0, status
       assert_includes stdout, "price:product"
       assert_includes stdout, "--id"
     end
 
     test "unknown command returns an error envelope on stderr and exits 1" do
-      status, _json, err, stdout = run_cli("frobnicate")
+      status, stdout, err = run_cli_raw("frobnicate")
       assert_equal 1, status
       assert_empty stdout
       payload = JSON.parse(err)
@@ -45,7 +46,7 @@ module Agents
       supplier = Supplier.create!(name: "CLI Test Supplier")
       Product.create!(canonical_name: "Sesame Bagel", supplier: supplier)
 
-      status, json, _err, _stdout = run_cli("products:search", "sesame")
+      status, json, = run_cli("products:search", "sesame")
       assert_equal 0, status
       assert_equal true, json["ok"]
       assert_equal "products:search", json["command"]
@@ -73,26 +74,26 @@ module Agents
     end
 
     test "an empty search query is a usage error" do
-      status, _json, err, _stdout = run_cli("products:search")
+      status, _json, err = run_cli("products:search")
       assert_equal 1, status
-      assert_equal "usage_error", JSON.parse(err).dig("error", "type")
+      assert_equal "usage_error", err.dig("error", "type")
     end
 
     test "price:product reports not_found for an unmatched name" do
-      status, _json, err, _stdout = run_cli("price:product", "definitely-not-a-product")
+      status, _json, err = run_cli("price:product", "definitely-not-a-product")
       assert_equal 1, status
-      assert_equal "not_found", JSON.parse(err).dig("error", "type")
+      assert_equal "not_found", err.dig("error", "type")
     end
 
     test "--compact emits single-line JSON" do
-      _status, _json, _err, stdout = run_cli("purchasing:dashboard", "--compact")
+      _status, stdout, = run_cli_raw("purchasing:dashboard", "--compact")
       assert_equal 1, stdout.strip.lines.count
     end
 
     test "a non-integer numeric option is a usage error" do
-      status, _json, err, _stdout = run_cli("tasks:history", "--days", "soon")
+      status, _json, err = run_cli("tasks:history", "--days", "soon")
       assert_equal 1, status
-      assert_equal "usage_error", JSON.parse(err).dig("error", "type")
+      assert_equal "usage_error", err.dig("error", "type")
     end
   end
 end

@@ -7,6 +7,7 @@ module Agents
     class Schema < Command
       command "schema"
       summary "Machine-readable catalog of every command (for mapping intent)"
+      skip_auth!
 
       def call
         {

@@ -15,14 +15,14 @@ module Agents
         "Options:",
         "  --occurrence N   Target by occurrence id (exact)",
         "  --task <name>    Target by fuzzy title among today's actionable tasks",
-        "  --user <ref>     Attribute to this user (email, name, or id) — required",
+        "  --user <ref>     Attribute to another user (email, name, or id); defaults to you",
         "  --notes <text>   Optional completion note",
         "  --date YYYY-MM-DD  Operate against a past day (rare)",
         "  --dry-run        Resolve and report what would happen, without writing"
       )
       param :occurrence, type: "integer", desc: "Target by occurrence id (exact)"
       param :task, desc: "Target by fuzzy title among today's actionable tasks"
-      param :user, required: true, desc: "Attribute to this user (email, name, or id)"
+      param :user, desc: "Attribute to another user (email, name, or id); defaults to the logged-in user"
       param :notes, desc: "Optional completion note"
       param :date, type: "date", desc: "Operate against a past day (rare)"
       param :"dry-run", type: "boolean", desc: "Resolve and report what would happen, without writing"
@@ -30,7 +30,7 @@ module Agents
       def call
         operating_day = operating_day_for_date
         occurrence = TaskTargeting.resolve_occurrence(options, operating_day)
-        user = TaskTargeting.resolve_user(options)
+        user = TaskTargeting.resolve_user(options, default: Current.user)
 
         guard_completable!(occurrence)
 

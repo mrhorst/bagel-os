@@ -4,12 +4,10 @@ module Agents
   # Covers the voice-driven authoring slice: creating task lists, tasks, and
   # inventory items, plus the reads that resolve where to file them.
   class AuthoringTest < ActiveSupport::TestCase
-    def run_cli(*argv)
-      out = StringIO.new
-      err = StringIO.new
-      status = Agents::Cli.run(argv, out: out, err: err)
-      [ status, JSON.parse(out.string.presence || "null"), JSON.parse(err.string.presence || "null") ]
-    end
+    include AgentCliTestHelper
+
+    setup { authenticate_agent!(User.create!(email_address: "author@example.com", name: "Author", password: "password123", role: :admin)) }
+    teardown { deauthenticate_agent! }
 
     test "tasks:create-list creates a list and derives its key from the name" do
       status, json, = run_cli("tasks:create-list", "--name", "Closing Duties")

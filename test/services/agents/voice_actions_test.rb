@@ -5,20 +5,16 @@ module Agents
   # transcribed intent, and the mutating commands (with fuzzy targeting,
   # ambiguity refusal, dry-run, and the photo-evidence guard).
   class VoiceActionsTest < ActiveSupport::TestCase
-    def run_cli(*argv)
-      out = StringIO.new
-      err = StringIO.new
-      status = Agents::Cli.run(argv, out: out, err: err)
-      [ status, JSON.parse(out.string.presence || "null"), JSON.parse(err.string.presence || "null") ]
-    end
-
-    # The attributed user every completion test references. Created up front so
-    # user resolution (which runs before occurrence guards) succeeds.
-    setup { staff }
+    include AgentCliTestHelper
 
     def staff
       @staff ||= User.create!(email_address: "maria@example.com", name: "Maria", password: "password123", role: :admin)
     end
+
+    # Sign in as Maria up front: she's the user these tests attribute work to,
+    # and commands now require authentication.
+    setup { authenticate_agent!(staff) }
+    teardown { deauthenticate_agent! }
 
     def task_list
       @task_list ||= TaskList.create!(name: "Cleaning", key: "cleaning-#{SecureRandom.hex(4)}", position: 0)
@@ -59,11 +55,13 @@ module Agents
       commands = json.dig("data", "commands")
       complete = commands.find { |c| c["command"] == "tasks:complete" }
       assert_equal true, complete["mutates"]
-      assert_includes complete["params"].map { |p| p["name"] }, "user"
-      assert(complete["params"].find { |p| p["name"] == "user" }["required"])
+      assert_equal true, complete["requires_auth"]
+      # --user is optional now: attribution defaults to the logged-in user.
+      assert_equal false, complete["params"].find { |p| p["name"] == "user" }["required"]
 
       search = commands.find { |c| c["command"] == "products:search" }
       assert_equal false, search["mutates"]
+      assert_equal true, search["requires_auth"]
     end
 
     test "tasks:complete completes by fuzzy title, attributing to the user" do
@@ -110,11 +108,11 @@ module Agents
       assert_nil target.reload.active_completion
     end
 
-    test "completing without --user is a usage error" do
+    test "completing without --user attributes to the logged-in user" do
       target = occurrence(title: "Take out trash")
-      status, _json, err = run_cli("tasks:complete", "--occurrence", target.id.to_s)
-      assert_equal 1, status
-      assert_equal "usage_error", err.dig("error", "type")
+      status, json, = run_cli("tasks:complete", "--occurrence", target.id.to_s)
+      assert_equal 0, status
+      assert_equal "Maria", json.dig("data", "completion", "completed_by")
     end
 
     test "an unknown user is not_found" do

@@ -13,20 +13,20 @@ module Agents
         "Options:",
         "  --occurrence N   Target by occurrence id (exact)",
         "  --task <name>    Target by fuzzy title among today's actionable tasks",
-        "  --user <ref>     Who is undoing it (email, name, or id) — required",
+        "  --user <ref>     Who is undoing it (email, name, or id); defaults to you",
         "  --note <text>    Optional reason for the undo",
         "  --dry-run        Resolve and report what would happen, without writing"
       )
       param :occurrence, type: "integer", desc: "Target by occurrence id (exact)"
       param :task, desc: "Target by fuzzy title among today's actionable tasks"
-      param :user, required: true, desc: "Who is undoing it (email, name, or id)"
+      param :user, desc: "Who is undoing it (email, name, or id); defaults to the logged-in user"
       param :note, desc: "Optional reason for the undo"
       param :"dry-run", type: "boolean", desc: "Resolve and report what would happen, without writing"
 
       def call
         operating_day = Tasks::OperatingDay.new
         occurrence = TaskTargeting.resolve_occurrence(options, operating_day)
-        user = TaskTargeting.resolve_user(options)
+        user = TaskTargeting.resolve_user(options, default: Current.user)
 
         completion = occurrence.active_completion
         raise UsageError, "#{occurrence.snapshot_title.inspect} is not currently completed." if completion.blank?
