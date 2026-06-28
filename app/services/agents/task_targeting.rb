@@ -33,6 +33,33 @@ module Agents
       end
     end
 
+    # Resolve a TaskList from --list, accepting an id or a name (exact match
+    # first, then a unique case-insensitive substring). Used when filing a new
+    # task into an existing list.
+    def resolve_task_list(options, key: "list")
+      raw = options.value(key)
+      raise Command::UsageError, "Provide --#{key} <name|id>" if raw.blank?
+
+      if raw.match?(/\A\d+\z/)
+        return TaskList.find_by(id: raw) || (raise Command::NotFoundError, "No task list with id #{raw}")
+      end
+
+      exact = TaskList.where("LOWER(name) = ?", raw.strip.downcase).to_a
+      candidates = exact.presence || TaskList.where("LOWER(name) LIKE ?", "%#{raw.strip.downcase}%").to_a
+
+      case candidates.size
+      when 0
+        raise Command::NotFoundError, "No task list matching #{raw.inspect}"
+      when 1
+        candidates.first
+      else
+        raise Command::AmbiguousError.new(
+          "#{candidates.size} task lists match #{raw.inspect}; use the exact name or --#{key} <id>",
+          candidates: candidates.map { |l| { id: l.id, name: l.name } }
+        )
+      end
+    end
+
     # Resolve the attributed user from --user, accepting an id, exact email, or
     # case-insensitive name.
     def resolve_user(options)

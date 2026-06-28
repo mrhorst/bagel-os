@@ -65,16 +65,21 @@ float rounding error on prices.
 | `reviews:pending`      | Open normalization reviews awaiting a human decision. `--limit N` (default 50). |
 | `purchasing:dashboard` | Top-line purchasing KPIs: spend, counts, category/supplier breakdown. |
 | `staff:list`           | Users a completion can be attributed to (resolve "complete as Maria"). |
+| `tasks:lists`          | Task lists with active task counts (resolve "add it to the closing list"). `--all` for archived. |
+| `inventory:sections`   | Inventory sections with active item counts. |
 
 ## Mutating commands
 
 These change state and are flagged `mutates: true` in `schema`. Both accept
 `--dry-run` to preview the resolution first.
 
-| Command          | What it does |
-| ---------------- | ------------ |
-| `tasks:complete` | Completes a task occurrence via `Tasks::CompleteOccurrence`. Target with `--occurrence <id>` or `--task <fuzzy title>`; attribute with `--user <email\|name\|id>` (required); optional `--notes`. Photo-required tasks are refused (no image to attach from a CLI). |
-| `tasks:undo`     | Undoes today's completion of an occurrence (`Tasks::UndoCompletion`). Same targeting/attribution; optional `--note`. |
+| Command             | What it does |
+| ------------------- | ------------ |
+| `tasks:create-list` | Creates a task list (key auto-derived from `--name`). Optional `--position`, `--notes`, `--display-start/--display-end`. |
+| `tasks:create`      | Creates a task in a list. `--list <name\|id>` and `--title` required; `--recurrence one_time\|daily\|weekly\|monthly` (default daily) with the schedule it needs (`--due-time`, `--starts-on`, `--weekdays`, `--one-time-on`); optional `--instructions`, `--requires-photo`. Materializes the task's occurrences on save. |
+| `inventory:add-item`| Adds an inventory item (key auto-derived from `--name`). `--section` is matched by name and created if new. Optional `--guide-frequency`, `--category`, `--count-unit`, `--pack-size`, `--par`, `--notes`. Units/pack sizes are never guessed — set only when passed. |
+| `tasks:complete`    | Completes a task occurrence via `Tasks::CompleteOccurrence`. Target with `--occurrence <id>` or `--task <fuzzy title>`; attribute with `--user <email\|name\|id>` (required); optional `--notes`. Photo-required tasks are refused (no image to attach from a CLI). |
+| `tasks:undo`        | Undoes today's completion of an occurrence (`Tasks::UndoCompletion`). Same targeting/attribution; optional `--note`. |
 
 Run `bin/agent help <command>` for per-command options.
 
@@ -116,6 +121,12 @@ same-operating-day undo rule are all enforced server-side, not in the CLI.
   `app/services/agents/`; one class per command under
   `app/services/agents/commands/`. Add a command by creating the class and
   appending it to `Agents::Cli::REGISTRY`.
+
+## Not yet available
+
+- **Recipes / menu items.** There is no recipe domain in the app yet (it's a
+  "Future Direction" in `CONTEXT.md`). Recipe commands can't be added until that
+  domain (models, costing via `PriceObservation`) is built.
 
 ## Adding a command
 

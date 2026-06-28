@@ -19,13 +19,18 @@ module Agents
       Commands::Schema,
       Commands::TasksToday,
       Commands::TasksHistory,
+      Commands::TasksLists,
       Commands::InventoryGaps,
+      Commands::InventorySections,
       Commands::PriceSpikes,
       Commands::PriceProduct,
       Commands::ProductsSearch,
       Commands::ReviewsPending,
       Commands::PurchasingDashboard,
       Commands::StaffList,
+      Commands::TasksCreateList,
+      Commands::TasksCreate,
+      Commands::InventoryAddItem,
       Commands::TasksComplete,
       Commands::TasksUndo
     ].freeze
