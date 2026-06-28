@@ -4862,6 +4862,40 @@
     display: flex;
     justify-content: flex-start;
   }
+  .task-wizard-review {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+  .task-wizard-review > div {
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 2px;
+    padding-bottom: 8px;
+  }
+  .task-wizard-review > div:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .task-wizard-review dt {
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+  .task-wizard-review dd {
+    color: var(--ink);
+    margin: 0;
+  }
+  .task-wizard-review-empty {
+    color: var(--ink-muted);
+  }
+  .task-wizard-subhead {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 6px 0 0;
+  }
   .task-wizard-actions {
     align-items: center;
     display: flex;

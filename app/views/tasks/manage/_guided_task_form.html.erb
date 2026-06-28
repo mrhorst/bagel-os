@@ -117,7 +117,32 @@
 
   <section class="task-wizard-panel" data-task-wizard-target="panel" hidden>
     <p class="task-wizard-kicker">Step 5 of 5</p>
-    <h2>Final options</h2>
+    <h2>Review</h2>
+    <p class="muted">Check what you entered, then create the task.</p>
+
+    <%# Populated by task_wizard_controller#renderReview from the fields on the
+        earlier panels whenever this last step opens, so the "Review" label the
+        progress nav promises actually delivers a summary. %>
+    <dl class="task-wizard-review">
+      <div>
+        <dt>List</dt>
+        <dd data-task-wizard-target="reviewValue" data-task-wizard-field="task_list_id">—</dd>
+      </div>
+      <div>
+        <dt>Task name</dt>
+        <dd data-task-wizard-target="reviewValue" data-task-wizard-field="title">—</dd>
+      </div>
+      <div>
+        <dt>Timing</dt>
+        <dd data-task-wizard-target="reviewValue" data-task-wizard-field="timing">—</dd>
+      </div>
+      <div>
+        <dt>Instructions</dt>
+        <dd data-task-wizard-target="reviewValue" data-task-wizard-field="instructions">—</dd>
+      </div>
+    </dl>
+
+    <h3 class="task-wizard-subhead">Final options</h3>
     <p class="muted">Only turn on proof or sort order when the task really needs it.</p>
     <label class="check">
       <%= form.check_box :requires_photo_evidence %>
