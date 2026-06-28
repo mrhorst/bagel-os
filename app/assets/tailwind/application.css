@@ -870,6 +870,11 @@
     color: var(--ink-2);
     font-size: 0.92rem;
     margin: 4px 0 6px;
+    /* Cap the description to a comfortable reading measure so it doesn't run the
+       full ~110ch card width on a wide desktop. Matches the app's body-copy
+       convention (.home-hero p 60ch, .home-ai-recommendation p 82ch); a no-op
+       on mobile, where the card is already narrower than this. */
+    max-width: 68ch;
   }
   /* Status indication via 2 px left rule per design system — warn (amber) for
      needs-attention, escalating to danger (red) when urgent. Same convention as
