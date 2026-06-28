@@ -4,7 +4,15 @@
   of the recipe show page. A line can link to an inventory item OR carry a
   free-text name; amount and unit are optional and never inferred. %>
 <% stacked = local_assigns.fetch(:stacked, false) %>
-<%= form_with model: ingredient,
+<%# Every row's inline edit form and the bottom "Add ingredient" form share this
+    partial, so without a per-form namespace they'd all emit the same field ids
+    (recipe_ingredient_name, …). Duplicate ids are invalid HTML and break
+    `<label for>`: each label resolves to the FIRST matching field, so clicking a
+    label here focused row 1's input instead of the field beneath it. Namespacing
+    by the record's dom_id ("recipe_ingredient_5" / "new_recipe_ingredient") keeps
+    every id unique and every label wired to its own field. The namespace touches
+    only ids, not the `name` attributes, so submitted params are unchanged. %>
+<%= form_with model: ingredient, namespace: dom_id(ingredient),
       url: (ingredient.persisted? ? recipe_ingredient_path(recipe, ingredient) : recipe_ingredients_path(recipe)),
       class: (stacked ? "stacked-form" : "inline-ingredient-form") do |form| %>
   <% if ingredient.errors.any? %>
