@@ -71,7 +71,18 @@ class InventoryController < ApplicationController
     guide = OrderGuide.active.find_by(id: params[:order_guide_id].presence)
     item.assign_primary_order_guide!(guide)
 
-    redirect_back fallback_location: inventory_items_path, notice: "Updated #{item.name} primary guide."
+    # Confirm what actually happened: name the guide when one was set, and say
+    # "cleared" when "No primary guide" was chosen. The old single message
+    # ("Updated … primary guide") read the same either way — after picking "No
+    # primary guide" it sounded like a guide was still set, leaving the user
+    # unsure the clear took.
+    notice =
+      if guide
+        "Set #{item.name}'s primary guide to #{guide.name}."
+      else
+        "Cleared #{item.name}'s primary guide."
+      end
+    redirect_back fallback_location: inventory_items_path, notice: notice
   end
 
   private

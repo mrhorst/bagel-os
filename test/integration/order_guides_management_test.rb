@@ -381,4 +381,35 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert membership.primary_guide?
     assert_equal guide, item.reload.primary_order_guide
   end
+
+  test "setting a primary guide confirms which guide the item now uses" do
+    guide = OrderGuide.create!(name: "Weekly")
+    item = InventoryItem.create!(name: "Napkins", key: "napkins")
+
+    patch inventory_item_primary_order_guide_path(item), params: { order_guide_id: guide.id }
+
+    assert_redirected_to inventory_items_path
+    assert_equal guide, item.reload.primary_order_guide
+    # The confirmation should name the guide the item now orders from, so the
+    # user can see at a glance the right one stuck.
+    assert_match "Weekly", flash[:notice]
+    assert_match "Napkins", flash[:notice]
+  end
+
+  test "clearing a primary guide says it was cleared, not that it was updated" do
+    guide = OrderGuide.create!(name: "Weekly")
+    item = InventoryItem.create!(name: "Napkins", key: "napkins")
+    item.assign_primary_order_guide!(guide)
+
+    # Selecting "No primary guide" submits a blank order_guide_id.
+    patch inventory_item_primary_order_guide_path(item), params: { order_guide_id: "" }
+
+    assert_redirected_to inventory_items_path
+    assert_nil item.reload.primary_order_guide
+    # The guide was removed, not changed to another — the confirmation must say
+    # so. "Updated … primary guide" reads as if a new guide was set and leaves
+    # the user unsure whether the clear took.
+    assert_match(/cleared/i, flash[:notice])
+    assert_no_match(/updated/i, flash[:notice])
+  end
 end
