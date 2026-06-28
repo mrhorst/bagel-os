@@ -147,7 +147,7 @@
                     <td class="row-heading" data-label="Item">
                       <strong><%= item.name %></strong>
                       <% if membership.primary_guide? %>
-                        <span class="badge badge-ok badge-compact">Primary</span>
+                        <span class="badge badge-compact">Primary</span>
                       <% end %>
                     </td>
                     <td data-label="Guide section"><%= membership.order_guide_section&.name || item.inventory_section&.name || "Unsectioned" %></td>
