@@ -105,14 +105,35 @@ if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
   # Generic house recipes so the Recipes module has something to open.
   # Ingredient lines and costing build on these (#242, #243).
   [
-    { name: "Plain bagel dough", description: "House bagel dough. Mix, proof, shape, boil, bake.", position: 1 },
-    { name: "Scallion cream cheese", description: "Whip plain cream cheese with chopped scallions.", position: 2 }
+    {
+      name: "Plain bagel dough", description: "House bagel dough. Mix, proof, shape, boil, bake.", position: 1,
+      ingredients: [
+        { item: "All-purpose flour", quantity: 5, unit: "lb" },
+        { item: "Eggs", quantity: 2, unit: "each" }
+      ]
+    },
+    {
+      name: "Scallion cream cheese", description: "Whip plain cream cheese with chopped scallions.", position: 2,
+      ingredients: [
+        { item: "Plain cream cheese", quantity: 1, unit: "tub" }
+      ]
+    }
   ].each do |attrs|
     recipe = Recipe.find_or_initialize_by(name: attrs.fetch(:name))
     recipe.description = attrs.fetch(:description)
     recipe.position = attrs.fetch(:position)
     recipe.active = true
     recipe.save!
+
+    attrs.fetch(:ingredients, []).each_with_index do |line, index|
+      item = InventoryItem.find_by(key: InventoryItem.key_for(line.fetch(:item)))
+      ingredient = recipe.recipe_ingredients.find_or_initialize_by(inventory_item: item)
+      ingredient.name = line.fetch(:item)
+      ingredient.quantity = line[:quantity]
+      ingredient.unit = line[:unit]
+      ingredient.position = index + 1
+      ingredient.save!
+    end
   end
 
   # ── Demo task lists ──────────────────────────────────────────────────

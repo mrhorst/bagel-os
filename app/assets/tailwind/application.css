@@ -2120,6 +2120,15 @@
     margin: 6px 0 0;
     max-width: 220px;
   }
+  .inline-ingredient-form {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .inline-ingredient-form .compact-input {
+    width: 110px;
+  }
   .compact-input,
   .compact-select {
     min-height: 32px;

@@ -4,6 +4,9 @@ class Recipe < ApplicationRecord
   # costing build on top of it (#242, #243).
   has_paper_trail ignore: %i[updated_at]
 
+  has_many :recipe_ingredients, dependent: :destroy
+  has_many :inventory_items, through: :recipe_ingredients
+
   validates :name, presence: true
   validates :name, uniqueness: { case_sensitive: false }, if: -> { name.present? }
 

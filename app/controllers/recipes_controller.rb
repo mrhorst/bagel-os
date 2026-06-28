@@ -8,6 +8,7 @@ class RecipesController < ApplicationController
   end
 
   def show
+    load_ingredient_form_data
   end
 
   def new
@@ -39,6 +40,12 @@ class RecipesController < ApplicationController
 
   def set_recipe
     @recipe = Recipe.find(params[:id])
+  end
+
+  def load_ingredient_form_data
+    @ingredients = @recipe.recipe_ingredients.ordered.includes(:inventory_item)
+    @new_ingredient ||= @recipe.recipe_ingredients.build
+    @inventory_items = InventoryItem.active.ordered
   end
 
   def recipe_params

@@ -120,7 +120,9 @@ Rails.application.routes.draw do
   resources :products, only: %i[index show edit update] do
     resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
   end
-  resources :recipes, only: %i[index show new create edit update]
+  resources :recipes, only: %i[index show new create edit update] do
+    resources :ingredients, only: %i[create update destroy], controller: "recipe_ingredients"
+  end
   resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy] do
     collection do
       post :bulk, to: "photo_asset_bulk_actions#create", as: :bulk_actions

@@ -32,3 +32,58 @@
     </div>
   </section>
 <% end %>
+
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Ingredients</h2>
+      <p class="muted">Link a line to an inventory item where you can, and record the amount and unit. Leave the amount or unit blank when it isn't known — they're never guessed.</p>
+    </div>
+  </div>
+
+  <% if @ingredients.any? %>
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          <th>Ingredient</th>
+          <th>Amount</th>
+          <th>Unit</th>
+          <th>Edit</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @ingredients.each do |ingredient| %>
+          <%# When an inline edit is rejected, the controller hands back the
+              invalid instance so the row keeps the typed values and shows the
+              error instead of reverting. %>
+          <% row = (@editing_ingredient if @editing_ingredient&.id == ingredient.id) || ingredient %>
+          <tr>
+            <td class="row-heading" data-label="Ingredient">
+              <%= ingredient.display_name %>
+              <% if ingredient.inventory_item %><span class="badge badge-compact">Inventory</span><% end %>
+            </td>
+            <td data-label="Amount" class="tnum"><%= compact_decimal(ingredient.quantity) %></td>
+            <td data-label="Unit"><%= ingredient.unit.presence || "—" %></td>
+            <td data-label="Edit">
+              <%= render "recipes/ingredient_form",
+                    recipe: @recipe, ingredient: row, inventory_items: @inventory_items, submit_label: "Save" %>
+            </td>
+            <td data-label="Remove">
+              <%= button_to "Remove", recipe_ingredient_path(@recipe, ingredient), method: :delete, class: "button small",
+                    data: { turbo_confirm: "Remove #{ingredient.display_name} from #{@recipe.name}?" } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No ingredients yet. Add the first line below.</p>
+  <% end %>
+</section>
+
+<section class="panel narrow">
+  <h2>Add ingredient</h2>
+  <%= render "recipes/ingredient_form",
+        recipe: @recipe, ingredient: @new_ingredient, inventory_items: @inventory_items, submit_label: "Add ingredient", stacked: true %>
+</section>

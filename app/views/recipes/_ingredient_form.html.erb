@@ -1,0 +1,54 @@
+<%# locals: recipe, ingredient, inventory_items, submit_label, stacked (default false)
+
+  Shared by the inline per-row edit and the "Add ingredient" form at the bottom
+  of the recipe show page. A line can link to an inventory item OR carry a
+  free-text name; amount and unit are optional and never inferred. %>
+<% stacked = local_assigns.fetch(:stacked, false) %>
+<%= form_with model: ingredient,
+      url: (ingredient.persisted? ? recipe_ingredient_path(recipe, ingredient) : recipe_ingredients_path(recipe)),
+      class: (stacked ? "stacked-form" : "inline-ingredient-form") do |form| %>
+  <% if ingredient.errors.any? %>
+    <% if stacked %>
+      <div class="flash flash-alert"><%= ingredient.errors.full_messages.to_sentence %></div>
+    <% else %>
+      <p class="inline-form-error" role="alert"><%= ingredient.errors.full_messages.to_sentence %></p>
+    <% end %>
+  <% end %>
+
+  <% if stacked %>
+    <div class="field">
+      <%= form.label :inventory_item_id, "Inventory item" %>
+      <%= form.collection_select :inventory_item_id, inventory_items, :id, :name,
+            { include_blank: "Not an inventory item" }, { class: "compact-select" } %>
+    </div>
+    <div class="field">
+      <%= form.label :name, "Or type a name" %>
+      <p class="muted small">Use this for something not tracked in inventory. Required only when no inventory item is chosen.</p>
+      <%= form.text_field :name, autocomplete: "off", placeholder: "Chopped scallions" %>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <%= form.label :quantity, "Amount" %>
+        <%= form.number_field :quantity, step: "0.0001", min: "0", placeholder: "Leave blank if unknown" %>
+      </div>
+      <div class="field">
+        <%= form.label :unit %>
+        <%= form.text_field :unit, autocomplete: "off", placeholder: "cup, lb, each" %>
+      </div>
+    </div>
+    <div class="form-footer">
+      <%= form.submit submit_label, class: "button primary" %>
+    </div>
+  <% else %>
+    <%= form.label :inventory_item_id, "Inventory item", class: "sr-only" %>
+    <%= form.collection_select :inventory_item_id, inventory_items, :id, :name,
+          { include_blank: "No item" }, { class: "compact-select" } %>
+    <%= form.label :name, "Name", class: "sr-only" %>
+    <%= form.text_field :name, class: "compact-input", autocomplete: "off", placeholder: "or name" %>
+    <%= form.label :quantity, "Amount", class: "sr-only" %>
+    <%= form.number_field :quantity, step: "0.0001", min: "0", class: "compact-input", placeholder: "amt" %>
+    <%= form.label :unit, "Unit", class: "sr-only" %>
+    <%= form.text_field :unit, class: "compact-input", autocomplete: "off", placeholder: "unit" %>
+    <%= form.submit submit_label, class: "button small" %>
+  <% end %>
+<% end %>
