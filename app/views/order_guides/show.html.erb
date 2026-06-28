@@ -95,8 +95,10 @@
       </div>
       <%= form.submit "Add to guide", class: "button primary" %>
     <% end %>
-  <% else %>
+  <% elsif @memberships.any? %>
     <p class="field-hint">Every active inventory item is already on this guide.</p>
+  <% else %>
+    <p class="field-hint">No inventory items exist yet. Import receipts or add a product to the operating workflow from its product page to build your inventory.</p>
   <% end %>
 </section>
 <% end %>
