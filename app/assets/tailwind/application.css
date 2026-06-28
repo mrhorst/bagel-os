@@ -1196,6 +1196,19 @@
     max-width: 720px;
   }
 
+  /* A panel's intro helper (`<p class="muted small">` sitting directly under the
+     heading, before the form/control it introduces — e.g. the Account screen's
+     "Update the name and email…" line) carries no margin of its own, so it butts
+     right up against the first field label below it and reads as if it belongs to
+     that field instead of the heading. Add a gap below it — but only when it has
+     a following sibling (`:not(:last-child)`), so a helper used as a panel's last
+     line gains no stray trailing space. Direct-child only: helpers nested inside
+     a `.stacked-form`, a `.settings-card`, or `.decision-card-body` keep their
+     own spacing and are untouched. */
+  .panel > p.small:not(:last-child) {
+    margin-bottom: 12px;
+  }
+
   .guide-card {
     background: var(--surface-3);
     border: 1px solid var(--line);
