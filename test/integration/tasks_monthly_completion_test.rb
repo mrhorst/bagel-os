@@ -49,6 +49,26 @@ class TasksMonthlyCompletionTest < ActionDispatch::IntegrationTest
       "the completed monthly occurrence should not appear in the focused list"
   end
 
+  test "the monthly completion circle is guarded by a confirmation, the daily one is not" do
+    monthly = monthly_occurrence
+    daily = daily_occurrence_for(monthly.task_list)
+
+    get tasks_list_path(monthly.task_list)
+    assert_response :success
+    doc = Nokogiri::HTML(response.body)
+
+    monthly_row = doc.at_css("##{ActionView::RecordIdentifier.dom_id(monthly)}")
+    monthly_form = monthly_row.at_css("form.task-checkbox-form")
+    assert_equal "Mark Descale dish sink done for this month?",
+      monthly_form["data-turbo-confirm"],
+      "the monthly completion circle must confirm before silently removing the row"
+
+    daily_row = doc.at_css("##{ActionView::RecordIdentifier.dom_id(daily)}")
+    daily_form = daily_row.at_css("form.task-checkbox-form")
+    assert_nil daily_form["data-turbo-confirm"],
+      "the daily completion circle stays a single tap (its row is undoable in place)"
+  end
+
   test "completing a daily task still replaces its row in place with a completed circle" do
     occurrence = daily_occurrence
 
@@ -85,6 +105,27 @@ class TasksMonthlyCompletionTest < ActionDispatch::IntegrationTest
       period_ends_on: Date.current.end_of_month,
       due_at: nil,
       completion_window_ends_at: nil,
+      snapshot_title: task.title,
+      snapshot_list_name: list.name,
+      requires_photo_evidence: false
+    )
+  end
+
+  def daily_occurrence_for(list)
+    task = list.tasks.create!(
+      title: "Wipe counters",
+      recurrence_type: "daily",
+      starts_on: Date.current,
+      due_time: Time.zone.parse("23:59"),
+      requires_photo_evidence: false
+    )
+    task.task_occurrences.create!(
+      task_list: list,
+      period_kind: "day",
+      period_starts_on: Date.current,
+      period_ends_on: Date.current,
+      due_at: 1.hour.from_now,
+      completion_window_ends_at: 1.week.from_now,
       snapshot_title: task.title,
       snapshot_list_name: list.name,
       requires_photo_evidence: false

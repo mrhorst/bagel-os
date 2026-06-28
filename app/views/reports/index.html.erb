@@ -21,7 +21,14 @@
         <tr>
           <td class="row-heading" data-label="Report"><strong><%= report.humanize %></strong> <code><%= report %>.csv</code></td>
           <td data-label="Description"><%= report_description(report) %></td>
-          <td class="numeric"><%= link_to "Download", report_path(report), class: "button" %></td>
+          <%# Fetch-and-share the CSV via download_controller instead of a plain
+              attachment link: a same-window nav to an attachment strands a
+              chrome-less installed PWA on a page it can't render. target=_blank
+              is the no-JS fallback. See download_controller.js. %>
+          <td class="numeric"><%= link_to "Download", report_path(report),
+                class: "button", target: "_blank", rel: "noopener",
+                data: { controller: "download", action: "download#save",
+                        download_filename_value: "#{report}.csv" } %></td>
         </tr>
       <% end %>
     </tbody>

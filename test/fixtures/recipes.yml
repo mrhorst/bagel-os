@@ -1,0 +1,15 @@
+bagel_dough:
+  name: Plain bagel dough
+  description: "House bagel dough."
+  active: true
+  position: 1
+
+scallion_spread:
+  name: Scallion cream cheese
+  active: true
+  position: 2
+
+archived_recipe:
+  name: Retired soup base
+  active: false
+  position: 3

@@ -28,6 +28,12 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     get order_guides_path
     assert_response :success
     assert_select "a", text: "CSV example"
+    # The CSV example link must use the PWA-safe download pattern so a same-window
+    # attachment nav can't strand an installed PWA on a chrome-less page.
+    assert_select(
+      %(a[href="#{csv_example_order_guides_path}"][data-controller~="download"][data-action~="download#save"][target="_blank"][rel="noopener"]),
+      count: 1
+    )
     assert_no_match "Import current PDFs", response.body
     assert_select "h2", text: "Items by guide"
     assert_match "Cream Cheese", response.body
@@ -66,6 +72,23 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_select "textarea[name=?]", "order_guide[notes]",
       text: "Count before the morning order; ask about par levels."
     assert_select "input[name=?][value=?]", "order_guide[name]", "Daily"
+    assert_equal 1, OrderGuide.where(name: "Daily").count
+  end
+
+  test "renaming a guide onto another guide's name is blocked in place, not silently duplicated" do
+    OrderGuide.create!(name: "Daily")
+    weekly = OrderGuide.create!(name: "Weekly")
+
+    patch order_guide_path(weekly), params: { order_guide: { name: "Daily" } }
+
+    # The rename must be rejected with the same recoverable message the create
+    # form gives — not silently succeed and leave two "Daily" guides. The index
+    # re-renders in place with the attempted name and an inline error.
+    assert_response :unprocessable_entity
+    assert_select ".inline-form-error", text: /A guide named "Daily" already exists\. Pick a different name\./
+    assert_select "form[action=?] input[name=?][value=?]",
+      order_guide_path(weekly), "order_guide[name]", "Daily"
+    assert_equal "Weekly", weekly.reload.name
     assert_equal 1, OrderGuide.where(name: "Daily").count
   end
 

@@ -1548,6 +1548,24 @@
   .log-book-save-status-error { color: var(--danger-fg); }
   .log-book-save-status-idle { color: var(--ink-muted); }
 
+  .log-book-draft-recovery {
+    align-items: center;
+    background: var(--danger-soft);
+    border: 1px solid color-mix(in oklch, var(--danger) 24%, transparent);
+    border-radius: var(--radius-md);
+    box-shadow: inset 2px 0 0 var(--danger);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+  }
+  .log-book-draft-recovery p {
+    color: var(--ink);
+    margin: 0;
+  }
+
   /* Visually distinct from .check (which is a checkbox). A radio inside a
      label gets a slightly tighter feel and a subtle border treatment so the
      user can tell at a glance that only one in the group is selectable. */
@@ -2115,6 +2133,35 @@
     gap: 8px;
     min-width: 220px;
   }
+  .inline-form-error {
+    color: var(--danger-fg);
+    font-size: 0.82rem;
+    margin: 6px 0 0;
+    max-width: 220px;
+  }
+  .inline-ingredient-form {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .inline-ingredient-form .compact-input {
+    width: 110px;
+  }
+  .recipe-cost-summary {
+    border-top: 1px solid var(--line);
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+  .recipe-cost-total {
+    align-items: baseline;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+  .recipe-cost-total strong {
+    font-size: 1.2rem;
+  }
   .compact-input,
   .compact-select {
     min-height: 32px;
@@ -2167,12 +2214,16 @@
   /* Guide carries the select + Save control (floored ~240px); the three
      short-data columns get just enough for their headers; Item and Receipt
      product are left to split the remainder equally — the two text columns
-     stay the widest while every section lines up on the same column axes. */
+     stay the widest while every section lines up on the same column axes.
+     "Pack / count note" is the longest of the three short headers, so it needs
+     a touch more room than the others to keep its label on a single line —
+     otherwise it wraps to two lines and drops below the single-line headers
+     beside it, breaking the header row's shared top baseline. */
   .inventory-section-table th:nth-child(2) {
     width: 280px;
   } /* Guide (select + Save) */
   .inventory-section-table th:nth-child(4) {
-    width: 14%;
+    width: 16%;
   } /* Pack / count note */
   .inventory-section-table th:nth-child(5) {
     width: 11%;
@@ -4166,61 +4217,6 @@
     max-width: 60ch;
   }
 
-  .home-ai-recommendation {
-    align-items: center;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    box-shadow:
-      inset 2px 0 0 var(--info),
-      var(--shadow-e1);
-    display: flex;
-    gap: 16px;
-    justify-content: space-between;
-    margin-bottom: 18px;
-    padding: 16px;
-  }
-
-  .home-ai-recommendation-main {
-    min-width: 0;
-  }
-
-  .home-ai-recommendation-tag {
-    background: var(--info-soft);
-    border: 1px solid color-mix(in oklch, var(--info) 24%, transparent);
-    border-radius: var(--radius-pill);
-    color: var(--info-fg);
-    display: inline-flex;
-    font-size: 0.72rem;
-    font-weight: 650;
-    letter-spacing: 0.04em;
-    margin-bottom: 8px;
-    padding: 3px 9px;
-    text-transform: uppercase;
-  }
-
-  .home-ai-recommendation h2 {
-    color: var(--ink);
-    font-size: 1.1rem;
-    font-weight: 650;
-    line-height: 1.25;
-    margin: 0 0 6px;
-  }
-
-  .home-ai-recommendation p {
-    color: var(--ink-2);
-    line-height: 1.45;
-    margin: 0;
-    max-width: 82ch;
-  }
-
-  .home-ai-recommendation-time {
-    color: var(--ink-muted);
-    display: block;
-    font-size: 0.82rem;
-    margin-top: 10px;
-  }
-
   .home-surface-grid {
     display: grid;
     gap: 12px;
@@ -4946,6 +4942,40 @@
     display: flex;
     justify-content: flex-start;
   }
+  .task-wizard-review {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+  .task-wizard-review > div {
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 2px;
+    padding-bottom: 8px;
+  }
+  .task-wizard-review > div:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .task-wizard-review dt {
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+  .task-wizard-review dd {
+    color: var(--ink);
+    margin: 0;
+  }
+  .task-wizard-review-empty {
+    color: var(--ink-muted);
+  }
+  .task-wizard-subhead {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 6px 0 0;
+  }
   .task-wizard-actions {
     align-items: center;
     display: flex;
@@ -5506,7 +5536,6 @@
     .hero-panel,
     .dashboard-hero,
     .dashboard-block-header,
-    .home-ai-recommendation,
     .block-page-header,
     .block-panel-header,
     .topbar {

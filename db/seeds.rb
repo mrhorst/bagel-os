@@ -101,6 +101,41 @@ if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
     item.assign_primary_order_guide!(demo_guides.fetch(seed_item.fetch(:guide)))
   end
 
+  # ── Demo recipes ─────────────────────────────────────────────────────
+  # Generic house recipes so the Recipes module has something to open.
+  # Ingredient lines and costing build on these (#242, #243).
+  [
+    {
+      name: "Plain bagel dough", description: "House bagel dough. Mix, proof, shape, boil, bake.", position: 1,
+      ingredients: [
+        { item: "All-purpose flour", quantity: 5, unit: "lb" },
+        { item: "Eggs", quantity: 2, unit: "each" }
+      ]
+    },
+    {
+      name: "Scallion cream cheese", description: "Whip plain cream cheese with chopped scallions.", position: 2,
+      ingredients: [
+        { item: "Plain cream cheese", quantity: 1, unit: "tub" }
+      ]
+    }
+  ].each do |attrs|
+    recipe = Recipe.find_or_initialize_by(name: attrs.fetch(:name))
+    recipe.description = attrs.fetch(:description)
+    recipe.position = attrs.fetch(:position)
+    recipe.active = true
+    recipe.save!
+
+    attrs.fetch(:ingredients, []).each_with_index do |line, index|
+      item = InventoryItem.find_by(key: InventoryItem.key_for(line.fetch(:item)))
+      ingredient = recipe.recipe_ingredients.find_or_initialize_by(inventory_item: item)
+      ingredient.name = line.fetch(:item)
+      ingredient.quantity = line[:quantity]
+      ingredient.unit = line[:unit]
+      ingredient.position = index + 1
+      ingredient.save!
+    end
+  end
+
   # ── Demo task lists ──────────────────────────────────────────────────
   # Three always-visible lists (no display_start_time / display_end_time)
   # so the dashboard's list picker has real choices to offer, and the
@@ -220,5 +255,17 @@ if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
     line.needs_review  = attrs.fetch(:needs_review)
     line.row_checksum  = "demo-receipt-0001-line-#{attrs.fetch(:line_number)}"
     line.save!
+
+    # Keep the invariant the app assumes — needs_review ⟺ a pending review
+    # exists — so a flagged demo line is actually resolvable from the edit page
+    # rather than a dead-end (#172). The demo line carries no derivable
+    # comparable price, so a "price" review is the right thing to resolve.
+    if line.needs_review? && line.normalization_reviews.pending.none?
+      line.normalization_reviews.create!(
+        issue_type: "price",
+        status: "pending",
+        description: Purchasing::ReceiptLineNormalizer::PRICE_REVIEW
+      )
+    end
   end
 end
