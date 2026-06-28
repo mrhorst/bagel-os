@@ -6163,6 +6163,14 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    /* The day-stepper arrows are the primary day-navigation control on this
+       screen, but their 36px desktop size is under the 44px touch-target floor.
+       The full-width pager bar has room, so size them to 44x44 on touch widths
+       (the glyph stays 16px — only the tap area grows). */
+    .log-book-date-arrow {
+      height: 44px;
+      width: 44px;
+    }
     .log-book-header-actions {
       justify-content: flex-end;
     }
