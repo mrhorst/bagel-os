@@ -94,6 +94,43 @@ class PhotoAssetBulkActionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/already in/, flash[:notice])
   end
 
+  test "tagging reports the number actually tagged, not the number selected" do
+    sign_in_as(users(:one))
+    already_tagged, fresh = create_asset, create_asset
+    already_tagged.taggings.create!(tag: tags(:food), source: "manual", confirmed_at: Time.current, created_by: users(:one))
+
+    post bulk_actions_photo_assets_path, params: { bulk_action: "add_tag", tag_id: tags(:food).id, photo_asset_ids: [ already_tagged.id, fresh.id ] }
+
+    # Only `fresh` gains the tag; the notice must count that one, not both.
+    assert_nil flash[:alert]
+    assert_match(/Tagged 1 photo/, flash[:notice])
+  end
+
+  test "tagging only already-tagged photos says so instead of claiming a fresh tag" do
+    sign_in_as(users(:one))
+    asset = create_asset
+    asset.taggings.create!(tag: tags(:food), source: "manual", confirmed_at: Time.current, created_by: users(:one))
+
+    post bulk_actions_photo_assets_path, params: { bulk_action: "add_tag", tag_id: tags(:food).id, photo_asset_ids: [ asset.id ] }
+
+    assert_nil flash[:alert]
+    assert_no_match(/Tagged 1 photo/, flash[:notice])
+    assert_match(/already have/, flash[:notice])
+  end
+
+  test "bulk tagging confirms a pending suggestion and counts it as tagged" do
+    sign_in_as(users(:one))
+    asset = create_asset
+    asset.taggings.create!(tag: tags(:food), source: "ai", confirmed_at: nil)
+
+    post bulk_actions_photo_assets_path, params: { bulk_action: "add_tag", tag_id: tags(:food).id, photo_asset_ids: [ asset.id ] }
+
+    # Confirming a pending suggestion is a real change — it counts.
+    assert asset.taggings.sole.confirmed?
+    assert_nil flash[:alert]
+    assert_match(/Tagged 1 photo/, flash[:notice])
+  end
+
   test "applying with no tag chosen warns via alert, not a success notice" do
     sign_in_as(users(:one))
     asset = create_asset
