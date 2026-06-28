@@ -1,5 +1,13 @@
 <% content_for :title, @order_guide ? "Count #{@order_guide.name}" : "New Inventory Count" %>
 
+<%# The slim mobile top bar centers a 1.5rem/700 title in a single grid column
+    between the back link and the right slot. "New Inventory Count" overflows that
+    column and ellipsizes to "New Inventory Co…", clipping the screen's own name.
+    Show a short title in the compact bar via the layout's :mobile_title hook (the
+    desktop h1 keeps the full label). Only needed in the guide-chooser state — once
+    a guide is picked the title is the already-short "Count <name>". %>
+<% content_for :mobile_title, "New Count" if @order_guide.blank? %>
+
 <%# On mobile the top-left chevron is the primary back affordance. Without this
     override the layout's auto-chevron points at the module hub (Stock),
     overshooting the Inventory Counts list this page was opened from and
