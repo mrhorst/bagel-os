@@ -1,4 +1,13 @@
 <% line = review.receipt_line_item %>
+<%# This card renders once per pending review, and in list view ("Show all")
+    several render on the same page. The tag helpers below derive their id from
+    the field name, so without a review-scoped id every card emits the same
+    id="product_id", id="canonical_name", etc. — duplicate, invalid ids across
+    the queue. Scope each control's id to the review and give it an sr-only
+    label (the h3s name the section, not the individual control), so each
+    select/field is programmatically labelled for assistive tech. The name
+    attributes are unchanged, so the controllers and form POSTs are untouched. %>
+<% rid = review.id %>
 <article class="panel review-card decision-card">
   <header class="decision-card-header">
     <div class="decision-card-meta">
@@ -25,9 +34,10 @@
     <section class="decision-action decision-action-primary">
       <h3>Assign to existing product</h3>
       <%= form_with url: assign_product_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
+        <%= label_tag "product_id_#{rid}", "Product to assign", class: "sr-only" %>
         <%= select_tag :product_id,
           options_from_collection_for_select(products, :id, :canonical_name),
-          prompt: "Choose product" %>
+          prompt: "Choose product", id: "product_id_#{rid}" %>
         <%= form.submit "Assign", class: "button primary" %>
       <% end %>
     </section>
@@ -35,10 +45,12 @@
     <section class="decision-action">
       <h3>Or create new</h3>
       <%= form_with url: create_product_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
-        <%= text_field_tag :canonical_name, line.raw_name, placeholder: "Canonical name" %>
+        <%= label_tag "canonical_name_#{rid}", "New product name", class: "sr-only" %>
+        <%= text_field_tag :canonical_name, line.raw_name, placeholder: "Canonical name", id: "canonical_name_#{rid}" %>
+        <%= label_tag "product_category_id_#{rid}", "Category", class: "sr-only" %>
         <%= select_tag :product_category_id,
           options_from_collection_for_select(categories, :id, :name),
-          prompt: "Choose category" %>
+          prompt: "Choose category", id: "product_category_id_#{rid}" %>
         <%= form.submit "Create", class: "button" %>
       <% end %>
     </section>
@@ -46,8 +58,10 @@
     <section class="decision-action decision-action-tertiary">
       <h3>Or resolve / ignore</h3>
       <%= form_with url: resolve_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
-        <%= select_tag :review_status, options_for_select([ [ "Resolved", "resolved" ], [ "Ignored", "ignored" ] ]) %>
-        <%= text_field_tag :resolution_notes, nil, placeholder: "Resolution note" %>
+        <%= label_tag "review_status_#{rid}", "Resolution", class: "sr-only" %>
+        <%= select_tag :review_status, options_for_select([ [ "Resolved", "resolved" ], [ "Ignored", "ignored" ] ]), id: "review_status_#{rid}" %>
+        <%= label_tag "resolution_notes_#{rid}", "Resolution note", class: "sr-only" %>
+        <%= text_field_tag :resolution_notes, nil, placeholder: "Resolution note", id: "resolution_notes_#{rid}" %>
         <%= form.submit "Update", class: "button" %>
       <% end %>
     </section>
