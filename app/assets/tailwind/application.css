@@ -1208,6 +1208,20 @@
   .guide-card h3 a:hover {
     text-decoration: none;
   }
+  /* "Items by guide" item cell: the name carries an optional "Primary" tag.
+     Inline, a long name (e.g. "All-purpose flour") pushes the badge onto its
+     own line where it orphaned flush-left, so short-named rows read "name
+     Primary" inline while long-named rows stacked — the same component two
+     ways. Stack the badge as a meta tag under the name for EVERY primary row,
+     matching the guide-membership table on the guide detail page (where a
+     block <small> already drops the badge below). Consistent regardless of
+     name length, never truncates the name. */
+  .guide-card td.row-heading strong {
+    display: block;
+  }
+  .guide-card td.row-heading .badge {
+    margin-top: 4px;
+  }
 
   .panel-heading,
   .review-main {
