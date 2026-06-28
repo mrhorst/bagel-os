@@ -19,7 +19,7 @@
     <tbody>
       <% @reports.each do |report| %>
         <tr>
-          <td class="row-heading" data-label="Report"><%= report.humanize %> <code><%= report %>.csv</code></td>
+          <td class="row-heading" data-label="Report"><strong><%= report.humanize %></strong> <code><%= report %>.csv</code></td>
           <td data-label="Description"><%= report_description(report) %></td>
           <%# Fetch-and-share the CSV via download_controller instead of a plain
               attachment link: a same-window nav to an attachment strands a
