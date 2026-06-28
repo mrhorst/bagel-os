@@ -6036,9 +6036,11 @@
        card itself uses — so on mobile the chip vanishes and its value (e.g. a
        user's role) reads as a stray word indented by the badge's own padding.
        Lift the neutral chip one surface step so it stays a visible chip on the
-       card. Coloured status badges (--ok/--warn soft fills) already contrast,
-       so leave them untouched and keep their meaning. */
-    .responsive-table td .badge:not(.badge-ok):not(.badge-warning) {
+       card. Coloured status badges (--ok/--warn/--danger soft fills) already
+       contrast, so leave them untouched and keep their meaning — without the
+       --danger exclusion a "Missed"/"Failed" badge lost its red fill on mobile
+       and read as a washed-out neutral chip. */
+    .responsive-table td .badge:not(.badge-ok):not(.badge-warning):not(.badge-danger) {
       background: var(--surface-2);
     }
     /* Optional: hide low-priority columns on mobile via .hide-on-mobile */
