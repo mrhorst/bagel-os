@@ -53,14 +53,29 @@ class PhotoAssetBulkActionsController < ApplicationController
     tag = Tag.active.find_by(id: params[:tag_id])
     return [ :alert, "Choose a tag to apply." ] if tag.nil?
 
+    tagged = 0
     assets.find_each do |asset|
       tagging = asset.taggings.find_or_initialize_by(tag: tag)
+      # A photo already carrying this confirmed tag is unchanged — skip it so it
+      # isn't counted as a fresh tag. A pending AI suggestion still counts: the
+      # manual apply confirms it, which is a real state change.
+      next if tagging.persisted? && tagging.confirmed?
+
       tagging.source = "manual" if tagging.new_record?
       tagging.confirmed_at ||= Time.current
       tagging.created_by ||= Current.user
       tagging.save!
+      tagged += 1
     end
-    [ :notice, "Tagged #{pluralize_photos(assets.count)} #{tag.name}." ]
+
+    # Report what actually changed, not how many were selected: photos already
+    # carrying the tag are skipped above, so counting the whole selection would
+    # claim a fresh tag that never happened. Mirrors #add_to_collection.
+    if tagged.zero?
+      [ :notice, "Those photos already have #{tag.name}." ]
+    else
+      [ :notice, "Tagged #{pluralize_photos(tagged)} #{tag.name}." ]
+    end
   end
 
   def add_to_collection(assets)
