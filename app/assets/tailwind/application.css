@@ -3184,9 +3184,13 @@
   /* The Search submit is an <input type="submit">, so the global block-form
      control rule forces it to width:100% — which drops it onto its own full
      width row and makes it read like an input, not a button. Keep it sized to
-     its content so it trails the field inline, as the flex row intends. */
+     its content so it trails the field inline, as the flex row intends.
+     Match the 40px search field height (the .button.small default is 30px,
+     which left the submit floating 5px short top and bottom of the field on
+     this align-items:center row) so the pair reads as one search bar. */
   .photo-search input[type="submit"] {
     flex: 0 0 auto;
+    min-height: 40px;
     width: auto;
   }
 
