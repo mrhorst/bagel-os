@@ -1,0 +1,23 @@
+<% content_for :title, "Edit #{@recipe.name}" %>
+
+<%# Send the mobile back-chevron up exactly one level — to this recipe — rather
+    than the layout's default jump to the Stock hub, matching the "Cancel"
+    target on the form. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to recipe_path(@recipe), class: "mobile-header-back", aria: { label: "Back to recipe" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Recipe</span>
+  <% end %>
+<% end %>
+
+<section class="page-heading">
+  <div>
+    <h1>Edit recipe</h1>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= render "form", recipe: @recipe %>
+</article>
