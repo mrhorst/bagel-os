@@ -28,6 +28,12 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     get order_guides_path
     assert_response :success
     assert_select "a", text: "CSV example"
+    # The CSV example link must use the PWA-safe download pattern so a same-window
+    # attachment nav can't strand an installed PWA on a chrome-less page.
+    assert_select(
+      %(a[href="#{csv_example_order_guides_path}"][data-controller~="download"][data-action~="download#save"][target="_blank"][rel="noopener"]),
+      count: 1
+    )
     assert_no_match "Import current PDFs", response.body
     assert_select "h2", text: "Items by guide"
     assert_match "Cream Cheese", response.body

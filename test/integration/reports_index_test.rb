@@ -27,4 +27,21 @@ class ReportsIndexTest < ActionDispatch::IntegrationTest
         "Reports page no longer shows the #{report}.csv filename"
     end
   end
+
+  test "each report download uses the PWA-safe download pattern" do
+    get reports_path
+
+    assert_response :success
+    # A same-window nav to a Content-Disposition: attachment link strands an
+    # installed PWA on a chrome-less page. Every download must route through
+    # download_controller (with a target=_blank no-JS fallback), like the photo
+    # downloads already do.
+    Purchasing::ReportExporter::REPORTS.each do |report|
+      assert_select(
+        %(a[href="#{report_path(report)}"][data-controller~="download"][data-action~="download#save"][target="_blank"][rel="noopener"][data-download-filename-value="#{report}.csv"]),
+        { count: 1 },
+        "#{report} download is missing the PWA-safe download wiring"
+      )
+    end
+  end
 end

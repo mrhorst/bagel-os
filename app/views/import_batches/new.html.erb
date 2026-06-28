@@ -25,7 +25,13 @@
     <div>
       <%= form.label :csv_file, "CSV file" %>
       <%= form.file_field :csv_file, accept: ".csv,text/csv", required: true %>
-      <p class="field-hint">Not sure of the format? <%= link_to "Download a CSV example", csv_example_import_batches_path %> to see the expected columns.</p>
+      <%# Fetch-and-share via download_controller so a same-window attachment nav
+          can't strand an installed PWA on a chrome-less page. target=_blank is
+          the no-JS fallback. See download_controller.js. %>
+      <p class="field-hint">Not sure of the format? <%= link_to "Download a CSV example", csv_example_import_batches_path,
+            target: "_blank", rel: "noopener",
+            data: { controller: "download", action: "download#save",
+                    download_filename_value: "receipt-import-example.csv" } %> to see the expected columns.</p>
     </div>
     <%= form.submit "Import receipt", class: "button primary" %>
   <% end %>
