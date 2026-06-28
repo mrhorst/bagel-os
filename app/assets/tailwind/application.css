@@ -1240,6 +1240,19 @@
   .guide-card td.row-heading .badge {
     margin-top: 4px;
   }
+  /* The "Primary" tag is a neutral .badge, which fills with --surface-3 — the
+     exact token the .guide-card itself uses — so the chip's fill dissolves into
+     the card and the tag reads as bare, low-key text instead of a chip. That
+     leaves it visually inconsistent with the filled status badges elsewhere on
+     this screen (e.g. the green "Active" chip in the Named guides table) and
+     too easy to miss. Lift the neutral chip one surface step so it stays a
+     visible chip on the card — the same fix the mobile .responsive-table cards
+     already apply for the identical surface-3-on-surface-3 collision. Coloured
+     status badges (--ok/--warn/--danger soft fills) already contrast, so leave
+     them untouched and keep their meaning. */
+  .guide-card .badge:not(.badge-ok):not(.badge-warning):not(.badge-danger) {
+    background: var(--surface-2);
+  }
 
   .panel-heading,
   .review-main {
