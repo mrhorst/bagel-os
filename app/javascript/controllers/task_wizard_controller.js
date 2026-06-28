@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["panel", "step", "back", "next", "submit"]
+  static targets = ["panel", "step", "back", "next", "submit", "reviewValue"]
   static values = { errorStep: { type: Number, default: -1 } }
 
   connect() {
@@ -41,7 +41,7 @@ export default class extends Controller {
 
   submit(event) {
     // Validate EVERY panel, not just the current one. The step nav lets a user
-    // jump straight to the last step (e.g. to "Review"), skipping a required
+    // jump straight to the last step (the "Review" step), skipping a required
     // field like the title on an earlier, now-hidden panel. The browser still
     // blocks the native submit on that invalid field — but it can't show its
     // validation bubble on a hidden control, so the click silently does nothing
@@ -72,6 +72,84 @@ export default class extends Controller {
     this.backTarget.hidden = this.index === 0
     this.nextTarget.hidden = this.index === this.panelTargets.length - 1
     this.submitTarget.hidden = this.index !== this.panelTargets.length - 1
+
+    // The last panel is the Review step. Refill its summary every time it opens
+    // so it always reflects the latest entries (the user can jump back, edit,
+    // and return via the step nav).
+    if (this.index === this.panelTargets.length - 1) this.renderReview()
+  }
+
+  // Mirror the entries from the earlier panels into the Review step's summary.
+  // Reads straight from the live form controls so it never drifts from what
+  // will actually be submitted.
+  renderReview() {
+    if (!this.hasReviewValueTarget) return
+
+    this.reviewValueTargets.forEach((node) => {
+      const text = this.reviewText(node.dataset.taskWizardField)
+      node.textContent = text || "—"
+      node.classList.toggle("task-wizard-review-empty", !text)
+    })
+  }
+
+  reviewText(field) {
+    if (field === "timing") return this.timingSummary()
+
+    const control = this.fieldControl(field)
+    if (!control) return ""
+
+    if (control.tagName === "SELECT") {
+      return control.selectedOptions[0]?.value ? control.selectedOptions[0].text.trim() : ""
+    }
+    return control.value.trim()
+  }
+
+  timingSummary() {
+    const recurrenceControl = this.fieldControl("recurrence_type")
+    if (!recurrenceControl) return ""
+    const recurrence = recurrenceControl.value
+    const parts = [recurrenceControl.selectedOptions[0]?.text.trim()].filter(Boolean)
+
+    if (recurrence === "one_time") {
+      const date = this.fieldControl("one_time_on")?.value
+      if (date) parts.push(`on ${date}`)
+    }
+
+    if (recurrence === "weekly") {
+      const days = this.weekdayAbbreviations()
+      if (days.length) parts.push(days.join(", "))
+    }
+
+    if (recurrence !== "monthly") {
+      const due = this.fieldControl("due_time")?.value
+      if (due) parts.push(`due ${this.formatTime(due)}`)
+    }
+
+    return parts.join(" · ")
+  }
+
+  weekdayAbbreviations() {
+    const abbr = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    return Array.from(
+      this.element.querySelectorAll('input[name="task[weekdays][]"]:checked')
+    )
+      .map((input) => abbr[Number(input.value)])
+      .filter(Boolean)
+  }
+
+  formatTime(value) {
+    const [hours, minutes] = value.split(":").map(Number)
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return value
+    const period = hours >= 12 ? "PM" : "AM"
+    const twelveHour = hours % 12 === 0 ? 12 : hours % 12
+    return `${twelveHour}:${String(minutes).padStart(2, "0")} ${period}`
+  }
+
+  fieldControl(field) {
+    return (
+      this.element.querySelector(`[name="task[${field}]"]`) ||
+      this.element.querySelector(`[name="task[${field}][]"]`)
+    )
   }
 
   currentPanelIsValid() {

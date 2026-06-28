@@ -60,12 +60,18 @@ class OrderGuidesController < ApplicationController
   end
 
   def update
-    guide = OrderGuide.find(params[:id])
+    @order_guide = OrderGuide.find(params[:id])
 
-    if guide.update(order_guide_params)
+    if @order_guide.update(order_guide_params)
       redirect_to order_guides_path, notice: "Order guide updated."
     else
-      redirect_to order_guides_path, alert: guide.errors.full_messages.to_sentence
+      # Re-render the index in place rather than redirecting, so a rejected
+      # rename (e.g. a duplicate name) keeps what the manager typed and shows
+      # the error beside the field instead of dropping it to a top-of-page flash.
+      # Matches the in-place recovery the create path already uses.
+      load_guides_index
+      @new_order_guide = OrderGuide.new
+      render :index, status: :unprocessable_entity
     end
   end
 

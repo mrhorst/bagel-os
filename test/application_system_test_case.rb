@@ -11,6 +11,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     # Required for headless Chrome in sandboxed/CI environments.
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    # Some sandboxes (e.g. Claude Code on the web) ship a browser that isn't on
+    # the default Chrome search path. Point Selenium at it via env when set;
+    # unset, this is a no-op and Selenium resolves the browser as usual.
+    if (chrome_binary = ENV["SYSTEM_TEST_CHROME_BINARY"]).present?
+      options.binary = chrome_binary
+    end
     # Chrome's password manager / autofill intermittently swallows the keystrokes
     # typed into the email + autocomplete="current-password" fields, leaving them
     # blank and making the sign-in system tests flaky (~50% on a 4-test file).

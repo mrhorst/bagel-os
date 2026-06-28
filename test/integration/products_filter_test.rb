@@ -86,6 +86,51 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_not product.reload.needs_review?
   end
 
+  test "a product hidden from the catalog drops out of the index but Show hidden brings it back" do
+    product = Product.find_by!(canonical_name: "Tongol Tuna")
+    product.update!(active: false)
+
+    # Default catalog: the hidden product is gone.
+    get products_path
+    assert_response :success
+    assert_select "td a", text: "Tongol Tuna", count: 0
+
+    # Show hidden: it reappears, flagged so it reads as hidden, not normal.
+    get products_path(show_hidden: "1")
+    assert_response :success
+    assert_select "td a", text: "Tongol Tuna"
+    assert_select "td.row-heading .badge", text: "Hidden"
+  end
+
+  test "Show hidden is a clearable filter" do
+    get products_path(show_hidden: "1")
+
+    assert_response :success
+    assert_select "form.filters a[data-filter-clear]", text: "Clear filters"
+  end
+
+  test "a hidden product's show page says it is hidden from the catalog" do
+    product = Product.find_by!(canonical_name: "Tongol Tuna")
+    product.update!(active: false)
+
+    get product_path(product)
+
+    assert_response :success
+    # The direct link still resolves, but it must not read as a normal product.
+    assert_select ".review-callout strong", text: "Hidden from catalog"
+  end
+
+  test "the Master products CSV still exports products hidden from the catalog" do
+    product = Product.find_by!(canonical_name: "Tongol Tuna")
+    product.update!(active: false)
+
+    rows = Purchasing::PriceIntelligence.new.master_product_rows
+
+    # The CSV is the full receipt-backed history of record, so hiding a product
+    # from the in-app catalog must not drop it from the export.
+    assert_includes rows.map { |row| row[1] }, "Tongol Tuna"
+  end
+
   test "product index paginates large product lists" do
     supplier = Supplier.primary
     category = ProductCategory.find_by!(name: "Dry goods")

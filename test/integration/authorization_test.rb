@@ -30,7 +30,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "admin reaches every module" do
     sign_in_as(users(:one))
     [ tasks_root_path, log_book_path, order_guides_path, products_path,
-      inventory_path, import_batches_path,
+      inventory_path, recipes_path, import_batches_path,
       normalization_reviews_path, reports_path ].each do |path|
       get path
       assert_response :success, "expected success at #{path}, got #{response.status}"
