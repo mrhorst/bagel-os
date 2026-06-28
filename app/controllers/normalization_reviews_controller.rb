@@ -50,9 +50,9 @@ class NormalizationReviewsController < ApplicationController
 
   def resolve
     review = NormalizationReview.find(params[:id])
-    review_workflow.update_review_status(review: review, status: params[:review_status], notes: params[:resolution_notes])
+    updated = review_workflow.update_review_status(review: review, status: params[:review_status], notes: params[:resolution_notes])
     clear_skipped(review.id)
-    redirect_back fallback_location: normalization_reviews_path, notice: "Review updated."
+    redirect_back fallback_location: normalization_reviews_path, notice: "Review marked #{updated.status}."
   end
 
   def skip
