@@ -4691,18 +4691,24 @@
      or a 2-card hub to the full row width, breaking sibling consistency and
      stranding the trailing "›" chevron far from its text. */
   .settings-hub {
+    /* Size each card to its own content rather than stretching every card to the
+       tallest in the row (the grid default). When one card carries an extra
+       .settings-card-count line — e.g. "Tasks" / "Task lists" ("9 active tasks")
+       beside a count-less "History" — equal-height stretch forced the shorter
+       card's centred content to drop its title well below its rowmates' titles,
+       breaking the row's shared title baseline. Sizing to content starts every
+       card's text at the same top edge, so the titles align across the row. */
+    align-items: start;
     display: grid;
     gap: 10px;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
   .settings-card {
-    /* Center the icon + text block so they line up with the trailing chevron
-       (::after is align-self:center) and follow the iOS settings-row pattern.
-       In a stretched grid row a shorter card — e.g. a "History" card with no
-       .settings-card-count line beside a "Sections"/"Tasks" card that has one —
-       would otherwise top-align and strand its content above a dead gap while
-       the chevron floated mid-card; centering keeps every row item on one
-       optical line and balances the card. */
+    /* Within each (now content-sized — see .settings-hub) card, centre the icon
+       and trailing chevron (::after is align-self:center) against the text block
+       so the card reads as a balanced iOS settings row. Because cards no longer
+       stretch to a shared row height, this centring no longer strands a dead gap
+       or drops a shorter card's title below its rowmates'. */
     align-items: center;
     background: var(--surface-2);
     border: 1px solid var(--line);
