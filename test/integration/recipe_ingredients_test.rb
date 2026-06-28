@@ -82,6 +82,33 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Add ingredient"
   end
 
+  test "ingredient form fields stay uniquely id'd across rows so labels point to their own field" do
+    # Several rows mean several inline edit forms PLUS the add form, all from the
+    # shared partial. Without a per-form namespace they emitted identical field
+    # ids (recipe_ingredient_name, …) — duplicate ids are invalid HTML and make
+    # every <label for> resolve to the FIRST match, so clicking a label focused
+    # row 1's input instead of the field beneath it.
+    @recipe.recipe_ingredients.create!(name: "Water", quantity: 2, unit: "cup")
+    @recipe.recipe_ingredients.create!(inventory_item: @flour, quantity: 5, unit: "lb")
+
+    get recipe_path(@recipe)
+    assert_response :success
+
+    ids = Nokogiri::HTML(response.body).css("[id]").map { |n| n["id"] }
+    duplicates = ids.tally.select { |_id, count| count > 1 }.keys
+    assert_empty duplicates, "Recipe show page has duplicate element ids: #{duplicates.inspect}"
+
+    # The add form's visible "Amount" label must point at an input that exists and
+    # sits inside the same (add) form — not at a stray duplicate elsewhere.
+    doc = Nokogiri::HTML(response.body)
+    add_form = doc.at_css("form[action='#{recipe_ingredients_path(@recipe)}']")
+    amount_label = add_form.css("label").find { |l| l.text.strip == "Amount" }
+    assert amount_label, "expected an 'Amount' label on the add-ingredient form"
+    target = add_form.at_css("##{amount_label['for']}")
+    assert target, "the 'Amount' label's for=#{amount_label['for'].inspect} must resolve to a field within the add form"
+    assert_equal "recipe_ingredient[quantity]", target["name"]
+  end
+
   test "the show page shows a total when every line is costed and flags uncertain ones" do
     @flour.update!(product: priced_product("Flour stock", price: 2, unit: "lb"))
     @recipe.recipe_ingredients.create!(inventory_item: @flour, quantity: 5, unit: "lb")
