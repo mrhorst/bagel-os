@@ -68,6 +68,39 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     assert_select "input[name=?][value=?]", "recipe_ingredient[unit]", "cup"
   end
 
+  test "an ingredient linked to a since-archived item stays selected and editable" do
+    # An inventory item can be deactivated through normal operation (e.g. an
+    # order-guide re-import deactivates an item with no guide types or counts —
+    # Purchasing::OrderGuideImporter). A recipe line already linked to it must not
+    # become a dead end: before the fix the edit dropdown offered only active
+    # items, so the archived link silently vanished from the select (read as "No
+    # item") and saving any edit blanked the link and failed with "Name can't be
+    # blank" on a line that visibly HAS an inventory item.
+    line = @recipe.recipe_ingredients.create!(inventory_item: @flour, quantity: 5, unit: "lb")
+    @flour.update!(active: false)
+
+    get recipe_path(@recipe)
+    assert_response :success
+
+    doc = Nokogiri::HTML(response.body)
+    edit_form = doc.at_css("form[action='#{recipe_ingredient_path(@recipe, line)}']")
+    assert edit_form, "expected an inline edit form for the linked line"
+    select = edit_form.at_css("select[name='recipe_ingredient[inventory_item_id]']")
+    selected = select.css("option[selected]").first
+    assert selected, "the edit dropdown must keep the archived linked item selected, not drop it"
+    assert_equal @flour.id.to_s, selected["value"]
+    assert_match(/archived/i, selected.text, "the archived item should be labelled so")
+
+    # And the line remains editable: a save carrying the (preserved) item id keeps
+    # the link instead of 422-ing on a phantom missing name.
+    patch recipe_ingredient_path(@recipe, line), params: {
+      recipe_ingredient: { inventory_item_id: @flour.id, quantity: "6", unit: "lb" }
+    }
+    assert_redirected_to recipe_path(@recipe)
+    assert_equal @flour, line.reload.inventory_item
+    assert_equal BigDecimal("6"), line.quantity
+  end
+
   test "updates an ingredient line" do
     line = @recipe.recipe_ingredients.create!(inventory_item: @flour, quantity: 5, unit: "lb")
 
