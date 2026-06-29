@@ -1,65 +1,59 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bagel">
   <defs>
-    <radialGradient id="dough" cx="42%" cy="36%" r="72%">
-      <stop offset="0%" stop-color="#E8B468"/>
-      <stop offset="45%" stop-color="#D49A4A"/>
-      <stop offset="100%" stop-color="#A96A28"/>
+    <radialGradient id="dough" cx="40%" cy="32%" r="80%">
+      <stop offset="0%" stop-color="#EAB76A"/>
+      <stop offset="45%" stop-color="#D29442"/>
+      <stop offset="100%" stop-color="#9A5C22"/>
     </radialGradient>
-    <radialGradient id="hole" cx="50%" cy="44%" r="60%">
-      <stop offset="0%" stop-color="#9A5C24"/>
-      <stop offset="100%" stop-color="#C98A40"/>
+    <radialGradient id="hole" cx="50%" cy="42%" r="62%">
+      <stop offset="0%" stop-color="#8A4F1E"/>
+      <stop offset="100%" stop-color="#BE7E38"/>
     </radialGradient>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#FBF4E7"/>
-      <stop offset="100%" stop-color="#F4E7CF"/>
-    </linearGradient>
+    
   </defs>
 
-  <!-- App background tile (iOS rounds the corners) -->
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- transparent: bagel only -->
 
-  <!-- Soft contact shadow under the bagel -->
-  <ellipse cx="256" cy="270" rx="172" ry="166" fill="#6B4A1F" opacity="0.12"/>
+  <!-- Bagel ring (outer disc minus the hole) -->
+  <circle cx="256" cy="256" r="250" fill="url(#dough)" stroke="#7E4A18" stroke-width="3" stroke-opacity="0.35"/>
 
-  <!-- Bagel body: outer disc minus the hole (even-odd donut) -->
-  <path fill-rule="evenodd" fill="url(#dough)" stroke="#8C551F" stroke-width="3" stroke-opacity="0.45"
-        d="M 256 84
-           a 172 172 0 1 0 0.01 0 Z
-           M 256 192
-           a 64 64 0 1 1 -0.01 0 Z"/>
-
-  <!-- Inner hole shading ring -->
-  <circle cx="256" cy="256" r="64" fill="url(#hole)"/>
-  <circle cx="256" cy="256" r="64" fill="none" stroke="#7A471A" stroke-width="3" stroke-opacity="0.4"/>
+  <circle cx="256" cy="256" r="78" fill="url(#hole)"/>
+  <circle cx="256" cy="256" r="78" fill="none" stroke="#6F4014" stroke-width="3" stroke-opacity="0.35"/>
 
   <!-- Top glaze highlight -->
-  <path d="M 160 160 a 150 150 0 0 1 200 -8" fill="none" stroke="#FCE2A8" stroke-width="16" stroke-linecap="round" opacity="0.5"/>
+  <path d="M 118 118 a 210 210 0 0 1 286 -4" fill="none" stroke="#FCE6AE" stroke-width="22" stroke-linecap="round" opacity="0.5"/>
 
   <!-- Sesame seeds -->
-  <g transform="translate(374.2 235.1) rotate(264)"><ellipse rx="7.9" ry="4.3" fill="#F6E7C3"/><ellipse rx="7.9" ry="4.3" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(411.6 277.2) rotate(184)"><ellipse rx="8.3" ry="4.2" fill="#F6E7C3"/><ellipse rx="8.3" ry="4.2" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(391.4 304.8) rotate(324)"><ellipse rx="8.2" ry="4.2" fill="#F6E7C3"/><ellipse rx="8.2" ry="4.2" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(330.3 310.9) rotate(116)"><ellipse rx="7.7" ry="4.7" fill="#F6E7C3"/><ellipse rx="7.7" ry="4.7" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(337.6 377.3) rotate(265)"><ellipse rx="7.6" ry="4.5" fill="#F6E7C3"/><ellipse rx="7.6" ry="4.5" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(325.7 386.2) rotate(167)"><ellipse rx="8.3" ry="4.4" fill="#F6E7C3"/><ellipse rx="8.3" ry="4.4" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(272.6 332.2) rotate(8)"><ellipse rx="9.1" ry="4.8" fill="#F6E7C3"/><ellipse rx="9.1" ry="4.8" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(228.9 376.8) rotate(276)"><ellipse rx="8.5" ry="4.3" fill="#F6E7C3"/><ellipse rx="8.5" ry="4.3" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(225.0 349.9) rotate(126)"><ellipse rx="8.5" ry="4.3" fill="#F6E7C3"/><ellipse rx="8.5" ry="4.3" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(203.9 364.5) rotate(56)"><ellipse rx="8.2" ry="4.3" fill="#F6E7C3"/><ellipse rx="8.2" ry="4.3" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(200.6 316.9) rotate(355)"><ellipse rx="8.4" ry="4.1" fill="#F6E7C3"/><ellipse rx="8.4" ry="4.1" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(148.8 290.4) rotate(252)"><ellipse rx="7.8" ry="4.5" fill="#F6E7C3"/><ellipse rx="7.8" ry="4.5" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(163.6 262.3) rotate(246)"><ellipse rx="8.1" ry="4.4" fill="#F6E7C3"/><ellipse rx="8.1" ry="4.4" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(164.7 248.1) rotate(291)"><ellipse rx="8.8" ry="4.1" fill="#F6E7C3"/><ellipse rx="8.8" ry="4.1" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(168.3 249.2) rotate(229)"><ellipse rx="8.1" ry="4.2" fill="#F6E7C3"/><ellipse rx="8.1" ry="4.2" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(150.1 200.1) rotate(37)"><ellipse rx="9.1" ry="4.3" fill="#F6E7C3"/><ellipse rx="9.1" ry="4.3" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(188.5 183.9) rotate(239)"><ellipse rx="9.0" ry="4.4" fill="#F6E7C3"/><ellipse rx="9.0" ry="4.4" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(166.8 132.3) rotate(168)"><ellipse rx="9.1" ry="4.3" fill="#F6E7C3"/><ellipse rx="9.1" ry="4.3" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(218.0 113.0) rotate(267)"><ellipse rx="8.4" ry="4.7" fill="#F6E7C3"/><ellipse rx="8.4" ry="4.7" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(244.8 154.4) rotate(123)"><ellipse rx="8.0" ry="4.4" fill="#F6E7C3"/><ellipse rx="8.0" ry="4.4" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(274.8 126.8) rotate(22)"><ellipse rx="8.3" ry="4.4" fill="#F6E7C3"/><ellipse rx="8.3" ry="4.4" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(281.5 124.0) rotate(139)"><ellipse rx="8.2" ry="4.8" fill="#F6E7C3"/><ellipse rx="8.2" ry="4.8" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(307.1 156.2) rotate(105)"><ellipse rx="8.2" ry="4.2" fill="#F6E7C3"/><ellipse rx="8.2" ry="4.2" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(352.9 161.7) rotate(336)"><ellipse rx="7.5" ry="4.4" fill="#F6E7C3"/><ellipse rx="7.5" ry="4.4" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(368.5 212.3) rotate(45)"><ellipse rx="8.1" ry="4.1" fill="#F6E7C3"/><ellipse rx="8.1" ry="4.1" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
-  <g transform="translate(364.2 241.6) rotate(27)"><ellipse rx="8.5" ry="4.3" fill="#F6E7C3"/><ellipse rx="8.5" ry="4.3" fill="none" stroke="#D9B97E" stroke-width="0.8" opacity="0.55"/></g>
+  <g transform="translate(471.2 212.4) rotate(104)"><ellipse rx="9.4" ry="5.4" fill="#F7EAC8"/><ellipse rx="9.4" ry="5.4" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(394.4 285.4) rotate(270)"><ellipse rx="10.5" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(418.5 337.8) rotate(294)"><ellipse rx="9.5" ry="5.0" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.0" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(404.8 374.4) rotate(19)"><ellipse rx="10.4" ry="5.1" fill="#F7EAC8"/><ellipse rx="10.4" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(374.3 422.9) rotate(44)"><ellipse rx="10.0" ry="5.6" fill="#F7EAC8"/><ellipse rx="10.0" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(345.9 415.4) rotate(207)"><ellipse rx="10.8" ry="5.6" fill="#F7EAC8"/><ellipse rx="10.8" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(317.1 384.5) rotate(301)"><ellipse rx="9.7" ry="4.8" fill="#F7EAC8"/><ellipse rx="9.7" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(298.3 404.7) rotate(106)"><ellipse rx="10.9" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.9" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(236.4 469.0) rotate(21)"><ellipse rx="9.5" ry="5.2" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(225.5 406.6) rotate(69)"><ellipse rx="10.8" ry="4.7" fill="#F7EAC8"/><ellipse rx="10.8" ry="4.7" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(208.3 391.3) rotate(239)"><ellipse rx="10.8" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.8" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(189.4 392.1) rotate(102)"><ellipse rx="9.7" ry="5.1" fill="#F7EAC8"/><ellipse rx="9.7" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(145.3 382.6) rotate(221)"><ellipse rx="9.5" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(81.8 376.7) rotate(228)"><ellipse rx="10.3" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.3" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(81.3 328.0) rotate(338)"><ellipse rx="9.8" ry="5.4" fill="#F7EAC8"/><ellipse rx="9.8" ry="5.4" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(88.2 307.2) rotate(126)"><ellipse rx="9.7" ry="5.0" fill="#F7EAC8"/><ellipse rx="9.7" ry="5.0" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(43.6 230.8) rotate(39)"><ellipse rx="10.6" ry="4.7" fill="#F7EAC8"/><ellipse rx="10.6" ry="4.7" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(139.2 237.3) rotate(28)"><ellipse rx="11.0" ry="4.8" fill="#F7EAC8"/><ellipse rx="11.0" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(150.4 205.6) rotate(164)"><ellipse rx="10.2" ry="4.8" fill="#F7EAC8"/><ellipse rx="10.2" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(100.0 108.4) rotate(320)"><ellipse rx="10.8" ry="5.6" fill="#F7EAC8"/><ellipse rx="10.8" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(171.4 151.6) rotate(3)"><ellipse rx="9.5" ry="4.7" fill="#F7EAC8"/><ellipse rx="9.5" ry="4.7" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(128.7 129.5) rotate(83)"><ellipse rx="10.5" ry="5.1" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(215.6 133.1) rotate(317)"><ellipse rx="9.5" ry="5.0" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.0" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(251.6 142.5) rotate(176)"><ellipse rx="9.0" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.0" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(268.0 36.6) rotate(7)"><ellipse rx="10.8" ry="4.8" fill="#F7EAC8"/><ellipse rx="10.8" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(320.6 95.9) rotate(244)"><ellipse rx="9.5" ry="4.8" fill="#F7EAC8"/><ellipse rx="9.5" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(303.1 90.0) rotate(18)"><ellipse rx="10.5" ry="5.4" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.4" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(358.3 128.1) rotate(11)"><ellipse rx="9.2" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.2" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(368.4 104.3) rotate(321)"><ellipse rx="9.1" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.1" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(462.8 157.5) rotate(343)"><ellipse rx="10.5" ry="5.1" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(426.9 164.1) rotate(317)"><ellipse rx="9.8" ry="4.9" fill="#F7EAC8"/><ellipse rx="9.8" ry="4.9" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <g transform="translate(465.2 206.0) rotate(201)"><ellipse rx="9.7" ry="5.3" fill="#F7EAC8"/><ellipse rx="9.7" ry="5.3" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
 </svg>
