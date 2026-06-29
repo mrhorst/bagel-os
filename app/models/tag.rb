@@ -7,8 +7,9 @@ class Tag < ApplicationRecord
   before_validation :normalize_slug
 
   validates :name, presence: true
-  validates :slug, presence: true, uniqueness: true,
+  validates :slug, presence: true,
     format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/, message: "must be lowercase words separated by dashes" }
+  validate :slug_not_already_used
 
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:position, :name) }
@@ -19,5 +20,27 @@ class Tag < ApplicationRecord
   # just type a label (e.g. "Plated Food" -> "plated-food").
   def normalize_slug
     self.slug = (slug.presence || name).to_s.parameterize
+  end
+
+  # `slug` is the machine value the AI tagger returns, but the form tells admins
+  # to "Leave blank to derive it from the name" — so most of them only ever type
+  # a *name* and never touch the slug field. Surfacing a raw "Slug has already
+  # been taken" to that person is confusing: they have no mental model for the
+  # field the error names, and the message never says which tag actually clashed.
+  # A unique DB index still guards the column; here we express the collision in
+  # name terms on :base (so it renders without the attribute prefix) and name the
+  # existing tag, pointing the admin at what they control. Mirrors
+  # OrderGuide#name_not_already_used. Checking the effective (post-normalize)
+  # slug covers both the derived-from-name path and an explicitly typed slug, so
+  # the unique-index collision never reaches the user as a 500.
+  def slug_not_already_used
+    return if slug.blank?
+
+    clash = Tag.where(slug: slug)
+    clash = clash.where.not(id: id) if persisted?
+    existing = clash.first
+    return unless existing
+
+    errors.add(:base, %(A tag named "#{existing.name}" already exists. Pick a different name or slug.))
   end
 end

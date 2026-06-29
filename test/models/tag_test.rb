@@ -17,10 +17,34 @@ class TagTest < ActiveSupport::TestCase
     assert tag.errors[:name].any?
   end
 
-  test "rejects a duplicate slug" do
+  test "rejects a duplicate slug with a name-anchored message (no leaked Slug field)" do
+    # An explicitly typed slug that collides still has to be rejected, but the
+    # message must read in name terms and name the tag that actually owns the
+    # slug — never a bare "Slug has already been taken" the admin can't act on.
     dup = Tag.new(name: "Food again", slug: "food")
     assert_not dup.valid?
-    assert tag_includes_slug_error?(dup)
+    assert_includes dup.errors[:base], %(A tag named "Food" already exists. Pick a different name or slug.)
+    assert_empty dup.errors[:slug]
+    assert_not_includes dup.errors.full_messages.to_sentence, "Slug"
+  end
+
+  test "a duplicate name with a blank (derived) slug is rejected in name terms" do
+    # The headline case: the admin follows the form's "Leave blank to derive it
+    # from the name" hint, re-types an existing name, and must NOT get an error
+    # about the Slug field they deliberately left empty.
+    dup = Tag.new(name: "Food")
+    assert_not dup.valid?
+    assert_equal "food", dup.slug
+    assert_includes dup.errors[:base], %(A tag named "Food" already exists. Pick a different name or slug.)
+    assert_empty dup.errors[:slug]
+  end
+
+  test "editing a tag's slug onto another tag's slug is rejected in name terms" do
+    promo = tags(:inactive_promo)
+    promo.slug = "food" # already owned by the Food tag
+    assert_not promo.valid?
+    assert_includes promo.errors[:base], %(A tag named "Food" already exists. Pick a different name or slug.)
+    assert_empty promo.errors[:slug]
   end
 
   test "sanitizes a messy slug into the canonical form" do
