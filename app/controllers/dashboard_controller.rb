@@ -21,7 +21,7 @@ class DashboardController < ApplicationController
     @pending_review_count = NormalizationReview.pending.count
     @guide_items_needing_review_count = OrderGuideItem.active.needs_review.count
     @inventory_items_needing_review_count = InventoryItem.active.needs_review.count
-    @products_needing_review_count = Product.needs_review.count
+    @products_needing_review_count = Product.active.needs_review.count
     @log_book_follow_up_count = LogBookResponse.unresolved.count
     @marketing_unreviewed_count = PhotoAsset.with_status("unreviewed").count
   end
