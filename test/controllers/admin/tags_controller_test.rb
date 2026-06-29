@@ -46,6 +46,21 @@ module Admin
       assert_response :unprocessable_entity
     end
 
+    test "a duplicate name with a blank slug re-renders with a name-anchored error, not a leaked Slug field" do
+      sign_in_as(users(:one))
+
+      # The admin follows the form's "Leave blank to derive it from the name"
+      # hint and re-types an existing name. The error must point at what they
+      # actually typed, never "Slug has already been taken" for a field they left
+      # empty on purpose.
+      assert_no_difference "Tag.count" do
+        post admin_tags_path, params: { tag: { name: "Food" } }
+      end
+      assert_response :unprocessable_entity
+      assert_select "div.flash-alert", text: /A tag named "Food" already exists/
+      assert_select "div.flash-alert", text: /Slug has already been taken/, count: 0
+    end
+
     test "admin updates a tag's rule" do
       sign_in_as(users(:one))
 
