@@ -36,6 +36,19 @@ module PurchasingHelper
     value.to_d.round(4).to_s("F").sub(/\.?0+$/, "")
   end
 
+  # A weight given in grams, shown in grams under 1 kg and in kilograms above,
+  # so a recipe total reads naturally without losing precision.
+  def weight_in_grams(grams)
+    return "n/a" if grams.blank?
+
+    grams = grams.to_d
+    if grams >= 1000
+      "#{compact_decimal((grams / 1000).round(3))} kg"
+    else
+      "#{compact_decimal(grams.round(2))} g"
+    end
+  end
+
   def review_badge(record)
     if record.needs_review?
       tag.span("Needs review", class: "badge badge-warning")

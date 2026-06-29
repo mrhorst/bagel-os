@@ -116,6 +116,25 @@ class RecipeCostingTest < ActiveSupport::TestCase
     assert_match(/no amount/i, cost.reason)
   end
 
+  test "cost per serving divides a complete total by the yield" do
+    @recipe.update!(yield_quantity: 5, yield_unit: "bagels")
+    @recipe.recipe_ingredients.create!(inventory_item: priced_item("Flour", price: 2, unit: "lb"), quantity: 5, unit: "lb")
+
+    costing = Purchasing::RecipeCosting.new(@recipe)
+    # 5 lb * $2 = $10 over 5 bagels = $2.00 each
+    assert_equal BigDecimal("2.00"), costing.cost_per_serving
+  end
+
+  test "cost per serving is nil without a yield or a complete total" do
+    item = priced_item("Flour", price: 2, unit: "lb")
+    @recipe.recipe_ingredients.create!(inventory_item: item, quantity: 5, unit: "lb")
+    assert_nil Purchasing::RecipeCosting.new(@recipe).cost_per_serving
+
+    @recipe.update!(yield_quantity: 5, yield_unit: "bagels")
+    @recipe.recipe_ingredients.create!(name: "Pinch of malt", quantity: 1, unit: "pinch")
+    assert_nil Purchasing::RecipeCosting.new(@recipe).cost_per_serving
+  end
+
   private
 
   def priced_item(name, price:, unit:)

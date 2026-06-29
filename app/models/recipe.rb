@@ -9,11 +9,18 @@ class Recipe < ApplicationRecord
 
   validates :name, presence: true
   validates :name, uniqueness: { case_sensitive: false }, if: -> { name.present? }
+  validates :yield_quantity, numericality: { greater_than: 0 }, allow_nil: true
 
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:position, :name) }
 
   def archived?
     !active?
+  end
+
+  # Whether this recipe records how much one batch makes, so per-serving cost
+  # and weight can be divided out.
+  def yield_described?
+    yield_quantity.present? && yield_quantity.positive?
   end
 end

@@ -203,7 +203,7 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
 
     get recipe_path(@recipe)
     assert_response :success
-    assert_select ".recipe-cost-summary", text: /can't be costed/
+    assert_select ".recipe-cost-summary", text: /Estimated cost so far/
     assert_select "td", text: /Not linked to an inventory item/
   end
 

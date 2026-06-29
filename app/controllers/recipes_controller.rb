@@ -47,10 +47,11 @@ class RecipesController < ApplicationController
     @new_ingredient ||= @recipe.recipe_ingredients.build
     @inventory_items = InventoryItem.active.ordered
     @costing = Purchasing::RecipeCosting.new(@recipe)
+    @weight = Purchasing::RecipeWeight.new(@recipe)
   end
 
   def recipe_params
-    params.require(:recipe).permit(:name, :description, :active, :position)
+    params.require(:recipe).permit(:name, :description, :active, :position, :yield_quantity, :yield_unit)
   end
 
   def next_position

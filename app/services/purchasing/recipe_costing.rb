@@ -51,6 +51,14 @@ module Purchasing
       complete? ? subtotal : nil
     end
 
+    # Cost per serving, only when the whole recipe is costed and a positive yield
+    # is recorded — never divide a partial total.
+    def cost_per_serving
+      return unless complete? && @recipe.yield_described?
+
+      (total / @recipe.yield_quantity).round(2)
+    end
+
     private
 
     def lines_by_ingredient_id
