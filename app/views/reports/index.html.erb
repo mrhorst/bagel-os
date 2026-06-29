@@ -20,7 +20,11 @@
       <% @reports.each do |report| %>
         <tr>
           <td class="row-heading" data-label="Report"><strong><%= report.humanize %></strong> <code><%= report %>.csv</code></td>
-          <td data-label="Description"><%= report_description(report) %></td>
+          <%# No data-label here: on mobile the responsive-table card already reads
+              name → filename → prose, and a single self-evident description needs
+              no "DESCRIPTION" eyebrow (the same logic the .row-heading label-drop
+              uses). Omitting it keeps the action cell's no-eyebrow treatment. %>
+          <td><%= report_description(report) %></td>
           <%# Fetch-and-share the CSV via download_controller instead of a plain
               attachment link: a same-window nav to an attachment strands a
               chrome-less installed PWA on a page it can't render. target=_blank
