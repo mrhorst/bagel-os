@@ -59,6 +59,12 @@ class OrderGuideMembershipsController < ApplicationController
     membership.deactivate!
 
     redirect_to order_guide_path(order_guide), notice: "#{item_name} removed from #{order_guide.name}."
+  rescue ActiveRecord::RecordNotFound
+    # The row is already gone — a double-tapped "×", a stale tab, or two staff
+    # removing the same item. The user's intent (this item off the guide) is
+    # already satisfied, so land them back on the guide with reassuring
+    # feedback instead of a raw 404 dead-end, mirroring create/update above.
+    redirect_to guide_or_index_path(order_guide), notice: "That item is already off #{order_guide&.name || "the guide"}."
   end
 
   private
