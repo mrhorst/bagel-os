@@ -4727,7 +4727,13 @@
        card's text at the same top edge, so the titles align across the row. */
     align-items: start;
     display: grid;
-    gap: 10px;
+    /* Gap must clear the card's own internal spacing — its 14px padding and 12px
+       icon→text gap — so two separate, separately-tappable cards never sit closer
+       than the elements inside one card. At 10px the between-card gutter was the
+       tightest space on the screen, inverting Gestalt proximity: stacked mobile
+       cards read as one ribbed strip instead of discrete rows. 16px restores the
+       rhythm (between-card > within-card) without stretching the layout. */
+    gap: 16px;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
   .settings-card {
