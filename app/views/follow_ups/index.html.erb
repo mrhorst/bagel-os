@@ -37,7 +37,11 @@
         <% if follow_up.description.present? %>
           <p class="follow-up-card-body"><%= truncate(follow_up.description, length: 140) %></p>
         <% end %>
-        <p class="muted small">
+        <%# tnum: the opened/resolved dates are a data surface, so they get
+            tabular figures — matching the tab counts above and the sibling
+            .log-book-recent-date convention. font-variant-numeric only touches
+            digits, so the surrounding words/separators are unaffected. %>
+        <p class="muted small tnum">
           <% if follow_up.origin.is_a?(LogBookResponse) %>
             From Log Book ·
           <% end %>
