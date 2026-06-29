@@ -1,4 +1,6 @@
 class RecipesController < ApplicationController
+  include RecipeShowData
+
   require_module_access :recipes
 
   before_action :set_recipe, only: %i[show edit update]
@@ -8,7 +10,7 @@ class RecipesController < ApplicationController
   end
 
   def show
-    load_ingredient_form_data
+    load_recipe_show_data
   end
 
   def new
@@ -40,14 +42,6 @@ class RecipesController < ApplicationController
 
   def set_recipe
     @recipe = Recipe.find(params[:id])
-  end
-
-  def load_ingredient_form_data
-    @ingredients = @recipe.recipe_ingredients.ordered.includes(inventory_item: { product: :price_observations })
-    @new_ingredient ||= @recipe.recipe_ingredients.build
-    @inventory_items = InventoryItem.active.ordered
-    @costing = Purchasing::RecipeCosting.new(@recipe)
-    @weight = Purchasing::RecipeWeight.new(@recipe)
   end
 
   def recipe_params

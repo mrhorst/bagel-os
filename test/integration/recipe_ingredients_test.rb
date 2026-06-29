@@ -103,6 +103,21 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     assert_equal BigDecimal("6"), line.quantity
   end
 
+  # Regression: the re-render must load the same data the show page needs
+  # (including the weight rollup) even when the recipe already has lines drawn in
+  # the table — a missing @weight once crashed this path.
+  test "rejecting an add re-renders a recipe that already has ingredients" do
+    @recipe.recipe_ingredients.create!(name: "Flour", quantity: 1, unit: "lb")
+
+    post recipe_ingredients_path(@recipe), params: {
+      recipe_ingredient: { inventory_item_id: "", name: "", quantity: "3", unit: "cup" }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select ".recipe-cost-summary"
+    assert_select "td", text: /Flour/
+  end
+
   test "updates an ingredient line" do
     line = @recipe.recipe_ingredients.create!(inventory_item: @flour, quantity: 5, unit: "lb")
 
