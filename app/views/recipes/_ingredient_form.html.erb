@@ -4,6 +4,21 @@
   of the recipe show page. A line can link to an inventory item OR carry a
   free-text name; amount and unit are optional and never inferred. %>
 <% stacked = local_assigns.fetch(:stacked, false) %>
+<%# The select offers only active inventory items, but a line may already be
+    linked to an item that has since been archived (e.g. an order-guide re-import
+    deactivates an item with no guide types or counts — see
+    Purchasing::OrderGuideImporter). If we offered only the active list, that
+    archived item would silently drop out of the dropdown: the line would read as
+    "No item" even though it IS linked, and saving any edit would blank the link
+    and fail validation with "Name can't be blank" — a dead end on a line that
+    visibly has an inventory item. Keep the line's own linked item in its options
+    (labelled archived) so it stays selected and the row remains editable. %>
+<% item_options = inventory_items.to_a %>
+<% linked_item = ingredient.inventory_item %>
+<% if linked_item && item_options.exclude?(linked_item) %>
+  <% item_options += [ linked_item ] %>
+<% end %>
+<% item_label = ->(item) { item.active? ? item.name : "#{item.name} (archived)" } %>
 <%# Every row's inline edit form and the bottom "Add ingredient" form share this
     partial, so without a per-form namespace they'd all emit the same field ids
     (recipe_ingredient_name, …). Duplicate ids are invalid HTML and break
@@ -26,7 +41,8 @@
   <% if stacked %>
     <div class="field">
       <%= form.label :inventory_item_id, "Inventory item" %>
-      <%= form.collection_select :inventory_item_id, inventory_items, :id, :name,
+      <%= form.select :inventory_item_id,
+            options_for_select(item_options.map { |i| [ item_label.call(i), i.id ] }, ingredient.inventory_item_id),
             { include_blank: "Not an inventory item" }, { class: "compact-select" } %>
     </div>
     <div class="field">
@@ -49,7 +65,8 @@
     </div>
   <% else %>
     <%= form.label :inventory_item_id, "Inventory item", class: "sr-only" %>
-    <%= form.collection_select :inventory_item_id, inventory_items, :id, :name,
+    <%= form.select :inventory_item_id,
+          options_for_select(item_options.map { |i| [ item_label.call(i), i.id ] }, ingredient.inventory_item_id),
           { include_blank: "No item" }, { class: "compact-select" } %>
     <%= form.label :name, "Name", class: "sr-only" %>
     <%= form.text_field :name, class: "compact-input", autocomplete: "off", placeholder: "or name" %>
