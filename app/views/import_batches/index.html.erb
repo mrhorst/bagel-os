@@ -35,7 +35,7 @@
             <td class="numeric" data-label="Needs review">
               <% review_count = @review_counts.fetch(batch.id, 0) %>
               <% if review_count.positive? %>
-                <span class="badge badge-warning tnum"><%= review_count %></span>
+                <span class="badge tnum"><%= review_count %></span>
               <% else %>
                 <span class="tnum">0</span>
               <% end %>
