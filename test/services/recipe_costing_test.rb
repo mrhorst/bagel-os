@@ -45,7 +45,8 @@ class RecipeCostingTest < ActiveSupport::TestCase
     assert_match(/no comparable price/i, costing.cost_for(no_price).reason)
   end
 
-  test "a unit mismatch is left uncertain rather than converted" do
+  test "incompatible dimensions are left uncertain rather than converted" do
+    # Volume against a per-weight price, with no density bridge — stays uncertain.
     item = priced_item("Flour", price: 2, unit: "lb")
     line = @recipe.recipe_ingredients.create!(inventory_item: item, quantity: 1, unit: "cup")
 
@@ -53,7 +54,7 @@ class RecipeCostingTest < ActiveSupport::TestCase
 
     cost = costing.cost_for(line)
     assert_not cost.costed?
-    assert_match(/doesn't match the priced unit/i, cost.reason)
+    assert_match(/measure different things/i, cost.reason)
   end
 
   test "plural and singular units are treated as the same unit" do
@@ -64,6 +65,46 @@ class RecipeCostingTest < ActiveSupport::TestCase
 
     assert costing.cost_for(line).costed?
     assert_equal BigDecimal("6.00"), costing.cost_for(line).cost
+  end
+
+  test "converts within a dimension to the priced unit" do
+    # 8 oz of flour priced at $2/lb -> 0.5 lb * 2.00 = $1.00
+    item = priced_item("Flour", price: 2, unit: "lb")
+    line = @recipe.recipe_ingredients.create!(inventory_item: item, quantity: 8, unit: "oz")
+
+    cost = Purchasing::RecipeCosting.new(@recipe).cost_for(line)
+    assert cost.costed?
+    assert_equal BigDecimal("1.00"), cost.cost
+  end
+
+  test "converts a dozen against a per-each price" do
+    item = priced_item("Eggs", price: 0.25, unit: "each")
+    line = @recipe.recipe_ingredients.create!(inventory_item: item, quantity: 1, unit: "dozen")
+
+    cost = Purchasing::RecipeCosting.new(@recipe).cost_for(line)
+    assert cost.costed?
+    assert_equal BigDecimal("3.00"), cost.cost
+  end
+
+  test "bridges count and weight when the product records an average weight" do
+    # Eggs priced per each at $0.25, average 50 g each. A recipe using 200 g of
+    # egg is 4 eggs -> 4 * 0.25 = $1.00.
+    item = priced_item("Eggs", price: 0.25, unit: "each")
+    item.product.update!(unit_basis: "count", each_weight_value: 50, each_weight_unit: "g")
+    line = @recipe.recipe_ingredients.create!(inventory_item: item, quantity: 200, unit: "g")
+
+    cost = Purchasing::RecipeCosting.new(@recipe).cost_for(line)
+    assert cost.costed?
+    assert_equal BigDecimal("1.00"), cost.cost
+  end
+
+  test "count and weight stay uncertain without an average weight, and the reason points to the fix" do
+    item = priced_item("Eggs", price: 0.25, unit: "each")
+    line = @recipe.recipe_ingredients.create!(inventory_item: item, quantity: 200, unit: "g")
+
+    cost = Purchasing::RecipeCosting.new(@recipe).cost_for(line)
+    assert_not cost.costed?
+    assert_match(/average weight per unit/i, cost.reason)
   end
 
   test "a line with no amount is left uncertain" do
