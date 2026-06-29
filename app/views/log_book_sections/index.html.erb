@@ -58,7 +58,7 @@
             <td class="numeric" data-label="Used in">
               <%= pluralize(usage_count, "entry") %>
             </td>
-            <td class="numeric" data-label="Actions">
+            <td class="row-actions" data-label="Actions">
               <%= link_to "Edit", edit_log_book_section_path(section), class: "button small" %>
               <% if section.active? %>
                 <%= button_to "Archive",
