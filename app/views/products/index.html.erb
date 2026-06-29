@@ -105,10 +105,10 @@
           </td>
           <td data-label="Category"><%= product.category_name %></td>
           <td class="hide-on-mobile" data-label="SKU"><%= product.supplier_sku_summary %></td>
-          <td class="numeric" data-label="Latest price"><%= money(stats[:latest_price]) %></td>
-          <td class="numeric hide-on-mobile" data-label="Avg"><%= money(stats[:average_price]) %></td>
-          <td class="numeric hide-on-mobile" data-label="Low"><%= money(stats[:lowest_price]) %></td>
-          <td class="numeric hide-on-mobile" data-label="High"><%= money(stats[:highest_price]) %></td>
+          <td class="numeric" data-label="Latest price"><%= money_cell(stats[:latest_price]) %></td>
+          <td class="numeric hide-on-mobile" data-label="Avg"><%= money_cell(stats[:average_price]) %></td>
+          <td class="numeric hide-on-mobile" data-label="Low"><%= money_cell(stats[:lowest_price]) %></td>
+          <td class="numeric hide-on-mobile" data-label="High"><%= money_cell(stats[:highest_price]) %></td>
           <td class="numeric hide-on-mobile" data-label="Times"><%= stats[:total_times_purchased] %></td>
           <td class="numeric" data-label="Total spend"><%= money(stats[:total_spend]) %></td>
           <td data-label="Review"><%= review_badge(product) %></td>

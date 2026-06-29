@@ -1734,6 +1734,12 @@
     text-align: right;
     white-space: nowrap;
   }
+  /* Placeholder for a data cell whose value is unknown (no data yet). Muted so
+     absent values recede behind real figures, and so "unknown" reads distinctly
+     from a known zero in the same column. */
+  .cell-empty {
+    color: var(--ink-muted);
+  }
 
   /* ── Buttons ──────────────────────────────────────────────────────── */
   .button,
