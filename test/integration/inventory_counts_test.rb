@@ -212,6 +212,31 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_equal 0, InventoryCount.count
   end
 
+  test "opening the new count page for an archived guide redirects to the picker instead of 404ing" do
+    @guide.update!(active: false)
+
+    get new_inventory_count_path(order_guide_id: @guide.id)
+
+    assert_redirected_to new_inventory_count_path
+    assert_equal "That guide is no longer active. Pick an active guide to count.", flash[:alert]
+  end
+
+  test "opening a buy list for an archived guide redirects to the picker instead of 404ing" do
+    @guide.update!(active: false)
+
+    get inventory_shopping_list_path(order_guide_id: @guide.id)
+
+    assert_redirected_to inventory_shopping_list_path
+    assert_equal "That guide is no longer active. Pick an active guide.", flash[:alert]
+  end
+
+  test "opening a buy list for a guide that never existed redirects to the picker instead of 404ing" do
+    get inventory_shopping_list_path(order_guide_id: 999_999)
+
+    assert_redirected_to inventory_shopping_list_path
+    assert_equal "That guide is no longer active. Pick an active guide.", flash[:alert]
+  end
+
   test "a negative legacy count surfaces a recoverable alert instead of crashing" do
     post inventory_counts_path, params: { counts: { @cream_cheese.id => "-2" } }
 
