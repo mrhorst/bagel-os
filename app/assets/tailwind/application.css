@@ -5209,7 +5209,11 @@
   }
   .tasks-date-pager-arrow:hover { background: var(--surface-3); }
   .tasks-date-pager-arrow-disabled {
-    color: var(--ink-3);
+    /* --ink-3 is not a defined token (the ramp is --ink/--ink-2/--ink-muted/
+       --ink-subtle), so this silently inherited near-black --ink and the
+       disabled arrow read almost as dark as the enabled one. Use --ink-muted,
+       matching the sibling date-stepper (.log-book-date-arrow-disabled). */
+    color: var(--ink-muted);
     opacity: 0.5;
     pointer-events: none;
   }
