@@ -169,6 +169,40 @@ class MarketingPhotoAssetsTest < ActionDispatch::IntegrationTest
     assert_select "a.mobile-header-back[href=?]", more_hub_path, count: 0
   end
 
+  test "opening a photo from a filtered library returns to that same filtered library" do
+    sign_in_as(users(:one))
+    asset = create_asset
+    asset.taggings.create!(tag: tags(:food), source: "manual", confirmed_at: Time.current)
+
+    # A reviewer working a filtered queue: the library narrowed to the "food"
+    # tag. The card linking to this photo must carry the active filter so that
+    # opening it and coming back keeps their place — the way Follow-ups does.
+    get photo_assets_path(tag: "food")
+    assert_response :success
+    assert_select "a.photo-card[href=?]", photo_asset_path(asset, tag: "food")
+
+    # On the photo, reached with that filter, BOTH "Back to library" affordances
+    # (mobile chevron + on-page button) return to the FILTERED library, not the
+    # bare All view that would discard the reviewer's queue.
+    get photo_asset_path(asset, tag: "food", scope: "tagged")
+    assert_response :success
+    back = photo_assets_path(tag: "food", scope: "tagged")
+    assert_select "a.mobile-header-back[href=?]", back
+    assert_select ".hero-actions a[href=?]", back, text: "Back to library"
+  end
+
+  test "the back-to-library affordances stay bare when no filter is active" do
+    sign_in_as(users(:one))
+    asset = create_asset
+
+    # The common case — opened from the unfiltered library — must not gain a
+    # stray query string; it stays a plain /marketing/photos link.
+    get photo_asset_path(asset)
+    assert_response :success
+    assert_select "a.mobile-header-back[href=?]", photo_assets_path
+    assert_select ".hero-actions a[href=?]", photo_assets_path, text: "Back to library"
+  end
+
   test "the mobile back-chevron on the add-photos page returns to the library, not the hub above it" do
     sign_in_as(users(:one))
 
