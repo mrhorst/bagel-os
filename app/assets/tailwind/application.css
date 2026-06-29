@@ -1740,6 +1740,22 @@
   .cell-empty {
     color: var(--ink-muted);
   }
+  /* Row action cell: keep several controls on one line, right-aligned. A
+     `button_to` renders a block <form>, so without this the Archive button drops
+     onto its own row beneath the inline Edit link — two stacked buttons that
+     inflate row height on a desktop table with acres of horizontal room. Flex
+     holds them side by side; the mobile `.responsive-table td` rules reset the
+     cell to a stacked block, so this governs only the desktop table. */
+  td.row-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  td.row-actions form {
+    margin: 0;
+  }
 
   /* ── Buttons ──────────────────────────────────────────────────────── */
   .button,
