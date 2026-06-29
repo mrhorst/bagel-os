@@ -19,7 +19,7 @@ class HomeDashboardProductsCardTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_products_summary "1 records to clean up"
+    assert_products_summary "1 record to clean up"
     assert_select "a.home-surface-card-active[href=?]", products_path
   end
 
