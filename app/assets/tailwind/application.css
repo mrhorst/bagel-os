@@ -4313,6 +4313,12 @@
     display: flex;
     gap: 8px;
     justify-content: space-between;
+    /* Reserve the count-chip's height on every card head, chip or not, so the
+       eyebrow label sits at the same y across the grid row. Without this the
+       chip-bearing cards have a taller head and `align-items: center` drops
+       their label ~4px below the chip-less cards' labels, zig-zagging the
+       eyebrows across a row. Tracks .home-surface-card-count's box height. */
+    min-height: 22px;
   }
   .home-surface-card-label {
     color: var(--ink-muted);
