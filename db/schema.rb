@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_28_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_29_000001) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -470,6 +470,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_28_000002) do
     t.boolean "active", default: true, null: false
     t.string "canonical_name", null: false
     t.datetime "created_at", null: false
+    t.string "each_weight_unit"
+    t.decimal "each_weight_value", precision: 12, scale: 4
     t.boolean "needs_review", default: true, null: false
     t.text "notes"
     t.decimal "package_size", precision: 12, scale: 4
@@ -478,6 +480,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_28_000002) do
     t.string "standard_unit"
     t.integer "supplier_id", null: false
     t.string "supplier_sku"
+    t.string "unit_basis"
     t.string "unit_of_measure"
     t.datetime "updated_at", null: false
     t.index ["canonical_name"], name: "index_products_on_canonical_name"
@@ -485,6 +488,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_28_000002) do
     t.index ["product_category_id"], name: "index_products_on_product_category_id"
     t.index ["supplier_id", "supplier_sku"], name: "index_products_on_supplier_id_and_supplier_sku", unique: true, where: "supplier_sku IS NOT NULL"
     t.index ["supplier_id"], name: "index_products_on_supplier_id"
+    t.index ["unit_basis"], name: "index_products_on_unit_basis"
   end
 
   create_table "push_subscriptions", force: :cascade do |t|
