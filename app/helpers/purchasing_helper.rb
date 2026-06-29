@@ -5,6 +5,16 @@ module PurchasingHelper
     number_to_currency(value)
   end
 
+  # Money for a data-table cell where a missing value means "unknown" (e.g. a
+  # product with no recorded price), NOT a real zero. Renders a muted em-dash so
+  # absent values recede and the eye lands on actual figures — and so "unknown"
+  # reads differently from a known $0.00. Presentation-only.
+  def money_cell(value)
+    return tag.span("—", class: "cell-empty", title: "No data yet") if value.blank?
+
+    money(value)
+  end
+
   def compact_decimal(value)
     return "n/a" if value.blank?
 
