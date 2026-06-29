@@ -846,10 +846,33 @@
     box-shadow: var(--shadow-e1);
     color: var(--ink);
     display: block;
-    padding: 14px 16px;
+    /* Reserve a right gutter for the trailing disclosure chevron so the card's
+       text (description, date, assignee) never runs under it. */
+    padding: 14px 32px 14px 16px;
+    position: relative;
     text-decoration: none;
   }
   .follow-up-card:hover { background: color-mix(in oklch, var(--surface-3) 60%, var(--surface-2)); }
+  /* Trailing disclosure chevron — each card is a whole-card navigation link to
+     the follow-up detail, so it carries the same iOS settings-row "›" affordance
+     as .settings-card / a.action-card, signalling it routes somewhere instead of
+     reading as an inert content tile. Drawn from a mask so it tracks --ink-muted. */
+  a.follow-up-card::after {
+    background: var(--ink-muted);
+    content: "";
+    height: 13px;
+    mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: background 120ms ease;
+    width: 8px;
+  }
+  a.follow-up-card:hover::after { background: var(--ink); }
   .follow-up-card-head {
     /* Baseline-align the title and its trailing urgency badge — the same
        convention as .task-card-title / .manage-stack-group-header. With
