@@ -4851,7 +4851,14 @@
   /* ── Task builder menu and guided task form ───────────────────────── */
   .task-builder-menu {
     display: grid;
-    gap: 12px;
+    /* Match the sibling .settings-hub chooser: the between-card gap must clear
+       each card's own padding (16px desktop / 14px mobile) and 12px icon→text
+       gap, so two separately-tappable cards never sit closer than the elements
+       inside one. At 12px the gutter was the tightest space on the screen,
+       inverting Gestalt proximity — the two choices fused into one ribbed strip,
+       worst when stacked on mobile. 16px restores between-card > within-card
+       rhythm, exactly as .settings-hub documents for the same card pattern. */
+    gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
   .task-builder-card {
