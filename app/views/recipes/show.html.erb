@@ -37,7 +37,7 @@
   <div class="panel-heading">
     <div>
       <h2>Ingredients</h2>
-      <p class="muted">Link a line to an inventory item where you can, and record the amount and unit. Leave the amount or unit blank when it isn't known — they're never guessed.</p>
+      <p class="muted">Link a line to an inventory item where you can, and record the amount and unit. Leave the amount or unit blank when it isn't known — they're never guessed. Substitutes are alternatives for a line; the cost and weight estimates use the main line, not its substitutes.</p>
     </div>
   </div>
 
@@ -66,6 +66,9 @@
             <td class="row-heading" data-label="Ingredient">
               <%= ingredient.display_name %>
               <% if ingredient.inventory_item %><span class="badge badge-compact">Inventory</span><% end %>
+              <%= render "recipes/substitutes",
+                    recipe: @recipe, ingredient: ingredient, inventory_items: @inventory_items,
+                    new_substitute: (@new_substitute if @substitute_errors_for == ingredient.id) %>
             </td>
             <%# A blank amount is intentional ("never guessed"), not missing data —
                 show the app's "—" blank marker like the Unit cell beside it, not

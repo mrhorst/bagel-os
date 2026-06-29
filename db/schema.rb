@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_29_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_29_000003) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -562,6 +562,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000002) do
     t.index ["supplier_id"], name: "index_receipts_on_supplier_id"
   end
 
+  create_table "recipe_ingredient_substitutes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "inventory_item_id"
+    t.string "name"
+    t.string "note"
+    t.integer "position"
+    t.decimal "quantity", precision: 12, scale: 4
+    t.integer "recipe_ingredient_id", null: false
+    t.string "unit"
+    t.datetime "updated_at", null: false
+    t.index ["inventory_item_id"], name: "index_recipe_ingredient_substitutes_on_inventory_item_id"
+    t.index ["recipe_ingredient_id"], name: "index_recipe_ingredient_substitutes_on_recipe_ingredient_id"
+  end
+
   create_table "recipe_ingredients", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "inventory_item_id"
@@ -847,6 +861,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000002) do
   add_foreign_key "receipt_line_items", "suppliers"
   add_foreign_key "receipts", "import_batches"
   add_foreign_key "receipts", "suppliers"
+  add_foreign_key "recipe_ingredient_substitutes", "inventory_items"
+  add_foreign_key "recipe_ingredient_substitutes", "recipe_ingredients"
   add_foreign_key "recipe_ingredients", "inventory_items"
   add_foreign_key "recipe_ingredients", "recipes"
   add_foreign_key "sessions", "users"

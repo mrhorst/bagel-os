@@ -121,7 +121,9 @@ Rails.application.routes.draw do
     resources :order_guide_memberships, only: %i[create], controller: "product_order_guide_memberships"
   end
   resources :recipes, only: %i[index show new create edit update] do
-    resources :ingredients, only: %i[create update destroy], controller: "recipe_ingredients"
+    resources :ingredients, only: %i[create update destroy], controller: "recipe_ingredients" do
+      resources :substitutes, only: %i[create destroy], controller: "recipe_ingredient_substitutes", shallow: true
+    end
   end
   resources :photo_assets, path: "marketing/photos", only: %i[index new create show update destroy] do
     collection do

@@ -1,0 +1,27 @@
+<%# locals: recipe, ingredient, substitute, inventory_items
+
+  Compact "add a substitute" form, one per ingredient row. Each ingredient
+  renders its own add form, so — like the ingredient forms — the field ids are
+  namespaced (here by the ingredient's dom_id) to stay unique and keep every
+  <label for> wired to its own field. The amount/unit are optional: blank means
+  the substitute uses the line's own amount. %>
+<%= form_with model: substitute, namespace: dom_id(ingredient, "newsub"),
+      url: recipe_ingredient_substitutes_path(recipe, ingredient),
+      class: "inline-ingredient-form" do |form| %>
+  <% if substitute.errors.any? %>
+    <p class="inline-form-error" role="alert"><%= substitute.errors.full_messages.to_sentence %></p>
+  <% end %>
+
+  <%= form.label :inventory_item_id, "Substitute item", class: "sr-only" %>
+  <%= form.collection_select :inventory_item_id, inventory_items, :id, :name,
+        { include_blank: "No item" }, { class: "compact-select" } %>
+  <%= form.label :name, "Substitute name", class: "sr-only" %>
+  <%= form.text_field :name, class: "compact-input", autocomplete: "off", placeholder: "or name" %>
+  <%= form.label :quantity, "Amount", class: "sr-only" %>
+  <%= form.number_field :quantity, step: "0.0001", min: "0", class: "compact-input", placeholder: "amt" %>
+  <%= form.label :unit, "Unit", class: "sr-only" %>
+  <%= form.text_field :unit, class: "compact-input", autocomplete: "off", placeholder: "unit" %>
+  <%= form.label :note, "Note", class: "sr-only" %>
+  <%= form.text_field :note, class: "compact-input", autocomplete: "off", placeholder: "note" %>
+  <%= form.submit "Add substitute", class: "button small" %>
+<% end %>
