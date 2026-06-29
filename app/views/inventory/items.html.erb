@@ -94,7 +94,7 @@
               <% end %>
             </td>
             <td data-label="Pack / count note"><%= item.pack_size.presence || item.count_unit.presence || "n/a" %></td>
-            <td class="numeric" data-label="Latest price"><%= item.latest_price.present? ? number_to_currency(item.latest_price) : "n/a" %></td>
+            <td class="numeric" data-label="Latest price"><%= money_cell(item.latest_price) %></td>
             <td data-label="Status">
               <% if item.needs_review? %>
                 <span class="badge badge-warning">Review</span>
