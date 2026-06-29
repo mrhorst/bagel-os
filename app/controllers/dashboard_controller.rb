@@ -23,6 +23,10 @@ class DashboardController < ApplicationController
     @inventory_items_needing_review_count = InventoryItem.active.needs_review.count
     @products_needing_review_count = Product.needs_review.count
     @log_book_follow_up_count = LogBookResponse.unresolved.count
-    @marketing_unreviewed_count = PhotoAsset.with_status("unreviewed").count
+    # "needs_review" is the real PhotoAsset status for AI-suggested photos
+    # awaiting a human (PhotoAsset::STATUSES) — and the status the library's own
+    # "Needs review" filter counts. The old "unreviewed" string isn't a valid
+    # status, so this tile always counted zero and claimed "Library is reviewed."
+    @marketing_unreviewed_count = PhotoAsset.with_status("needs_review").count
   end
 end
