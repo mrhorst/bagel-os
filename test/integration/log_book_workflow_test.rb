@@ -385,6 +385,34 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
     refute_match "Cinnamon raisin", response_row.display_value
   end
 
+  test "a section archived after the form loaded still saves instead of crashing the autosave" do
+    # A manager opens today's log (the section is active and rendered as a card),
+    # starts filling it in, and meanwhile an admin archives that section from the
+    # settings page (or the same manager does it in another tab). The browser form
+    # is now stale: its next autosave still POSTs the archived section's id. The
+    # section is only *soft*-archived (active:false, the row still exists), but the
+    # save looked it up through `LogBookSection.active.find`, which raised
+    # RecordNotFound — turning an ordinary concurrent edit into a failed save with
+    # no recovery (autosave reports "Couldn't save — copy kept in this browser" and
+    # the kept-draft Restore just fails again). The save must persist the work.
+    section = LogBookSection.create!(title: "Walk-in Temp", section_type: "long_text", position: 1)
+    section.archive!
+    assert_not section.reload.active?, "section is soft-archived but still exists"
+
+    assert_nothing_raised do
+      patch log_book_path,
+        params: {
+          operating_date: Date.current.iso8601,
+          responses: { section.id => { value_text: "41 F at open.", no_note: "0", flagged_for_follow_up: "0", urgency: "normal" } }
+        },
+        headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    end
+
+    assert_response :success
+    saved = LogBookResponse.find_by!(log_book_section: section)
+    assert_equal "41 F at open.", saved.value_text, "the in-progress entry is preserved, not dropped"
+  end
+
   test "multi-input section rejects non-numeric values for number sub-fields" do
     section = LogBookSection.create!(
       title: "Bagel count",

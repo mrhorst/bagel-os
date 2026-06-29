@@ -96,7 +96,17 @@ class LogBookController < ApplicationController
 
   def sync_responses!(entry, response_params)
     response_params.each do |section_id, attrs|
-      section = LogBookSection.active.find(section_id)
+      # Look the section up WITHOUT the `.active` scope. A section can be
+      # archived after the form was rendered — an admin in another tab or a
+      # second user on the settings page — leaving the stale form to autosave
+      # the now-inactive section id. Archiving is a soft delete (active: false;
+      # the row and its responses survive), so persist the in-progress entry
+      # against it instead of raising RecordNotFound, which turned an ordinary
+      # concurrent edit into a 404 the autosave reports as "Couldn't save".
+      # Skip only an id with no matching section at all.
+      section = LogBookSection.find_by(id: section_id)
+      next unless section
+
       response = entry.log_book_responses.find_or_initialize_by(log_book_section: section)
       no_note = ActiveModel::Type::Boolean.new.cast(attrs.fetch(:no_note, false))
 
