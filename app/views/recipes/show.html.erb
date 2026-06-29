@@ -65,7 +65,10 @@
               <%= ingredient.display_name %>
               <% if ingredient.inventory_item %><span class="badge badge-compact">Inventory</span><% end %>
             </td>
-            <td data-label="Amount" class="tnum"><%= compact_decimal(ingredient.quantity) %></td>
+            <%# A blank amount is intentional ("never guessed"), not missing data —
+                show the app's "—" blank marker like the Unit cell beside it, not
+                compact_decimal's "n/a", which reads as a system error. %>
+            <td data-label="Amount" class="tnum"><%= ingredient.quantity.present? ? compact_decimal(ingredient.quantity) : "—" %></td>
             <td data-label="Unit"><%= ingredient.unit.presence || "—" %></td>
             <td data-label="Est. cost" class="numeric">
               <% if line_cost&.costed? %>
