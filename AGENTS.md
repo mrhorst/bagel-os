@@ -55,7 +55,7 @@ This is a single-context Rails app with root `CONTEXT.md` and ADRs in `docs/adr/
 
 ### Agent CLI
 
-`bin/agent` gives agents JSON access to domain data (tasks, inventory gaps, prices, reviews), authoring actions (create lists/tasks/inventory items), and guarded task complete/undo for voice-driven flows. Authenticate first with `bin/agent login`; domain commands are gated on a session (the seam for future tenancy). Start with `bin/agent schema`. See `docs/agents/agent-cli.md`.
+`bin/agent` gives agents JSON access to domain data (tasks, inventory gaps, prices, reviews), authoring actions (create lists/tasks/inventory items), and guarded task complete/undo for voice-driven flows. Install with `bin/install-agent` (symlinks `agent` onto PATH), then authenticate with `agent login`; domain commands are gated on a session (the seam for future tenancy). Start with `agent schema`. See `docs/agents/agent-cli.md`.
 
 ### Production observability & self-healing
 

@@ -11,6 +11,29 @@ bin/agent tasks:today                      # pretty JSON
 bin/agent price:product "house blend" --compact
 ```
 
+## Install
+
+The CLI runs from this checkout (it boots the app from here), so "installing"
+just puts an `agent` command on your PATH that points back at `bin/agent` — no
+copy, no build step.
+
+```sh
+bin/install-agent          # symlinks agent into ~/.local/bin
+```
+
+Then `agent help` works from any directory. Options:
+
+- `BAGEL_AGENT_BIN_DIR=/usr/local/bin bin/install-agent` — link elsewhere.
+- `BAGEL_AGENT_FORCE=1 bin/install-agent` — replace a non-symlink already there.
+- Uninstall: `rm "<bin-dir>/agent"`.
+
+Prerequisites: Ruby and the app's gems (`bundle install`). The installer prints
+how to add the bin dir to PATH if it isn't already. You can always run
+`./bin/agent` directly without installing.
+
+> The rest of this doc writes `bin/agent` for clarity; once installed, `agent`
+> is equivalent.
+
 ## Authentication
 
 Domain commands require an authenticated session — having the project checked
