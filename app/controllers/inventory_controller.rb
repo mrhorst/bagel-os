@@ -22,7 +22,17 @@ class InventoryController < ApplicationController
     @order_guides = OrderGuide.active.ordered
 
     if params[:order_guide_id].present?
-      @order_guide = OrderGuide.active.find(params[:order_guide_id])
+      # A buy-list link can outlive its guide — a bookmark, a PWA deep link, or
+      # an open tab whose guide was archived from another session. Find the guide
+      # without raising so an archived/stale id lands the user back on the guide
+      # picker with a recoverable message instead of a dead-end 404 (mirrors the
+      # create-count path's handling of the same condition).
+      @order_guide = OrderGuide.active.find_by(id: params[:order_guide_id])
+      if @order_guide.nil?
+        redirect_to inventory_shopping_list_path, alert: "That guide is no longer active. Pick an active guide."
+        return
+      end
+
       recommendation = Purchasing::OrderGuideRecommendation.new(@order_guide)
       @recommendations = recommendation.rows
       @buy_now = @recommendations.select { |row| row.status == "buy_now" }
@@ -54,7 +64,15 @@ class InventoryController < ApplicationController
     @order_guides = OrderGuide.active.ordered
     return if params[:order_guide_id].blank?
 
-    @order_guide = OrderGuide.active.find(params[:order_guide_id])
+    # Same stale-link guard as shopping_list: the "Start count" button carries a
+    # guide id that may have been archived since the page loaded. Fall back to
+    # the guide picker with a clear message rather than a dead-end 404.
+    @order_guide = OrderGuide.active.find_by(id: params[:order_guide_id])
+    if @order_guide.nil?
+      redirect_to new_inventory_count_path, alert: "That guide is no longer active. Pick an active guide to count."
+      return
+    end
+
     @memberships = counted_memberships_for(@order_guide)
   end
 
