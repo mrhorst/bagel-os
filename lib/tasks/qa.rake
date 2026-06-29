@@ -81,7 +81,17 @@ namespace :qa do
     # flow is named to test. The second drill (a[href$='/edit']) then opens the
     # recipe's Edit page so its "Back to recipe" arrow is exercised too.
     { slug: "recipes-edit", label: "Recipes → recipe → edit → back to recipe → back",
-      entry: "/recipes", drill: [ "a[href*='/recipes/']:not([href$='/edit']):not([href$='/new'])", "a[href$='/edit']" ] }
+      entry: "/recipes", drill: [ "a[href*='/recipes/']:not([href$='/edit']):not([href$='/new'])", "a[href$='/edit']" ] },
+    # Collections (marketing/collections) is the one rotation-adjacent journey
+    # with no runtime back-chevron coverage — its pages aren't a nav module, so
+    # each renders an in-content "Back to collections" / "Back to library" chevron
+    # (a.mobile-header-back) that only an integration test asserts statically.
+    # Drive it here so the back-walk + referrer probe exercise that chevron the
+    # same way every other sub-page is exercised. Exclude the New/Edit links (they
+    # render before the collection cards) so the drill reaches a real collection
+    # show page rather than the form.
+    { slug: "collections", label: "Collections → open a collection → back",
+      entry: "/marketing/collections", drill: [ "a[href*='/marketing/collections/']:not([href$='/new']):not([href$='/edit'])" ] }
   ].freeze
 
   VIEWPORT = [ 414, 896 ].freeze # mobile — where the back affordance is the primary nav
