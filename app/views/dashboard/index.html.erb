@@ -52,7 +52,7 @@
       path: order_guides_path,
       count: @guide_items_needing_review_count,
       tone: @guide_items_needing_review_count.positive? ? "active" : "ok",
-      summary: @guide_items_needing_review_count.positive? ? "#{@guide_items_needing_review_count} links to verify" : "Guides look clean",
+      summary: @guide_items_needing_review_count.positive? ? "#{pluralize(@guide_items_needing_review_count, "link")} to verify" : "Guides look clean",
       description: "What you order, organized by supplier."
     },
     {
@@ -61,7 +61,7 @@
       path: inventory_path,
       count: @inventory_items_needing_review_count,
       tone: @inventory_items_needing_review_count.positive? ? "active" : "ok",
-      summary: @inventory_items_needing_review_count.positive? ? "#{@inventory_items_needing_review_count} items to clean up" : "On-hand looks tidy",
+      summary: @inventory_items_needing_review_count.positive? ? "#{pluralize(@inventory_items_needing_review_count, "item")} to clean up" : "On-hand looks tidy",
       description: "Counts, units, and on-hand stock."
     },
     {
@@ -70,7 +70,7 @@
       path: products_path,
       count: @products_needing_review_count,
       tone: @products_needing_review_count.positive? ? "active" : "ok",
-      summary: @products_needing_review_count.positive? ? "#{@products_needing_review_count} records to clean up" : "Records look complete",
+      summary: @products_needing_review_count.positive? ? "#{pluralize(@products_needing_review_count, "record")} to clean up" : "Records look complete",
       description: "The master catalog of everything purchased."
     },
     {
@@ -79,7 +79,7 @@
       path: photo_assets_path,
       count: @marketing_unreviewed_count,
       tone: @marketing_unreviewed_count.positive? ? "active" : "ok",
-      summary: @marketing_unreviewed_count.positive? ? "#{@marketing_unreviewed_count} photos to review" : "Library is reviewed",
+      summary: @marketing_unreviewed_count.positive? ? "#{pluralize(@marketing_unreviewed_count, "photo")} to review" : "Library is reviewed",
       description: "Photo library for menus, social, and the site."
     }
   ].select { |surface| current_user&.can_access?(surface[:module_name]) }
