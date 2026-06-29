@@ -4740,7 +4740,13 @@
        cards read as one ribbed strip instead of discrete rows. 16px restores the
        rhythm (between-card > within-card) without stretching the layout. */
     gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    /* auto-FIT, not auto-fill: a hub with fewer cards than the row can hold (the
+       Buying hub's two, the Log Book settings' two) must spread its cards to
+       fill the column. auto-fill keeps the empty phantom tracks, so two cards
+       huddled in the left ~60% with a dead column on the right — reading as an
+       unfinished layout. auto-fit collapses the empty tracks so the present
+       cards stretch edge to edge, matching the sibling .task-builder-menu grid. */
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
   .settings-card {
     /* Within each (now content-sized — see .settings-hub) card, centre the icon
