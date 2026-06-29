@@ -43,7 +43,7 @@
       path: normalization_reviews_path,
       count: @pending_review_count,
       tone: @pending_review_count.positive? ? "urgent" : "ok",
-      summary: @pending_review_count.positive? ? "#{@pending_review_count} receipts to review" : "Nothing pending",
+      summary: @pending_review_count.positive? ? pluralize(@pending_review_count, "receipt") + " to review" : "Nothing pending",
       description: "Confirm imported receipts before they hit reports."
     },
     {
