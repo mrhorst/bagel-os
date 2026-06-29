@@ -6257,6 +6257,17 @@
       width: auto;
     }
 
+    /* The subpage-header keeps its actions inline on mobile (they don't go
+       full-width like the .actions buttons above), so the primary action —
+       e.g. "Add task" on the manage screens — renders at the base .button
+       height of 36px, under the 44px minimum a thumb needs. Lift the
+       non-small header actions to 44px on mobile, matching the
+       .tasks-date-pager-arrow touch-target fix; .small secondaries stay
+       compact, per the rule above. Desktop keeps 36px. */
+    .subpage-header-actions .button:not(.small) {
+      min-height: 44px;
+    }
+
     .panel {
       padding: 14px;
     }
