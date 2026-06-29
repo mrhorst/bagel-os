@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Bagel OS agent CLI — read-only JSON access to domain data for AI agents.
+# Boots the Rails environment, then hands argv to Agents::Cli.
+#
+#   bin/agent help
+#   bin/agent tasks:today
+#   bin/agent price:product "house blend" --compact
+#
+# See docs/agents/agent-cli.md for the full command reference.
+
+require_relative "../config/environment"
+
+exit Agents::Cli.run(ARGV)
