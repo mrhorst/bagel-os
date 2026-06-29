@@ -38,6 +38,22 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     assert line.unit.blank?
   end
 
+  test "a deliberately-blank amount reads as blank, not 'n/a'" do
+    recipe = Recipe.create!(name: "Blank-amount probe", active: true, position: 999)
+    # A line whose amount is intentionally unknown — the feature promises these
+    # are left blank, never guessed. It must read like the blank Unit beside it
+    # (the app's "—" convention), not "n/a", which reads as a system error.
+    recipe.recipe_ingredients.create!(name: "Salt to taste", quantity: nil, unit: nil, position: 1)
+    # A line with a real amount still shows the number.
+    recipe.recipe_ingredients.create!(name: "Flour", quantity: 5, unit: "cup", position: 2)
+
+    get recipe_path(recipe)
+    assert_response :success
+    assert_select %(td[data-label="Amount"]), text: "—"
+    assert_select %(td[data-label="Amount"]), text: "5"
+    assert_select %(td[data-label="Amount"]), text: "n/a", count: 0
+  end
+
   test "rejecting an ingredient with no item and no name re-renders in place keeping input" do
     assert_no_difference -> { @recipe.recipe_ingredients.count } do
       post recipe_ingredients_path(@recipe), params: {
