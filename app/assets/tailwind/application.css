@@ -5913,6 +5913,16 @@
     .tasks-date-pager-form {
       flex: 1;
     }
+    /* Touch target: changing day with the prev/next arrows is the primary
+       mobile interaction here, so size them to the 44px minimum (Apple HIG /
+       WCAG 2.5.5) rather than the 30px pointer size kept on desktop. The pager
+       is full-width on a phone, so the larger arrows sit comfortably at the row
+       edges, and the taller row gives the date label (which opens the native
+       picker) a 44px tap height too. */
+    .tasks-date-pager-arrow {
+      height: 44px;
+      width: 44px;
+    }
     .tasks-staff-chip {
       max-width: 130px;
       overflow: hidden;
