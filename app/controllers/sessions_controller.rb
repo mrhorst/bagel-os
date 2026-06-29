@@ -10,7 +10,12 @@ class SessionsController < ApplicationController
       start_new_session_for user
       redirect_to after_authentication_url
     else
-      redirect_to new_session_path, alert: "Try another email address or password."
+      # Re-render the form in place (not a redirect) so the typed email survives
+      # the failed attempt — the email field already reads params[:email_address],
+      # but a redirect drops those params and forces a full retype. Matches the
+      # app-wide "recover in place on failed save" pattern (see AccountsController).
+      flash.now[:alert] = "Try another email address or password."
+      render :new, status: :unprocessable_entity
     end
   end
 
