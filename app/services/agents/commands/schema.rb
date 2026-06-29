@@ -13,8 +13,10 @@ module Agents
         {
           envelope: {
             success: "stdout: { ok: true, command, generated_at, data }",
-            failure: "stderr + exit 1: { ok: false, command, error: { type, message } }",
-            error_types: %w[unknown_command usage_error not_found ambiguous error],
+            failure: "stderr + exit 1: { ok: false, command, error: { type, message, hint? } }",
+            error_types: %w[unknown_command unauthenticated usage_error not_found ambiguous error],
+            error_hint: "Errors carry a `hint`: a short, actionable next step (often the command to run next). `ambiguous` errors also carry `candidates`.",
+            pagination: "List commands that take --limit return `returned`, `limit`, and `truncated`. truncated=true means more rows exist — raise --limit to see them.",
             money: "decimal values are JSON strings to avoid float rounding"
           },
           global_options: [

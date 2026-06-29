@@ -9,24 +9,37 @@ module Agents
   # Commands are READ-ONLY by design (see docs/agents/agent-cli.md). Keep them
   # side-effect free so an agent can call them freely while reasoning.
   class Command
+    # Base for every command error. Carries an optional `hint`: a short,
+    # actionable next step the CLI surfaces in the error envelope so an agent
+    # knows how to recover (e.g. which command to run next), not just that it
+    # failed.
+    class Error < StandardError
+      attr_reader :hint
+
+      def initialize(message = nil, hint: nil)
+        super(message)
+        @hint = hint
+      end
+    end
+
     # Raised for bad input (unknown flag value, missing argument). The CLI turns
     # this into a clean error envelope and a non-zero exit, not a stack trace.
-    class UsageError < StandardError; end
+    class UsageError < Error; end
 
     # Raised when a looked-up record does not exist.
-    class NotFoundError < StandardError; end
+    class NotFoundError < Error; end
 
     # Raised for credential/session failures (bad login, no active session).
-    class AuthenticationError < StandardError; end
+    class AuthenticationError < Error; end
 
     # Raised when a fuzzy reference (e.g. --task "cheese") matches more than one
     # record. Carries the candidates so the CLI can hand them back and the agent
     # can ask the user which one — rather than guessing.
-    class AmbiguousError < StandardError
+    class AmbiguousError < Error
       attr_reader :candidates
 
-      def initialize(message, candidates:)
-        super(message)
+      def initialize(message, candidates:, hint: nil)
+        super(message, hint: hint)
         @candidates = candidates
       end
     end
@@ -120,6 +133,21 @@ module Agents
 
     def iso(time)
       time&.iso8601
+    end
+
+    # Load at most `limit` records and report whether more were available, by
+    # asking for one extra. Lets a read command tell an agent "this is the full
+    # set" vs "there's more — raise --limit" without a second COUNT query.
+    # Returns [records, truncated].
+    def fetch_capped(relation, limit)
+      records = relation.limit(limit + 1).to_a
+      [ records.first(limit), records.length > limit ]
+    end
+
+    # Standard pagination metadata for a limited read, so every list command
+    # reports completeness the same way.
+    def page_meta(returned:, limit:, truncated:)
+      { returned: returned, limit: limit, truncated: truncated }
     end
   end
 end

@@ -11,24 +11,25 @@ module Agents
     def resolve_occurrence(options, operating_day)
       if (id = options.value("occurrence")).present?
         return TaskOccurrence.find_by(id: id) ||
-          (raise Command::NotFoundError, "No task occurrence with id #{id}")
+          (raise Command::NotFoundError.new("No task occurrence with id #{id}", hint: "Run `bin/agent tasks:today` to see today's occurrence ids."))
       end
 
       query = options.value("task")
-      raise Command::UsageError, "Provide --occurrence <id> or --task <name>" if query.blank?
+      raise Command::UsageError.new("Provide --occurrence <id> or --task <name>", hint: "Run `bin/agent tasks:today` to see today's tasks.") if query.blank?
 
       candidates = actionable_occurrences(operating_day)
       matches = candidates.select { |o| o.snapshot_title.to_s.downcase.include?(query.downcase) }
 
       case matches.size
       when 0
-        raise Command::NotFoundError, "No actionable task matching #{query.inspect} for #{operating_day.today.iso8601}"
+        raise Command::NotFoundError.new("No actionable task matching #{query.inspect} for #{operating_day.today.iso8601}", hint: "Run `bin/agent tasks:today` to see what's open.")
       when 1
         matches.first
       else
         raise Command::AmbiguousError.new(
           "#{matches.size} tasks match #{query.inspect}; specify --occurrence <id>",
-          candidates: matches.map { |o| { id: o.id, title: o.snapshot_title, list: o.snapshot_list_name } }
+          candidates: matches.map { |o| { id: o.id, title: o.snapshot_title, list: o.snapshot_list_name } },
+          hint: "Re-run with --occurrence <id> from candidates."
         )
       end
     end
@@ -38,10 +39,11 @@ module Agents
     # task into an existing list.
     def resolve_task_list(options, key: "list")
       raw = options.value(key)
-      raise Command::UsageError, "Provide --#{key} <name|id>" if raw.blank?
+      raise Command::UsageError.new("Provide --#{key} <name|id>", hint: "Run `bin/agent tasks:lists` to see lists.") if raw.blank?
 
       if raw.match?(/\A\d+\z/)
-        return TaskList.find_by(id: raw) || (raise Command::NotFoundError, "No task list with id #{raw}")
+        return TaskList.find_by(id: raw) ||
+          (raise Command::NotFoundError.new("No task list with id #{raw}", hint: "Run `bin/agent tasks:lists` to see list ids."))
       end
 
       exact = TaskList.where("LOWER(name) = ?", raw.strip.downcase).to_a
@@ -49,13 +51,14 @@ module Agents
 
       case candidates.size
       when 0
-        raise Command::NotFoundError, "No task list matching #{raw.inspect}"
+        raise Command::NotFoundError.new("No task list matching #{raw.inspect}", hint: "Run `bin/agent tasks:lists` to see lists, or `bin/agent tasks:create-list --name #{raw.inspect}` to make one.")
       when 1
         candidates.first
       else
         raise Command::AmbiguousError.new(
           "#{candidates.size} task lists match #{raw.inspect}; use the exact name or --#{key} <id>",
-          candidates: candidates.map { |l| { id: l.id, name: l.name } }
+          candidates: candidates.map { |l| { id: l.id, name: l.name } },
+          hint: "Re-run with --#{key} <id> from candidates."
         )
       end
     end
@@ -68,11 +71,12 @@ module Agents
       if raw.blank?
         return default if default
 
-        raise Command::UsageError, "Provide --user <email|name|id> for attribution"
+        raise Command::UsageError.new("Provide --user <email|name|id> for attribution", hint: "Run `bin/agent staff:list` to see users.")
       end
 
       if raw.match?(/\A\d+\z/)
-        return User.find_by(id: raw) || (raise Command::NotFoundError, "No user with id #{raw}")
+        return User.find_by(id: raw) ||
+          (raise Command::NotFoundError.new("No user with id #{raw}", hint: "Run `bin/agent staff:list` to see user ids."))
       end
 
       by_email = User.find_by(email_address: raw.strip.downcase)
@@ -81,13 +85,14 @@ module Agents
       by_name = User.where("LOWER(name) = ?", raw.strip.downcase).to_a
       case by_name.size
       when 0
-        raise Command::NotFoundError, "No user matching #{raw.inspect}"
+        raise Command::NotFoundError.new("No user matching #{raw.inspect}", hint: "Run `bin/agent staff:list` to see users.")
       when 1
         by_name.first
       else
         raise Command::AmbiguousError.new(
           "#{by_name.size} users named #{raw.inspect}; use their email or --user <id>",
-          candidates: by_name.map { |u| { id: u.id, name: u.name, email: u.email_address } }
+          candidates: by_name.map { |u| { id: u.id, name: u.name, email: u.email_address } },
+          hint: "Re-run with --user <email|id>."
         )
       end
     end

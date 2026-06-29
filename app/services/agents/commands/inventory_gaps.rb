@@ -14,11 +14,14 @@ module Agents
       def call
         limit = options.integer("limit", 25)
         analyzer = Purchasing::InventoryGapAnalyzer.new
+        summary = analyzer.summary
+        rows = analyzer.missing_products(limit: limit)
+        truncated = summary[:missing_count].to_i > rows.size
 
         {
-          summary: analyzer.summary,
-          rows: analyzer.missing_products(limit: limit).map { |row| row_json(row) }
-        }
+          summary: summary,
+          rows: rows.map { |row| row_json(row) }
+        }.merge(page_meta(returned: rows.size, limit: limit, truncated: truncated))
       end
 
       private

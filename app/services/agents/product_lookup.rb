@@ -20,11 +20,13 @@ module Agents
     # NotFoundError the CLI renders cleanly.
     def resolve(id:, query:)
       if id.present?
-        Product.find_by(id: id) || (raise Command::NotFoundError, "No product with id #{id}")
+        Product.find_by(id: id) ||
+          (raise Command::NotFoundError.new("No product with id #{id}", hint: "Run `bin/agent products:search <name>` to find a valid id."))
       elsif query.present?
-        search(query, limit: 1).first || (raise Command::NotFoundError, "No product matching #{query.inspect}")
+        search(query, limit: 1).first ||
+          (raise Command::NotFoundError.new("No product matching #{query.inspect}", hint: "Run `bin/agent products:search #{query.inspect}` to see candidates."))
       else
-        raise Command::UsageError, "Provide a product name or --id"
+        raise Command::UsageError.new("Provide a product name or --id", hint: "Usage: bin/agent price:product <name> [--id N]")
       end
     end
 

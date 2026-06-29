@@ -29,7 +29,12 @@ module Agents
         user = TaskTargeting.resolve_user(options, default: Current.user)
 
         completion = occurrence.active_completion
-        raise UsageError, "#{occurrence.snapshot_title.inspect} is not currently completed." if completion.blank?
+        if completion.blank?
+          raise UsageError.new(
+            "#{occurrence.snapshot_title.inspect} is not currently completed.",
+            hint: "Nothing to undo. Run `bin/agent tasks:today` to see current status."
+          )
+        end
 
         if options.flag?("dry-run")
           return {

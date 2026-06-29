@@ -70,7 +70,7 @@ module Agents
       Product.create!(canonical_name: "Plain Bagel", supplier: supplier)
 
       _status, json, = run_cli("products:search", "%")
-      assert_equal 0, json.dig("data", "count")
+      assert_equal 0, json.dig("data", "returned")
     end
 
     test "an empty search query is a usage error" do

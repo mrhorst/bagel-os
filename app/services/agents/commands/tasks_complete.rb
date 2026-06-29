@@ -70,7 +70,10 @@ module Agents
       # validation stack trace.
       def guard_completable!(occurrence)
         if occurrence.requires_photo_evidence?
-          raise UsageError, "#{occurrence.snapshot_title.inspect} requires photo evidence, which can't be attached from the CLI. Complete it in the app."
+          raise UsageError.new(
+            "#{occurrence.snapshot_title.inspect} requires photo evidence, which can't be attached from the CLI.",
+            hint: "Complete this task in the app, where a photo can be attached."
+          )
         end
       end
     end

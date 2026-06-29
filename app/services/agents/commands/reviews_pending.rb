@@ -14,15 +14,14 @@ module Agents
       def call
         limit = options.integer("limit", 50)
 
-        reviews = NormalizationReview.pending
+        scope = NormalizationReview.pending
           .recent
           .includes(:product, receipt_line_item: :receipt)
-          .limit(limit)
+        reviews, truncated = fetch_capped(scope, limit)
 
         {
-          count: reviews.size,
           reviews: reviews.map { |review| review_json(review) }
-        }
+        }.merge(page_meta(returned: reviews.size, limit: limit, truncated: truncated))
       end
 
       private

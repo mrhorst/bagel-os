@@ -24,17 +24,15 @@ module Agents
           .where(completed_at: since..)
           .includes(task_occurrence: :task_list)
           .order(completed_at: :desc)
-          .limit(limit)
         scope = scope.where(undone_at: nil) unless options.flag?("include-undone")
 
-        completions = scope.to_a
+        completions, truncated = fetch_capped(scope, limit)
 
         {
           since: since.iso8601,
           days: days,
-          count: completions.size,
           completions: completions.map { |c| completion_json(c) }
-        }
+        }.merge(page_meta(returned: completions.size, limit: limit, truncated: truncated))
       end
 
       private

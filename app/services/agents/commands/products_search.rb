@@ -19,13 +19,14 @@ module Agents
         raise UsageError, "Provide a search query" if query.blank?
 
         limit = options.integer("limit", 25)
-        products = ProductLookup.search(query, limit: limit).includes(:supplier, :product_category)
+        found = ProductLookup.search(query, limit: limit + 1).includes(:supplier, :product_category).to_a
+        truncated = found.length > limit
+        products = found.first(limit)
 
         {
           query: query,
-          count: products.size,
           products: products.map { |product| product_json(product) }
-        }
+        }.merge(page_meta(returned: products.size, limit: limit, truncated: truncated))
       end
 
       private

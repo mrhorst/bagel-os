@@ -65,10 +65,33 @@ Failures print an envelope to **stderr** and exit non-zero (status `1`):
 ```
 
 Error `type` is one of `unknown_command`, `unauthenticated`, `usage_error`,
-`not_found`, `ambiguous`, `error`. An `ambiguous` error also carries a `candidates` array
-(see "Voice workflow" below). This split (data on stdout, errors on stderr,
-exit codes) lets a caller pipe stdout straight into a JSON parser and branch on
-the exit status.
+`not_found`, `ambiguous`, `error`. This split (data on stdout, errors on
+stderr, exit codes) lets a caller pipe stdout straight into a JSON parser and
+branch on the exit status.
+
+Built for agent consumers, the output is self-describing:
+
+- **Every error carries a `hint`** — a short, actionable next step, usually the
+  command to run next. A `not_found` product points at `products:search`; a
+  missing list points at `tasks:lists` / `tasks:create-list`; the auth gate
+  points at `login`.
+- **`ambiguous` errors carry `candidates`** (id + label) so the agent re-runs
+  with an exact id instead of guessing.
+- **Limited reads report completeness** — commands that take `--limit` return
+  `returned`, `limit`, and `truncated`. `truncated: true` means more rows
+  exist, so raise `--limit`.
+
+```json
+{
+  "ok": false,
+  "command": "price:product",
+  "error": {
+    "type": "not_found",
+    "message": "No product matching \"zzz\"",
+    "hint": "Run `bin/agent products:search \"zzz\"` to see candidates."
+  }
+}
+```
 
 Money and decimal values serialize as **strings** so consumers never inherit
 float rounding error on prices.

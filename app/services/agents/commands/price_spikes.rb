@@ -15,15 +15,14 @@ module Agents
       def call
         limit = options.integer("limit", 25)
 
-        observations = PriceObservation.spikes
+        scope = PriceObservation.spikes
           .includes(:product, :supplier)
           .order(observed_at: :desc)
-          .limit(limit)
+        observations, truncated = fetch_capped(scope, limit)
 
         {
-          count: observations.size,
           spikes: observations.map { |observation| spike_json(observation) }
-        }
+        }.merge(page_meta(returned: observations.size, limit: limit, truncated: truncated))
       end
 
       private
