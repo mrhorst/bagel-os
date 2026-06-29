@@ -90,13 +90,30 @@ module Purchasing
         skipped_rows: skipped_rows,
         errors: errors
       }
-    rescue CSV::MalformedCSVError => error
+    rescue CSV::MalformedCSVError, EncodingError => error
+      # CSV::MalformedCSVError — the file is text but not valid CSV.
+      # EncodingError (Invalid/UndefinedByteSequence) — CSV.read can't decode the
+      # bytes at all: the upload starts with a UTF-16/UTF-32 BOM whose body isn't
+      # valid in that encoding (a corrupted/truncated "Unicode Text" export), or
+      # is a binary file that happens to begin with those marker bytes. CSV.read
+      # raises before any row is parsed, and neither the importer (which only
+      # rescues RecordInvalid) nor the controller catches it — so without this an
+      # ordinary "wrong file" mistake crashes the upload to a 500 instead of the
+      # recoverable failed batch every other bad file already produces. Return the
+      # same graceful shape, with a plain-language reason rather than a raw
+      # byte-sequence dump for the un-decodable case.
+      message =
+        if error.is_a?(EncodingError)
+          "This file couldn't be read as a CSV. It may be a non-text file (such as a PDF or image) or saved in an unsupported encoding — re-export it as a CSV (UTF-8) and try again."
+        else
+          error.message
+        end
       {
         source_filename: source_filename,
         rows_processed: 0,
         line_items: [],
         totals: {},
-        errors: [ error.message ],
+        errors: [ message ],
         raw_header: []
       }
     end
