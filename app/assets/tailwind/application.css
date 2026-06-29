@@ -3128,6 +3128,19 @@
     margin-top: 18px;
     padding-top: 14px;
   }
+  /* The footer pairs a neutral Cancel with a primary submit and right-aligns
+     them (justify-content: flex-end). A link Cancel (`<a class="button">`) is
+     content-sized, but the generic form-control rule gives every <input> —
+     including the submit — width:100%, so on desktop the submit ballooned across
+     the whole panel and stranded Cancel at the far left instead of clustering the
+     two as one [Cancel][Submit] action pair. Cap the submit to its content on
+     desktop so it matches the link-button footers. Mobile keeps the full-width
+     primary (a prominent thumb-reach CTA) via the base rule. */
+  @media (min-width: 641px) {
+    .form-footer input[type="submit"] {
+      width: auto;
+    }
+  }
 
   .form-errors {
     background: color-mix(in oklch, var(--warn) 12%, var(--surface-2));
