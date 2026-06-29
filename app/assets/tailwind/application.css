@@ -3418,12 +3418,13 @@
     margin-bottom: 16px;
   }
 
-  /* The favorites filter chip uses the accent to read as "the good ones". */
-  .tag-chip-fav.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
+  /* The Favorites filter is a selection toggle, so its active state uses the
+     same dark-ink fill as every other active filter on the screen — the
+     segmented status tabs (.segmented a.active) and the tag chips
+     (.tag-chip.active). It inherits that treatment from .tag-chip.active; no
+     accent override here. Reserving orange for the single primary action keeps
+     one "selected" language across the whole filter cluster (the ★ glyph, not
+     the fill, still carries the favorite meaning). */
 
   /* Star marker pinned to a favorited card. */
   .photo-card-fav {
