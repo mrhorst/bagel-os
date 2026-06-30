@@ -8,7 +8,12 @@ class RecipeIngredientsController < ApplicationController
     @new_ingredient.position ||= next_position
 
     if @new_ingredient.save
-      redirect_to recipe_path(@recipe), notice: "Ingredient added."
+      # Land back on the "Add ingredient" form (bottom of the show page) rather
+      # than the top, so building a recipe line-by-line doesn't make the user
+      # scroll past the whole ingredient table after every add. The form submits
+      # natively (data-turbo=false) so the browser honors this fragment — see
+      # the note in app/views/recipes/_ingredient_form.html.erb.
+      redirect_to recipe_path(@recipe, anchor: "add-ingredient"), notice: "Ingredient added."
     else
       # Re-render the recipe in place so the rejected line keeps what was typed
       # and shows the error, instead of redirecting and dropping the input.
@@ -20,7 +25,8 @@ class RecipeIngredientsController < ApplicationController
     @ingredient = @recipe.recipe_ingredients.find(params[:id])
 
     if @ingredient.update(ingredient_params)
-      redirect_to recipe_path(@recipe), notice: "Ingredient updated."
+      # Return to the row that was just edited, not the top of the page.
+      redirect_to recipe_path(@recipe, anchor: "ingredient-line-#{@ingredient.id}"), notice: "Ingredient updated."
     else
       @editing_ingredient = @ingredient
       render_recipe_with_errors
@@ -30,6 +36,10 @@ class RecipeIngredientsController < ApplicationController
   def destroy
     ingredient = @recipe.recipe_ingredients.find(params[:id])
     ingredient.destroy
+    # Remove stays a Turbo submit so its turbo_confirm guard fires, and Turbo
+    # drops a redirect fragment — so no place-preserving anchor here (the row is
+    # gone anyway). Add/edit use native submits (data-turbo=false) precisely so
+    # their fragment lands; remove keeps the confirmation instead.
     redirect_to recipe_path(@recipe), notice: "Ingredient removed."
   end
 
