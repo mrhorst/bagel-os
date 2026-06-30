@@ -79,6 +79,16 @@ module Agents
         @skip_auth != true
       end
 
+      # Mark a command as local-only (it manages the on-disk credential store),
+      # so the HTTP API refuses it — those flows have dedicated endpoints.
+      def local_only!
+        @local_only = true
+      end
+
+      def local_only?
+        @local_only == true
+      end
+
       # Structured parameter metadata, surfaced by `bin/agent schema` so an
       # agent can translate transcribed intent into a valid invocation.
       #   param :query, positional: true, required: true, desc: "..."

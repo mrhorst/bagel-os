@@ -14,6 +14,12 @@ Rails.application.routes.draw do
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
+  # Agent HTTP API — lets an authenticated agent run CLI commands against this
+  # app remotely (see docs/agents/agent-cli.md, "Remote mode").
+  post   "agent",         to: "agents/commands#create"
+  post   "agent/session", to: "agents/sessions#create"
+  delete "agent/session", to: "agents/sessions#destroy"
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check

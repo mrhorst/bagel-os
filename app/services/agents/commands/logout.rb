@@ -6,6 +6,7 @@ module Agents
       command "logout"
       summary "Revoke the stored session and clear the local token"
       skip_auth!
+      local_only!
 
       def call
         store = CredentialStore.new

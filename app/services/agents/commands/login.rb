@@ -10,6 +10,7 @@ module Agents
       command "login"
       summary "Authenticate and store a session token"
       skip_auth!
+      local_only!
       usage(
         "Usage: bin/agent login --email you@example.com",
         "",

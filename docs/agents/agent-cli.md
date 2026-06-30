@@ -34,6 +34,50 @@ how to add the bin dir to PATH if it isn't already. You can always run
 > The rest of this doc writes `bin/agent` for clarity; once installed, `agent`
 > is equivalent.
 
+## Local vs. remote (posting to production)
+
+The CLI has two transports, chosen by one environment variable:
+
+- **Local** (default): boots the app from this checkout and talks to its
+  database directly. Good for dev and for running on a server.
+- **Remote**: set `BAGEL_API_URL` and the CLI sends commands to a running app
+  over HTTPS instead of booting Rails. No checkout, gems, DB, or secrets needed
+  near the agent — just a URL and a token. This is how an agent posts to
+  production from anywhere.
+
+```sh
+export BAGEL_API_URL=https://app.example.com
+agent login --email you@example.com    # gets a token from the app, stores it
+agent tasks:create --list Closing --title "Lock up" --due-time 22:00 --yes
+```
+
+The remote transport hits three endpoints on the app:
+
+| Method + path        | Purpose |
+| -------------------- | ------- |
+| `POST /agent`        | Run a command. Body `{ "argv": [...] }`, `Authorization: Bearer <token>`. |
+| `POST /agent/session`| Log in: `{ email, password }` → `{ token, user, environment }`. Rate-limited. |
+| `DELETE /agent/session` | Log out: revoke the session (Bearer token). |
+
+Output is byte-for-byte the same envelope as a local run (same `Dispatcher`
+backs both), so an agent doesn't care which transport it used.
+
+### Production-write guardrail
+
+Every response includes an `environment` field (`development` / `production` /
+…) so an agent can confirm where it is before acting. On a **production** app,
+mutating commands are refused unless explicitly confirmed:
+
+```json
+{ "ok": false, "command": "tasks:create",
+  "error": { "type": "confirmation_required",
+             "message": "Refusing to run a write against production without confirmation.",
+             "hint": "Re-run with --yes (or set BAGEL_AGENT_YES=1) to proceed." } }
+```
+
+Reads are never gated. The check is enforced server-side, so it holds no matter
+which client connects.
+
 ## Authentication
 
 Domain commands require an authenticated session — having the project checked

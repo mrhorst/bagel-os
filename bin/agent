@@ -10,6 +10,14 @@
 #
 # See docs/agents/agent-cli.md for the full command reference.
 
-require_relative "../config/environment"
-
-exit Agents::Cli.run(ARGV)
+# Two transports, chosen by environment:
+#   - Remote: if BAGEL_API_URL is set, talk to a running app over HTTPS. No
+#     Rails boot, no DB, no checkout needed near the agent — just a token.
+#   - Local: otherwise boot the app from this checkout and run in-process.
+if ENV["BAGEL_API_URL"].to_s.strip.empty?
+  require_relative "../config/environment"
+  exit Agents::Cli.run(ARGV)
+else
+  require_relative "../lib/agents/remote_client"
+  exit Agents::RemoteClient.run(ARGV)
+end

@@ -60,45 +60,27 @@ module Agents
         return print_help && 0
       end
 
+      # `<command> --help` prints usage without running anything.
       command_class = lookup(name)
-      unless command_class
-        return fail!(name, "unknown_command", "Unknown command #{name.inspect}.", hint: "Run `bin/agent help` for the command list, or `bin/agent schema` for the machine-readable catalog.")
+      if command_class && Options.parse(tokens).help?
+        return print_command_help(command_class) && 0
       end
 
-      options = Options.parse(tokens)
-      return print_command_help(command_class) && 0 if options.help?
+      # Everything else runs through the shared dispatcher, with the session
+      # resolved from the locally stored token.
+      session = Authentication.resolve_session(CredentialStore.new.read_token)
+      result = Dispatcher.new(session: session, context: :cli).call(argv)
 
-      if command_class.requires_auth? && !authenticate!
-        return fail!(name, "unauthenticated", "Not authenticated.", hint: "Run `bin/agent login --email <you>` first, or set BAGEL_AGENT_TOKEN.")
+      if result.ok?
+        emit(result.payload, compact: argv.include?("--compact"))
+        0
+      else
+        @err.puts(JSON.pretty_generate(result.payload))
+        1
       end
-
-      data = command_class.new(options).call
-      emit(envelope(name, data), compact: options.flag?("compact"))
-      0
-    rescue Command::AmbiguousError => e
-      fail!(name, "ambiguous", e.message, hint: e.hint || "Re-run with the exact id from `candidates`.", details: { candidates: e.candidates })
-    rescue Command::UsageError => e
-      fail!(name, "usage_error", e.message, hint: e.hint)
-    rescue Command::AuthenticationError => e
-      fail!(name, "unauthenticated", e.message, hint: e.hint || "Run `bin/agent login --email <you>`.")
-    rescue Command::NotFoundError => e
-      fail!(name, "not_found", e.message, hint: e.hint)
-    rescue => e
-      fail!(name, "error", "#{e.class}: #{e.message}")
     end
 
     private
-
-    # Resolve the stored token to a live Session and bind it to Current for the
-    # command run (the seam tenancy will extend). Returns false when there's no
-    # valid session.
-    def authenticate!
-      session = Authentication.resolve_session(CredentialStore.new.read_token)
-      return false unless session
-
-      Current.session = session
-      true
-    end
 
     def lookup(name)
       return nil if name.nil?
@@ -106,27 +88,9 @@ module Agents
       REGISTRY.find { |klass| klass.command == name }
     end
 
-    def envelope(name, data)
-      {
-        ok: true,
-        command: name,
-        generated_at: Time.current.iso8601,
-        data: data
-      }
-    end
-
     def emit(payload, compact:)
       json = compact ? JSON.generate(payload) : JSON.pretty_generate(payload)
       @out.puts(json)
-    end
-
-    def fail!(name, type, message, hint: nil, details: nil)
-      error = { type: type, message: message }
-      error[:hint] = hint if hint.present?
-      error.merge!(details) if details
-      payload = { ok: false, command: name, error: error }
-      @err.puts(JSON.pretty_generate(payload))
-      1
     end
 
     def print_help
