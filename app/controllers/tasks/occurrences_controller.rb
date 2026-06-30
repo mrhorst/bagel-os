@@ -31,18 +31,26 @@ module Tasks
       # the arrow appears to do nothing. Fall back to the dashboard instead.
       return default_back_target if uri.path == request.path
 
-      target_for(uri.path)
+      # Pass the path AND query so filtered surfaces (History's date/status/list
+      # filters) survive the round-trip; target_for matches/labels on the path.
+      target_for(uri.request_uri)
     rescue URI::InvalidURIError
       default_back_target
     end
 
-    # Map a same-origin Tasks path to the [path, label] the back arrow shows.
-    def target_for(path)
+    # Map a same-origin Tasks path to the [href, label] the back arrow shows.
+    # `full_path` may carry a query string (History's filters); match and label
+    # on the bare path, but keep the query on the href so "back" returns to the
+    # same filtered view the user drilled in from rather than the unfiltered
+    # default — mirroring the place-preservation Follow-ups (its tab) and the
+    # Photos library (its filter) already practice.
+    def target_for(full_path)
+      path = full_path.split("?", 2).first
       case path
       when tasks_root_path
         [ tasks_root_path, "Tasks" ]
       when tasks_history_path
-        [ tasks_history_path, "History" ]
+        [ full_path, "History" ]
       when %r{\A/tasks/lists/(\d+)\z}
         list = TaskList.find_by(id: Regexp.last_match(1))
         list ? [ tasks_list_path(list), list.name ] : default_back_target
@@ -66,7 +74,9 @@ module Tasks
       return nil unless uri.path.start_with?("/tasks")
       return nil if uri.path == request.path
 
-      uri.path
+      # Keep the query (History's filters) so the back arrow can rebuild the
+      # exact view the user came from, not just the bare path.
+      uri.query.present? ? "#{uri.path}?#{uri.query}" : uri.path
     rescue URI::InvalidURIError
       nil
     end
