@@ -1764,20 +1764,30 @@
     color: var(--ink-muted);
   }
   /* Row action cell: keep several controls on one line, right-aligned. A
-     `button_to` renders a block <form>, so without this the Archive button drops
+     `button_to` renders a block <form>, so without help the Archive button drops
      onto its own row beneath the inline Edit link — two stacked buttons that
-     inflate row height on a desktop table with acres of horizontal room. Flex
-     holds them side by side; the mobile `.responsive-table td` rules reset the
-     cell to a stacked block, so this governs only the desktop table. */
+     inflate row height on a desktop table with acres of horizontal room.
+     This used `display:flex`, but flex overrides the cell's `display:table-cell`,
+     pulling it out of the table's border-collapse model: its `border-bottom` row
+     divider then stopped at the previous column, so on every populated row the
+     dividers ended short and the Edit/Archive buttons floated in an ungridded
+     gutter detached from the rest of the row. Keep the cell a real table-cell so
+     the divider spans the full width, and inline-align the controls instead —
+     `text-align:right` seats them at the column's right edge, and the form is set
+     inline so it sits beside the Edit link rather than wrapping below it. The
+     mobile `.responsive-table td` rules reset the cell to a stacked block, so
+     this governs only the desktop table. */
   td.row-actions {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-end;
+    text-align: right;
+    white-space: nowrap;
+  }
+  td.row-actions .button {
+    vertical-align: middle;
   }
   td.row-actions form {
-    margin: 0;
+    display: inline-flex;
+    margin: 0 0 0 8px;
+    vertical-align: middle;
   }
 
   /* ── Buttons ──────────────────────────────────────────────────────── */
