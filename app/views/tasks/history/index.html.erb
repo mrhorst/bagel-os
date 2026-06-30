@@ -69,7 +69,9 @@
                 <span class="muted">Not completed</span>
               <% end %>
             </td>
-            <td class="numeric"><%= link_to "Details", tasks_occurrence_path(occurrence), class: "button small" %></td>
+            <%# Carry the current filtered History URL so the occurrence page's
+                back arrow returns to this exact filtered view, not the default. %>
+            <td class="numeric"><%= link_to "Details", tasks_occurrence_path(occurrence, back: request.fullpath), class: "button small" %></td>
           </tr>
         <% end %>
       </tbody>
