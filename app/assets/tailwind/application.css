@@ -3921,13 +3921,13 @@
     margin-bottom: 10px;
     text-transform: uppercase;
   }
-  .decision-action-primary {
-    background: color-mix(in oklch, var(--accent-soft) 35%, var(--surface-2));
-  }
-  .decision-action-primary h3 {
-    color: var(--accent-fg);
-    color: color-mix(in oklch, var(--accent) 65%, var(--ink));
-  }
+  /* The three decision actions (assign / create / resolve) are peer choices, so
+     they read as parallel neutral columns. The recommended path is signalled by
+     the single orange `.button primary` on Assign — orange = primary action, its
+     one meaning. An earlier "primary" column tint mixed `--accent-soft` with the
+     cool-gray neutrals in oklch; that hue interpolation crossed through magenta,
+     painting the column a non-orange pink wash (a second tint the palette
+     forbids) and stacking false emphasis onto one of three equal options. */
 
   @media (max-width: 900px) {
     .decision-card-actions {

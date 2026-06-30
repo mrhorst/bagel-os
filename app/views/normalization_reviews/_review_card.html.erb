@@ -31,7 +31,7 @@
   </div>
 
   <div class="decision-card-actions">
-    <section class="decision-action decision-action-primary">
+    <section class="decision-action">
       <h3>Assign to existing product</h3>
       <%= form_with url: assign_product_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
         <%= label_tag "product_id_#{rid}", "Product to assign", class: "sr-only" %>
@@ -55,7 +55,7 @@
       <% end %>
     </section>
 
-    <section class="decision-action decision-action-tertiary">
+    <section class="decision-action">
       <h3>Or resolve / ignore</h3>
       <%= form_with url: resolve_normalization_review_path(review), method: :patch, class: "stack small" do |form| %>
         <%= label_tag "review_status_#{rid}", "Resolution", class: "sr-only" %>
