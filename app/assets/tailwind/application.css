@@ -2146,10 +2146,31 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
+  /* Filter toggles + actions each span the full filter grid so they read as
+     their own bands beneath the labelled selects, instead of flowing into the
+     auto-fit field columns as short, misaligned cells. Both classes appear only
+     on the Products filter (the one screen that mixes checkboxes into .filters),
+     so this is scoped to it. */
+  .filter-checks {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    grid-column: 1 / -1;
+  }
   .filter-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    grid-column: 1 / -1;
+  }
+  /* The base input rule stretches every non-checkbox control to width:100% for
+     the field grid; on its own full-width row the Apply submit would balloon to
+     the whole panel. Keep the action buttons at their intrinsic width, seated at
+     the row's start beside Clear filters. */
+  .filter-actions .button,
+  .filter-actions input[type="submit"] {
+    width: auto;
   }
   .stack.small {
     gap: 8px;
@@ -5839,6 +5860,14 @@
 
     .filters {
       grid-template-columns: 1fr;
+    }
+    /* Stack the filter toggles one per row on phones (matching the single-column
+       fields) so each checkbox keeps a full-width tap target rather than packing
+       two-up. */
+    .filter-checks {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
     }
 
     /* Mobile bottom tab bar — the signature floating glass surface. Detached
