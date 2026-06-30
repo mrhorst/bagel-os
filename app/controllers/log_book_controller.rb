@@ -73,6 +73,23 @@ class LogBookController < ApplicationController
     @prev_date = @operating_date - 1
     @next_date = @operating_date < @today ? @operating_date + 1 : nil
 
+    # A past, read-only day is reached several ways — the date pager, a bookmark,
+    # a deep link, or the post-save redirect — and its back chevron defaults to
+    # "Back to Log Book" → today (the same target as the in-body "Back to today").
+    # But when the manager drilled in from the History list, that default ejects
+    # them to today and strands them away from the list they were working: there
+    # is no affordance back to History. Honor an explicit origin the way
+    # Tasks::ManageController and Tasks::OccurrencesController already do — an
+    # internal flag (from=history), never a user-supplied path, so it can only
+    # resolve to History — and keep the "Back to today" default for every other
+    # arrival.
+    @past_day_back_path, @past_day_back_label =
+      if params[:from] == "history"
+        [ log_book_history_path, "History" ]
+      else
+        [ log_book_path, "Log Book" ]
+      end
+
     @open_follow_up_count = FollowUp.open.count
 
     @response_errors = build_response_errors(error_record)
