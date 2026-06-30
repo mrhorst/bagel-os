@@ -7,7 +7,12 @@ class LogBookSectionsController < ApplicationController
   end
 
   def new
-    @section = LogBookSection.new(section_type: "long_text", allow_no_note: true)
+    # Default the sort order to the next slot so a new section appends to the end
+    # of the Log Book instead of landing at position 0 — which sorts it ABOVE
+    # every existing section in both this table and the daily Log Book
+    # (LogBookSection.active.ordered = order(:position, :title)). Mirrors the
+    # sibling Marketing Tags admin, which seeds next_position the same way.
+    @section = LogBookSection.new(section_type: "long_text", allow_no_note: true, position: next_position)
   end
 
   def create
@@ -46,6 +51,10 @@ class LogBookSectionsController < ApplicationController
 
   def set_section
     @section = LogBookSection.find(params[:id])
+  end
+
+  def next_position
+    (LogBookSection.maximum(:position) || 0) + 1
   end
 
   def section_params
