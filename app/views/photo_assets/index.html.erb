@@ -98,7 +98,7 @@
     </div>
 
     <ul class="photo-grid" aria-label="Photo assets">
-      <%= render partial: "photo_card", collection: @assets, as: :asset, locals: { selectable: true } %>
+      <%= render partial: "photo_card", collection: @assets, as: :asset, locals: { selectable: true, card_params: library_filter_params } %>
     </ul>
   <% end %>
 <% else %>
