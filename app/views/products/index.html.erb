@@ -30,10 +30,17 @@
       <%= form.label :per_page, "Per page" %>
       <%= form.select :per_page, [[25, 25], [50, 50], [100, 100]], { selected: @per_page }, data: { action: "change->auto-submit-form#queueChange" } %>
     </div>
-    <label class="check"><%= form.check_box :needs_review, { checked: params[:needs_review] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Needs review</label>
-    <label class="check"><%= form.check_box :no_standard_unit_price, { checked: params[:no_standard_unit_price] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> No standard unit price</label>
-    <label class="check"><%= form.check_box :missing_category, { checked: params[:missing_category] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Missing category</label>
-    <label class="check"><%= form.check_box :show_hidden, { checked: params[:show_hidden] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Show hidden</label>
+    <%# The boolean toggles are their own row, full-width below the labelled
+        selects. As bare grid children they used to scatter as short cells among
+        the tall fields (a checkbox sharing a row with the "Per page" select),
+        leaving the filter panel on a ragged, hard-to-scan grid. Grouping them
+        keeps inputs, toggles, and the submit action in three clean bands. %>
+    <div class="filter-checks">
+      <label class="check"><%= form.check_box :needs_review, { checked: params[:needs_review] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Needs review</label>
+      <label class="check"><%= form.check_box :no_standard_unit_price, { checked: params[:no_standard_unit_price] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> No standard unit price</label>
+      <label class="check"><%= form.check_box :missing_category, { checked: params[:missing_category] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Missing category</label>
+      <label class="check"><%= form.check_box :show_hidden, { checked: params[:show_hidden] == "1", data: { action: "change->auto-submit-form#queueChange" } }, "1", "0" %> Show hidden</label>
+    </div>
     <div class="filter-actions">
       <%= form.submit "Apply", class: "button", data: { auto_submit_form_target: "submit", filter_submit: true } %>
       <% if product_filters_active?(params) %>
