@@ -27,8 +27,17 @@
     by the record's dom_id ("recipe_ingredient_5" / "new_recipe_ingredient") keeps
     every id unique and every label wired to its own field. The namespace touches
     only ids, not the `name` attributes, so submitted params are unchanged. %>
+<%# Submit natively (not via Turbo) so the controller's place-preserving redirect
+    fragment (#add-ingredient on add, #ingredient-line-N on edit) is honored by
+    the browser. Turbo Drive resolves form posts with fetch, which strips the
+    fragment from the redirect Location and then resets scroll to the top — so
+    under Turbo the user is thrown back to the page top after every add/edit and
+    has to scroll past the whole ingredient table again. A native submit lands
+    them right back where they were working. (Remove keeps Turbo for its
+    turbo_confirm guard — see recipe_ingredients_controller#destroy.) %>
 <%= form_with model: ingredient, namespace: dom_id(ingredient),
       url: (ingredient.persisted? ? recipe_ingredient_path(recipe, ingredient) : recipe_ingredients_path(recipe)),
+      data: { turbo: false },
       class: (stacked ? "stacked-form" : "inline-ingredient-form") do |form| %>
   <% if ingredient.errors.any? %>
     <% if stacked %>

@@ -60,7 +60,7 @@
               error instead of reverting. %>
           <% row = (@editing_ingredient if @editing_ingredient&.id == ingredient.id) || ingredient %>
           <% line_cost = @costing.cost_for(ingredient) %>
-          <tr>
+          <tr id="ingredient-line-<%= ingredient.id %>">
             <td class="row-heading" data-label="Ingredient">
               <%= ingredient.display_name %>
               <% if ingredient.inventory_item %><span class="badge badge-compact">Inventory</span><% end %>
@@ -116,7 +116,7 @@
   <% end %>
 </section>
 
-<section class="panel narrow">
+<section class="panel narrow" id="add-ingredient">
   <h2>Add ingredient</h2>
   <%= render "recipes/ingredient_form",
         recipe: @recipe, ingredient: @new_ingredient, inventory_items: @inventory_items, submit_label: "Add ingredient", stacked: true %>

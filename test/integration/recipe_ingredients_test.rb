@@ -14,7 +14,9 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to recipe_path(@recipe)
+    # After an add, return to the add form (bottom of the page) so the next line
+    # can be entered without scrolling back past the whole table.
+    assert_redirected_to recipe_path(@recipe, anchor: "add-ingredient")
     line = @recipe.recipe_ingredients.order(:id).last
     assert_equal @flour, line.inventory_item
     assert_equal BigDecimal("5"), line.quantity
@@ -29,7 +31,7 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
       recipe_ingredient: { name: "Pinch of malt", quantity: "", unit: "" }
     }
 
-    assert_redirected_to recipe_path(@recipe)
+    assert_redirected_to recipe_path(@recipe, anchor: "add-ingredient")
     line = @recipe.recipe_ingredients.order(:id).last
     assert_nil line.inventory_item
     assert_equal "Pinch of malt", line.name
@@ -96,7 +98,7 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     patch recipe_ingredient_path(@recipe, line), params: {
       recipe_ingredient: { inventory_item_id: @flour.id, quantity: "6", unit: "lb" }
     }
-    assert_redirected_to recipe_path(@recipe)
+    assert_redirected_to recipe_path(@recipe, anchor: "ingredient-line-#{line.id}")
     assert_equal @flour, line.reload.inventory_item
     assert_equal BigDecimal("6"), line.quantity
   end
@@ -108,7 +110,7 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
       recipe_ingredient: { inventory_item_id: @flour.id, quantity: "6", unit: "lb" }
     }
 
-    assert_redirected_to recipe_path(@recipe)
+    assert_redirected_to recipe_path(@recipe, anchor: "ingredient-line-#{line.id}")
     assert_equal BigDecimal("6"), line.reload.quantity
   end
 
@@ -156,6 +158,34 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     target = add_form.at_css("##{amount_label['for']}")
     assert target, "the 'Amount' label's for=#{amount_label['for'].inspect} must resolve to a field within the add form"
     assert_equal "recipe_ingredient[quantity]", target["name"]
+  end
+
+  test "add and edit redirects carry a place-preserving fragment that exists on the page" do
+    # Building a recipe means adding line after line from the form at the BOTTOM
+    # of the show page. A bare redirect dropped the user at the page top after
+    # every add, so each new line meant scrolling back past the whole table. The
+    # add/edit redirects now carry a fragment, the forms submit natively (so the
+    # browser honors it), and the show page must actually render those targets.
+    post recipe_ingredients_path(@recipe), params: {
+      recipe_ingredient: { inventory_item_id: @flour.id, quantity: "5", unit: "lb" }
+    }
+    assert_redirected_to recipe_path(@recipe, anchor: "add-ingredient")
+    line = @recipe.recipe_ingredients.order(:id).last
+
+    patch recipe_ingredient_path(@recipe, line), params: {
+      recipe_ingredient: { inventory_item_id: @flour.id, quantity: "6", unit: "lb" }
+    }
+    assert_redirected_to recipe_path(@recipe, anchor: "ingredient-line-#{line.id}")
+
+    get recipe_path(@recipe)
+    assert_response :success
+    # Each redirect target must resolve to a real element, or the browser lands
+    # nowhere and the place-preservation silently breaks.
+    assert_select "#add-ingredient"
+    assert_select "tr#ingredient-line-#{line.id}"
+    # The forms submit natively so the redirect fragment isn't stripped by Turbo.
+    assert_select "form[action=?][data-turbo='false']", recipe_ingredients_path(@recipe)
+    assert_select "form[action=?][data-turbo='false']", recipe_ingredient_path(@recipe, line)
   end
 
   test "the show page shows a total when every line is costed and flags uncertain ones" do
