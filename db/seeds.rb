@@ -268,4 +268,17 @@ if Rails.env.development? || ENV["SEED_DEMO_DATA"] == "true"
       )
     end
   end
+
+  # A generic, photo-less demo Collection so the marketing/Collections journey
+  # has a card to open in a fresh database. The qa:flows `collections` walk (and
+  # a hands-on demo) both need a real collection to reach a collection show page
+  # and exercise its mobile back chevron; without one the index renders only its
+  # empty state and there is nothing to drill into. Left photo-less on purpose —
+  # the show page renders its own empty state, which is enough for the back-walk.
+  # Idempotent on slug.
+  Collection.find_or_create_by!(slug: "demo-menu-shoot") do |collection|
+    collection.name = "Demo Menu Shoot"
+    collection.description = "Sample photo collection for the demo environment."
+    collection.position = (Collection.maximum(:position) || 0) + 1
+  end
 end

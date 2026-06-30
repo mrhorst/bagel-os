@@ -366,6 +366,67 @@ class NavigationTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "the mobile back chevron on the collections index returns to the photo library" do
+    # Collections isn't a navigation module, so the layout renders no auto-chevron;
+    # the index supplies its own "Back to library" mobile chevron. Confirm it
+    # points at — and lands on — the photo library, one level up. (Static href
+    # coverage lives in collections_back_navigation_test.rb; this pins the runtime
+    # behavior the old history.back back controller used to break.)
+    page.current_window.resize_to(414, 896)
+    visit collections_path
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to library", chevron["aria-label"]
+    assert_equal photo_assets_path, URI(chevron[:href]).path
+
+    click_mobile_back_to photo_assets_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "a collection back chevron honors its labeled destination on a cold load" do
+    # The #117 class on the Collections journey — its pages aren't a nav module
+    # and had no runtime back coverage, only static href assertions. A person can
+    # reach a collection WITHOUT navigating into it in-app: a PWA cold start, a
+    # deep link from a push notification, a bookmark, or the redirect after saving
+    # the collection form. The page then loads fresh with a same-origin referrer
+    # that is NOT the chevron's destination, and the old `back` Stimulus controller
+    # called history.back() — stranding the user on the referrer instead of where
+    # the chevron's label promised. The chevron must go to its labeled destination
+    # (the collections index) regardless of how the page was reached.
+    collection = collections(:summer)
+    page.current_window.resize_to(414, 896)
+
+    # A same-origin page that is NOT this chevron's destination, so a divergence
+    # would be unambiguous (the library is the collections index's own parent).
+    visit photo_assets_path
+    # Full (non-Turbo) load into the collection page, so document.referrer =
+    # /marketing/photos — the exact condition that used to trigger history.back().
+    page.execute_script("window.location.href = arguments[0]", collection_path(collection))
+    assert_current_path collection_path(collection)
+
+    assert_equal "Back to collections", find(".mobile-header-back")["aria-label"]
+    assert_equal collections_path, URI(find(".mobile-header-back")["href"]).path
+
+    # Click the chevron WITHOUT the fallback-visit helper, so a regression back to
+    # history.back() (which would strand the user on /marketing/photos, the
+    # referrer) actually fails here instead of being masked by a direct visit.
+    # Re-find each attempt to absorb the headless dropped-click flake: a dropped
+    # click leaves us on the collection page (retry); a divergence lands us
+    # elsewhere (stop and let the assertion catch it).
+    4.times do
+      find(".mobile-header-back").click
+      break if has_current_path?(collections_path, wait: 2)
+      break unless has_current_path?(collection_path(collection), wait: 1)
+    end
+
+    # Lands on the labeled destination (/marketing/collections), NOT the
+    # /marketing/photos referrer the old history.back() would have stranded us on.
+    assert_current_path collections_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "a tasks sub-page back arrow honors its labeled destination on a cold load" do
     # The bug: a person reaches a sub-page WITHOUT navigating into it in-app —
     # a PWA cold start, a deep link from a push notification, a bookmark, or the
