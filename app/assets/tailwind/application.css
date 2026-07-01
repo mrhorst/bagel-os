@@ -6437,6 +6437,21 @@
       min-width: 0;
       width: 100%;
     }
+    /* Re-stacked full-width above, these inline-form controls are the screen's
+       primary data-entry targets — guide rename (Order Guides) and the primary-
+       guide picker (Master Inventory) — yet at their compact 30–32px desktop
+       height they sit under the 44px touch floor a thumb needs. They're already
+       full-width block controls here, so lifting them to 44px grows only the tap
+       area and blows up no layout, matching the .log-book-date-arrow and header-
+       action touch fixes. `input.compact-input` keeps the `input` qualifier so it
+       outranks the 0,2,1 base rename-field rule; the app-wide compact secondary-
+       button decision is untouched — this is scoped to .inline-guide-form. */
+    .inline-guide-form input.compact-input,
+    .inline-guide-form .compact-select,
+    .inline-guide-form .button,
+    .inline-guide-form input[type='submit'] {
+      min-height: 44px;
+    }
 
     .log-book-header {
       grid-template-columns: 1fr;
