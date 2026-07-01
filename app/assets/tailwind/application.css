@@ -4950,7 +4950,15 @@
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
   .task-builder-card {
-    align-items: flex-start;
+    /* Centre the icon tile and text block against the card the same way the
+       sibling .settings-card chooser does (align-items:center). The trailing
+       disclosure chevron is already vertically centred (::after top:50%), so
+       top-aligning the leading tile left the icon riding high while the chevron
+       sat at mid-height — a visible leading/trailing imbalance within one card,
+       and a divergence from the .settings-card pattern this tile claims to
+       mirror. Centring also fixes mobile card 2, whose taller three-line copy
+       stranded the top-pinned tile far above its own text. */
+    align-items: center;
     background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
