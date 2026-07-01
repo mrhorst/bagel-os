@@ -169,6 +169,73 @@
   <% end %>
 </section>
 
+<section class="panel" id="modifiers">
+  <div class="panel-heading">
+    <div>
+      <h2>Guest choices</h2>
+      <p class="muted">Choices a guest makes on this item — a meat, a cheese, a bread, a side. Each is a shared modifier from <%= link_to "the library", modifier_groups_path %>: edit it there and every recipe using it follows. Detaching only removes it from this recipe.</p>
+    </div>
+  </div>
+
+  <% if @modifier_attachments.any? %>
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          <th>Choice</th>
+          <th>Type</th>
+          <th>Rule</th>
+          <th>Options</th>
+          <th>Detach</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @modifier_attachments.each do |attachment| %>
+          <% group = attachment.modifier_group %>
+          <tr id="modifier-attachment-<%= attachment.id %>">
+            <td class="row-heading" data-label="Choice"><%= link_to group.name, modifier_group_path(group) %></td>
+            <td data-label="Type">
+              <span class="badge <%= "badge-ok" if group.ingredient? %>"><%= group.ingredient? ? "Ingredient" : "Preparation" %></span>
+            </td>
+            <td data-label="Rule"><%= group.selection_summary %></td>
+            <td data-label="Options">
+              <% if group.modifier_options.any? %>
+                <% default = group.default_option %>
+                <%= group.modifier_options.map { |option| option == default ? "#{option.display_name} (default)" : option.display_name }
+                      .to_sentence(two_words_connector: " or ", last_word_connector: " or ") %>
+              <% else %>
+                <span class="muted">No options yet — add them in the library</span>
+              <% end %>
+            </td>
+            <td data-label="Detach">
+              <%= button_to "Detach", recipe_modifier_path(@recipe, attachment), method: :delete, class: "button small",
+                    data: { turbo_confirm: "Detach #{group.name} from #{@recipe.name}? The modifier stays in the library." } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No guest choices on this item yet.</p>
+  <% end %>
+
+  <% if @attachable_modifier_groups.any? %>
+    <%# Attach submits natively (data-turbo: false) so the #modifiers redirect
+        fragment is honored, matching the ingredient forms on this page. %>
+    <%= form_with model: [ @recipe, RecipeModifierGroup.new ], url: recipe_modifiers_path(@recipe),
+          data: { turbo: false }, class: "inline-ingredient-form" do |form| %>
+      <%= form.label :modifier_group_id, "Attach a modifier", class: "sr-only" %>
+      <%= form.select :modifier_group_id,
+            options_for_select(@attachable_modifier_groups.map { |g| [ g.name, g.id ] }),
+            { include_blank: "Choose a modifier…" }, { class: "compact-select" } %>
+      <%= form.submit "Attach", class: "button small" %>
+    <% end %>
+  <% elsif @modifier_attachments.any? %>
+    <p class="muted small">Every modifier in the library is already attached. <%= link_to "Add another in the library", new_modifier_group_path %>.</p>
+  <% else %>
+    <p class="muted small"><%= link_to "Create the first modifier in the library", new_modifier_group_path %> — like a Bread or a Sides — then attach it here.</p>
+  <% end %>
+</section>
+
 <section class="panel narrow" id="add-ingredient">
   <h2>Add ingredient</h2>
   <%= render "recipes/ingredient_form",

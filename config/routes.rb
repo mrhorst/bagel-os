@@ -124,6 +124,8 @@ Rails.application.routes.draw do
     resources :ingredients, only: %i[create update destroy], controller: "recipe_ingredients" do
       resources :substitutes, only: %i[create destroy], controller: "recipe_ingredient_substitutes", shallow: true
     end
+    # Attaching/detaching a shared modifier group to this recipe.
+    resources :modifiers, only: %i[create destroy], controller: "recipe_modifier_groups"
   end
   # The modifier library: reusable choice slots (meat, cheese, bread, sides…)
   # shared across recipes. Lives at /modifiers — not under /recipes/… — so the

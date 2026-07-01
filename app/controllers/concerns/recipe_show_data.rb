@@ -14,6 +14,10 @@ module RecipeShowData
     )
     @new_ingredient ||= @recipe.recipe_ingredients.build
     @inventory_items = InventoryItem.active.ordered
+    # The guest choices attached to this recipe, and the library groups still
+    # available to attach.
+    @modifier_attachments = @recipe.recipe_modifier_groups.includes(modifier_group: { modifier_options: :inventory_item })
+    @attachable_modifier_groups = ModifierGroup.ordered.where.not(id: @modifier_attachments.map(&:modifier_group_id))
     @costing = Purchasing::RecipeCosting.new(@recipe)
     @weight = Purchasing::RecipeWeight.new(@recipe)
   end
