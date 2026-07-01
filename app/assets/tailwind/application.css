@@ -6371,6 +6371,14 @@
     .responsive-table th.hide-on-mobile {
       display: none;
     }
+    /* Same utility for a non-table element — e.g. a header action that the
+       mobile header's back chevron already covers, so it isn't a redundant
+       third full-width button pushing content below the fold. The `:not(td/th)`
+       guard keeps the table-cell rule above authoritative for columns, and the
+       two negations lift this past a bare `.button` in the `display` cascade. */
+    .hide-on-mobile:not(td):not(th) {
+      display: none;
+    }
 
     .block-page-header {
       gap: 10px;
