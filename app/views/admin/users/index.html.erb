@@ -24,11 +24,11 @@
     <tbody>
       <% @users.each do |user| %>
         <tr>
-          <td data-label="Email">
-            <%= user.email_address %>
+          <td class="row-heading" data-label="Email">
+            <strong><%= user.email_address %></strong>
             <% if user.owner? %><span class="badge badge-ok">Owner</span><% end %>
           </td>
-          <td data-label="Name"><%= user.name.presence || "—" %></td>
+          <td data-label="Name"><%= user.name.presence || content_tag(:span, "—", class: "muted") %></td>
           <td data-label="Role">
             <span class="badge"><%= user.role.titleize %></span>
           </td>
@@ -40,7 +40,7 @@
               <%= mods.any? ? mods.map { |m| m.titleize }.join(", ") : content_tag(:span, "No access", class: "muted small") %>
             <% end %>
           </td>
-          <td data-label="">
+          <td class="row-actions" data-label="">
             <%= link_to "Edit", edit_admin_user_path(user), class: "button small" %>
           </td>
         </tr>
