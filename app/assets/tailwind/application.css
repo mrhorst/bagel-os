@@ -6391,6 +6391,15 @@
       margin-top: 8px;
     }
 
+    /* The Open/Resolved filter tabs are the primary control on the Follow-ups
+       screen, but their ~34px height (8px padding + 0.92rem text) sits under the
+       44px touch-target floor. Grow the tap height on touch widths — the tab is
+       already inline-flex/centred, so only the hit area grows; the label and
+       count stay put. Same treatment as the .log-book-date-arrow tap target. */
+    .follow-ups-tab {
+      min-height: 44px;
+    }
+
     .page-heading .button,
     .actions .button,
     .actions form,
