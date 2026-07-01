@@ -15,6 +15,21 @@ module PurchasingHelper
     money(value)
   end
 
+  # SKU for the master-products data-table cell. The model's
+  # `supplier_sku_summary` returns the literal string "n/a" when a product has no
+  # SKU — a sentinel the CSV exports and the product show-page subtitle depend on,
+  # so it stays. But inside the products table that bright literal shouts next to
+  # the sibling price cells, which recede as a muted em-dash via `money_cell`.
+  # Mirror that treatment here so an absent SKU recedes the same way and real SKUs
+  # stand out — the same "unknown recedes, data leads" contract `cell-empty`
+  # exists for. Presentation-only; no model change.
+  def sku_cell(product)
+    summary = product.supplier_sku_summary
+    return tag.span("—", class: "cell-empty", title: "No SKU recorded") if summary.blank? || summary == "n/a"
+
+    summary
+  end
+
   def compact_decimal(value)
     return "n/a" if value.blank?
 
