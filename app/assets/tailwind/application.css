@@ -3468,6 +3468,25 @@
     color: var(--surface);
   }
 
+  /* Mobile: the scope tabs and the tag/favorites chips are the primary way to
+     filter the library on a phone, but at their base padding they render only
+     ~30px tall — under the 44px iOS/WCAG 2.5.5 minimum touch target. Give them
+     a 44px min-height on mobile only (desktop keeps its denser mouse target),
+     which also lines the two stacked filter rows up to a common height. Scoped
+     to the library's own filter wrappers, so the shared `.segmented` (products)
+     and `.tag-chip` (photo detail) components elsewhere are left untouched. */
+  @media (max-width: 640px) {
+    .photo-library-filters a,
+    .tag-filter .tag-chip {
+      align-items: center;
+      display: inline-flex;
+      /* Flexbox collapses the whitespace between the label text node and the
+         `(0)` count span; restore it so "All (0)" doesn't read as "All(0)". */
+      gap: 0.28em;
+      min-height: 44px;
+    }
+  }
+
   /* Tags are the one place pills are allowed (alongside the bottom-tab badges),
      so tag pills keep the fully-rounded shape even though the base .badge they
      reuse is now a rounded-rect status chip. */
