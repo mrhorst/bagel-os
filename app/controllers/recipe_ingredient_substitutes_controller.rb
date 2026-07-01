@@ -10,7 +10,12 @@ class RecipeIngredientSubstitutesController < ApplicationController
     @new_substitute.position ||= next_position
 
     if @new_substitute.save
-      redirect_to recipe_path(@recipe), notice: "Substitute added."
+      # Land back on the ingredient line just annotated, not the top of the page,
+      # so adding several substitutes to a line far down a long recipe doesn't
+      # bounce the reader to the top each time. The form submits natively
+      # (data-turbo=false) so the browser honors this fragment — same convention
+      # as the ingredient add/edit forms; see app/views/recipes/_substitute_form.html.erb.
+      redirect_to recipe_path(@recipe, anchor: "ingredient-line-#{@ingredient.id}"), notice: "Substitute added."
     else
       # Re-render the recipe in place so the rejected substitute keeps its input
       # and shows the error, instead of redirecting and dropping it.
