@@ -1,0 +1,29 @@
+<%# locals: recipe, ingredient, inventory_items, new_substitute (optional)
+
+  The substitutes hanging under one ingredient line: the existing alternatives
+  (each removable) plus a compact form to add another. A substitute can link to
+  an inventory item or be a free-text name, and may carry its own amount — left
+  blank it means "the same amount as the line". %>
+<%# Build the blank form record with .new, not ingredient.substitutes.build —
+    .build would append an id-less record to the loaded association and leak it
+    into the existing-substitutes list below. %>
+<% substitute = local_assigns[:new_substitute] || RecipeIngredientSubstitute.new(recipe_ingredient: ingredient) %>
+<div class="ingredient-substitutes">
+  <% existing = ingredient.substitutes.sort_by { |sub| [ sub.position.to_i, sub.id.to_i ] } %>
+  <% if existing.any? %>
+    <ul class="substitute-list">
+      <% existing.each do |sub| %>
+        <li>
+          <span>
+            or <%= sub.display_name %><% if sub.effective_quantity.present? %> · <%= compact_decimal(sub.effective_quantity) %> <%= sub.effective_unit %><% end %><% if sub.note.present? %> — <%= sub.note %><% end %>
+          </span>
+          <%= button_to "Remove", substitute_path(sub), method: :delete, class: "button small",
+                data: { turbo_confirm: "Remove #{sub.display_name} as a substitute for #{ingredient.display_name}?" } %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%= render "recipes/substitute_form",
+        recipe: recipe, ingredient: ingredient, substitute: substitute, inventory_items: inventory_items %>
+</div>

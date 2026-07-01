@@ -84,6 +84,9 @@ class ProductsController < ApplicationController
       :package_size,
       :unit_of_measure,
       :standard_unit,
+      :unit_basis,
+      :each_weight_value,
+      :each_weight_unit,
       :notes,
       :active,
       :needs_review

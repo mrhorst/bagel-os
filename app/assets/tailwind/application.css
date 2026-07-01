@@ -2278,6 +2278,28 @@
   .inline-ingredient-form .compact-input {
     width: 110px;
   }
+  /* Substitutes hang under their ingredient's name as quiet supporting lines —
+     an alternative is secondary to the line it stands in for, so it never
+     competes with the primary ingredient for weight. */
+  .ingredient-substitutes {
+    margin-top: 8px;
+  }
+  .substitute-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+  }
+  .substitute-list li {
+    align-items: baseline;
+    color: var(--ink-muted);
+    display: flex;
+    font-size: 0.85rem;
+    gap: 8px;
+    justify-content: space-between;
+  }
   .recipe-cost-summary {
     border-top: 1px solid var(--line);
     margin-top: 14px;

@@ -96,6 +96,30 @@
 
       <section class="form-section">
         <div class="section-heading">
+          <h2>How it's used</h2>
+          <p>Whether this product is used by count, weight, or volume. Recipes use this to roll up cost and weight. Leave blank when it isn't clear.</p>
+        </div>
+        <div>
+          <%= form.label :unit_basis, "Used by" %>
+          <%= form.select :unit_basis,
+                Product::UNIT_BASES.map { |basis| [basis.titleize, basis] },
+                include_blank: "Not set yet" %>
+        </div>
+        <div class="form-grid">
+          <div>
+            <%= form.label :each_weight_value, "Average weight per unit" %>
+            <p class="muted small">Optional. For a counted product, the typical weight of one — lets recipes weigh it and cost it against a per-weight price.</p>
+            <%= form.number_field :each_weight_value, step: "0.0001", min: "0", placeholder: "50" %>
+          </div>
+          <div>
+            <%= form.label :each_weight_unit, "Weight unit" %>
+            <%= form.text_field :each_weight_unit, placeholder: "g, oz, lb" %>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
           <h2>Notes</h2>
           <p>Internal reasoning, aliases, or cleanup context.</p>
         </div>

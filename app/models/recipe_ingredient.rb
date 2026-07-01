@@ -4,6 +4,7 @@ class RecipeIngredient < ApplicationRecord
   # but it can also be a free-text name for something not tracked in inventory.
   belongs_to :recipe
   belongs_to :inventory_item, optional: true
+  has_many :substitutes, class_name: "RecipeIngredientSubstitute", dependent: :destroy
 
   # A line needs *something* to identify it: either a linked inventory item or a
   # typed name.
