@@ -38,7 +38,11 @@
       <%= form.email_field :email_address, required: true, autocomplete: "email" %>
     </div>
 
-    <div>
+    <%# .form-footer caps the submit to its content on desktop (the generic
+        input rule otherwise balloons it full-width across the panel) while
+        keeping the mobile full-width CTA — matching every other form card
+        (admin users/tags, recipes, task lists). %>
+    <div class="form-footer">
       <%= form.submit "Save profile", class: "button primary" %>
     </div>
   <% end %>
@@ -86,7 +90,7 @@
       <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72 %>
     </div>
 
-    <div>
+    <div class="form-footer">
       <%= form.submit "Update password", class: "button primary" %>
     </div>
   <% end %>
