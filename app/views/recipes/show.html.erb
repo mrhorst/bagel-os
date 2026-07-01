@@ -37,7 +37,7 @@
   <div class="panel-heading">
     <div>
       <h2>Ingredients</h2>
-      <p class="muted">Link a line to an inventory item where you can, and record the amount and unit. Leave the amount or unit blank when it isn't known — they're never guessed.</p>
+      <p class="muted">Link a line to an inventory item where you can, and record the amount and unit. Leave the amount or unit blank when it isn't known — they're never guessed. Substitutes are alternatives for a line; the cost and weight estimates use the main line, not its substitutes.</p>
     </div>
   </div>
 
@@ -49,6 +49,7 @@
           <th>Amount</th>
           <th>Unit</th>
           <th class="numeric">Est. cost</th>
+          <th class="numeric">Weight</th>
           <th>Edit</th>
           <th>Remove</th>
         </tr>
@@ -60,10 +61,14 @@
               error instead of reverting. %>
           <% row = (@editing_ingredient if @editing_ingredient&.id == ingredient.id) || ingredient %>
           <% line_cost = @costing.cost_for(ingredient) %>
+          <% line_weight = @weight.weight_for(ingredient) %>
           <tr id="ingredient-line-<%= ingredient.id %>">
             <td class="row-heading" data-label="Ingredient">
               <%= ingredient.display_name %>
               <% if ingredient.inventory_item %><span class="badge badge-compact">Inventory</span><% end %>
+              <%= render "recipes/substitutes",
+                    recipe: @recipe, ingredient: ingredient, inventory_items: @inventory_items,
+                    new_substitute: (@new_substitute if @substitute_errors_for == ingredient.id) %>
             </td>
             <%# A blank amount is intentional ("never guessed"), not missing data —
                 show the app's "—" blank marker like the Unit cell beside it, not
@@ -77,6 +82,15 @@
                 <%# Never invent a number — say why the line can't be costed. %>
                 <span class="badge">Uncertain</span>
                 <p class="muted small"><%= line_cost&.reason %></p>
+              <% end %>
+            </td>
+            <td data-label="Weight" class="numeric">
+              <% if line_weight&.weighed? %>
+                <span class="tnum"><%= weight_in_grams(line_weight.grams) %></span>
+              <% else %>
+                <%# Weight has its own reasons (a volume can't be weighed), so show them. %>
+                <span class="badge">Uncertain</span>
+                <p class="muted small"><%= line_weight&.reason %></p>
               <% end %>
             </td>
             <td data-label="Edit">
@@ -97,21 +111,60 @@
 
   <% if @ingredients.any? %>
     <div class="recipe-cost-summary">
+      <%# Total cost — complete only when every line is costed. %>
       <% if @costing.complete? %>
         <div class="recipe-cost-total">
           <span>Total estimated cost</span>
           <strong class="tnum"><%= money(@costing.total) %></strong>
         </div>
-        <p class="muted small">Based on the latest comparable unit price for each ingredient. Estimate only — actual cost varies with pack size, yield, and waste.</p>
       <% elsif @costing.costed_lines.any? %>
         <div class="recipe-cost-total">
-          <span>Estimated so far<span class="muted"> (<%= @costing.costed_lines.size %> of <%= @costing.total_lines %> lines)</span></span>
+          <span>Estimated cost so far<span class="muted"> (<%= @costing.costed_lines.size %> of <%= @costing.total_lines %> lines)</span></span>
           <strong class="tnum"><%= money(@costing.subtotal) %></strong>
         </div>
-        <p class="muted small">No full recipe total yet — <%= pluralize(@costing.total_lines - @costing.costed_lines.size, "line") %> can't be costed. See the reason on each uncertain line above.</p>
       <% else %>
-        <p class="muted">No cost estimate yet — none of these lines can be costed from existing price data. See the reason on each line above.</p>
+        <div class="recipe-cost-total">
+          <span>Total estimated cost</span>
+          <strong class="muted">No estimate</strong>
+        </div>
       <% end %>
+
+      <%# Total weight — same partial/complete treatment as cost. %>
+      <% if @weight.complete? %>
+        <div class="recipe-cost-total">
+          <span>Total weight</span>
+          <strong class="tnum"><%= weight_in_grams(@weight.total_grams) %></strong>
+        </div>
+      <% elsif @weight.weighed_lines.any? %>
+        <div class="recipe-cost-total">
+          <span>Weight so far<span class="muted"> (<%= @weight.weighed_lines.size %> of <%= @weight.total_lines %> lines)</span></span>
+          <strong class="tnum"><%= weight_in_grams(@weight.subtotal_grams) %></strong>
+        </div>
+      <% else %>
+        <div class="recipe-cost-total">
+          <span>Total weight</span>
+          <strong class="muted">No estimate</strong>
+        </div>
+      <% end %>
+
+      <%# Per-serving figures appear only with a yield and a complete total. %>
+      <% if @recipe.yield_described? %>
+        <% serving_unit = @recipe.yield_unit.presence || "serving" %>
+        <% if @costing.cost_per_serving %>
+          <div class="recipe-cost-total">
+            <span>Cost per <%= serving_unit %><span class="muted"> (yield <%= compact_decimal(@recipe.yield_quantity) %>)</span></span>
+            <strong class="tnum"><%= money(@costing.cost_per_serving) %></strong>
+          </div>
+        <% end %>
+        <% if @weight.weight_per_serving_grams %>
+          <div class="recipe-cost-total">
+            <span>Weight per <%= serving_unit %></span>
+            <strong class="tnum"><%= weight_in_grams(@weight.weight_per_serving_grams) %></strong>
+          </div>
+        <% end %>
+      <% end %>
+
+      <p class="muted small">Estimates only — actual cost and weight vary with pack size, yield, and waste. Any line we can't cost or weigh is marked uncertain above with the reason.</p>
     </div>
   <% end %>
 </section>

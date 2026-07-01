@@ -2278,6 +2278,28 @@
   .inline-ingredient-form .compact-input {
     width: 110px;
   }
+  /* Substitutes hang under their ingredient's name as quiet supporting lines —
+     an alternative is secondary to the line it stands in for, so it never
+     competes with the primary ingredient for weight. */
+  .ingredient-substitutes {
+    margin-top: 8px;
+  }
+  .substitute-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+  }
+  .substitute-list li {
+    align-items: baseline;
+    color: var(--ink-muted);
+    display: flex;
+    font-size: 0.85rem;
+    gap: 8px;
+    justify-content: space-between;
+  }
   .recipe-cost-summary {
     border-top: 1px solid var(--line);
     margin-top: 14px;
@@ -3444,6 +3466,25 @@
     background: var(--ink);
     border-color: var(--ink);
     color: var(--surface);
+  }
+
+  /* Mobile: the scope tabs and the tag/favorites chips are the primary way to
+     filter the library on a phone, but at their base padding they render only
+     ~30px tall — under the 44px iOS/WCAG 2.5.5 minimum touch target. Give them
+     a 44px min-height on mobile only (desktop keeps its denser mouse target),
+     which also lines the two stacked filter rows up to a common height. Scoped
+     to the library's own filter wrappers, so the shared `.segmented` (products)
+     and `.tag-chip` (photo detail) components elsewhere are left untouched. */
+  @media (max-width: 640px) {
+    .photo-library-filters a,
+    .tag-filter .tag-chip {
+      align-items: center;
+      display: inline-flex;
+      /* Flexbox collapses the whitespace between the label text node and the
+         `(0)` count span; restore it so "All (0)" doesn't read as "All(0)". */
+      gap: 0.28em;
+      min-height: 44px;
+    }
   }
 
   /* Tags are the one place pills are allowed (alongside the bottom-tab badges),

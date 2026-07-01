@@ -16,6 +16,18 @@
     <%= form.text_area :description, rows: 4, placeholder: "Method, yield, or notes about this recipe." %>
   </div>
 
+  <div class="form-grid">
+    <div class="field">
+      <%= form.label :yield_quantity, "Yield amount" %>
+      <p class="muted small">How much one batch makes. Used for per-serving cost and weight. Leave blank if unknown.</p>
+      <%= form.number_field :yield_quantity, step: "0.0001", min: "0", placeholder: "12" %>
+    </div>
+    <div class="field">
+      <%= form.label :yield_unit, "Yield unit" %>
+      <%= form.text_field :yield_unit, autocomplete: "off", placeholder: "bagels, servings" %>
+    </div>
+  </div>
+
   <% if recipe.persisted? %>
     <label class="check">
       <%= form.check_box :active %>

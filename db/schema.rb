@@ -468,6 +468,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000004) do
     t.boolean "active", default: true, null: false
     t.string "canonical_name", null: false
     t.datetime "created_at", null: false
+    t.string "each_weight_unit"
+    t.decimal "each_weight_value", precision: 12, scale: 4
     t.boolean "needs_review", default: true, null: false
     t.text "notes"
     t.decimal "package_size", precision: 12, scale: 4
@@ -476,6 +478,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000004) do
     t.string "standard_unit"
     t.integer "supplier_id", null: false
     t.string "supplier_sku"
+    t.string "unit_basis"
     t.string "unit_of_measure"
     t.datetime "updated_at", null: false
     t.index ["canonical_name"], name: "index_products_on_canonical_name"
@@ -483,6 +486,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000004) do
     t.index ["product_category_id"], name: "index_products_on_product_category_id"
     t.index ["supplier_id", "supplier_sku"], name: "index_products_on_supplier_id_and_supplier_sku", unique: true, where: "supplier_sku IS NOT NULL"
     t.index ["supplier_id"], name: "index_products_on_supplier_id"
+    t.index ["unit_basis"], name: "index_products_on_unit_basis"
   end
 
   create_table "push_subscriptions", force: :cascade do |t|
@@ -556,6 +560,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000004) do
     t.index ["supplier_id"], name: "index_receipts_on_supplier_id"
   end
 
+  create_table "recipe_ingredient_substitutes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "inventory_item_id"
+    t.string "name"
+    t.string "note"
+    t.integer "position"
+    t.decimal "quantity", precision: 12, scale: 4
+    t.integer "recipe_ingredient_id", null: false
+    t.string "unit"
+    t.datetime "updated_at", null: false
+    t.index ["inventory_item_id"], name: "index_recipe_ingredient_substitutes_on_inventory_item_id"
+    t.index ["recipe_ingredient_id"], name: "index_recipe_ingredient_substitutes_on_recipe_ingredient_id"
+  end
+
   create_table "recipe_ingredients", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "inventory_item_id"
@@ -576,6 +594,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000004) do
     t.string "name", null: false
     t.integer "position"
     t.datetime "updated_at", null: false
+    t.decimal "yield_quantity", precision: 12, scale: 4
+    t.string "yield_unit"
     t.index ["name"], name: "index_recipes_on_name"
   end
 
@@ -839,6 +859,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000004) do
   add_foreign_key "receipt_line_items", "suppliers"
   add_foreign_key "receipts", "import_batches"
   add_foreign_key "receipts", "suppliers"
+  add_foreign_key "recipe_ingredient_substitutes", "inventory_items"
+  add_foreign_key "recipe_ingredient_substitutes", "recipe_ingredients"
   add_foreign_key "recipe_ingredients", "inventory_items"
   add_foreign_key "recipe_ingredients", "recipes"
   add_foreign_key "sessions", "users"
