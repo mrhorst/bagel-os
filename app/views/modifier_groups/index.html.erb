@@ -1,0 +1,68 @@
+<% content_for :title, "Modifiers" %>
+
+<%# Send the mobile back-chevron up one level to the recipes index this library
+    hangs off, rather than the layout's default jump to the Stock hub. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to recipes_path, class: "mobile-header-back", aria: { label: "Back to recipes" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Recipes</span>
+  <% end %>
+<% end %>
+
+<section class="page-heading">
+  <div>
+    <h1>Modifiers</h1>
+    <p>Reusable choices a guest makes on an item — a meat, a cheese, a bread, a side. Define a choice once and attach it to every recipe that offers it.</p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to "All recipes", recipes_path, class: "button" %>
+    <%= link_to "New modifier", new_modifier_group_path, class: "button primary hide-for-fab" %>
+  </div>
+</section>
+
+<% if @modifier_groups.any? %>
+  <section class="panel">
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          <th>Modifier</th>
+          <th>Type</th>
+          <th>Rule</th>
+          <th>Options</th>
+          <th>Used by</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @modifier_groups.each do |group| %>
+          <tr>
+            <td class="row-heading" data-label="Modifier"><%= link_to group.name, modifier_group_path(group) %></td>
+            <td data-label="Type">
+              <span class="badge <%= "badge-ok" if group.ingredient? %>"><%= group.ingredient? ? "Ingredient" : "Preparation" %></span>
+            </td>
+            <td data-label="Rule"><%= group.selection_summary %></td>
+            <td data-label="Options">
+              <% if group.modifier_options.any? %>
+                <%= group.modifier_options.map(&:display_name).to_sentence(two_words_connector: " or ", last_word_connector: " or ") %>
+              <% else %>
+                <span class="muted">No options yet</span>
+              <% end %>
+            </td>
+            <td data-label="Used by" class="tnum"><%= pluralize(group.recipes.size, "recipe") %></td>
+            <td data-label=""><%= link_to "View", modifier_group_path(group), class: "button small" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% else %>
+  <article class="panel empty-state">
+    <strong>No modifiers yet.</strong>
+    <span>Add the first choice guests make — like a Bread with bagel, kaiser, white, and rye, or a Sides with tomato, home fries, grits, and oatmeal.</span>
+    <%= link_to "New modifier", new_modifier_group_path, class: "button primary hide-for-fab" %>
+  </article>
+<% end %>
+
+<%= mobile_fab_button new_modifier_group_path, label: "New modifier" %>

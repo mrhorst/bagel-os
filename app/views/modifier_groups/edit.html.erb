@@ -1,0 +1,22 @@
+<% content_for :title, "Edit #{@modifier_group.name}" %>
+
+<%# Send the mobile back-chevron up exactly one level — to this modifier —
+    matching the "Cancel" target on the form. %>
+<% content_for :mobile_left_action do %>
+  <%= link_to modifier_group_path(@modifier_group), class: "mobile-header-back", aria: { label: "Back to modifier" } do %>
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Modifier</span>
+  <% end %>
+<% end %>
+
+<section class="page-heading">
+  <div>
+    <h1>Edit modifier</h1>
+  </div>
+</section>
+
+<article class="panel narrow">
+  <%= render "form", modifier_group: @modifier_group %>
+</article>
