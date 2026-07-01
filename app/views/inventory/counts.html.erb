@@ -59,15 +59,14 @@
       </tbody>
     </table>
   <% else %>
+    <%# Text-only empty state — the sole "New count" primary lives in the page
+        header (visible in both empty and populated states, and on both
+        breakpoints). An in-card copy would duplicate that primary on desktop,
+        giving the view two competing orange CTAs; the copy below already names
+        the header button. Matches the sibling Imports index empty state. %>
     <p class="empty-state">
       <strong>No inventory counts saved yet.</strong>
       <span>Start one with the New count button and it will show up here with its guide, line count, and status.</span>
-      <%# Put the primary action at the locus of attention, matching the sibling
-          empty states (Follow-ups, Tasks manage, Products). hide-for-fab keeps
-          it to desktop only — on mobile the full-width "New count" header button
-          already sits directly above this card, so an in-card copy would
-          duplicate it. %>
-      <%= link_to "New count", new_inventory_count_path, class: "button primary hide-for-fab" %>
     </p>
   <% end %>
 </section>
