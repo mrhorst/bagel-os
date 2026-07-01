@@ -1200,6 +1200,22 @@
     font-size: 0.86rem;
     line-height: 1.42;
   }
+  /* Form helper/hint copy under a field. `.field-hint` is used across the form
+     screens (photo upload, receipt import, order-guide setup, task list/setup
+     forms, log-book sections) but only ever carried a definition in the
+     test-only legacy stylesheet — so in dev/production, where the tailwind
+     build is served, a bare `<p class="field-hint">` fell back to full body
+     --ink at 14px, rendering the hint darker AND larger than the --ink-2 field
+     label above it and inverting the label → hint hierarchy. Wire it to the
+     same demoted-helper scale as `p.small` / `.muted` (0.86rem, --ink-muted)
+     so hints read as supporting copy on every form. Any link inside keeps its
+     own link color. */
+  .field-hint {
+    color: var(--ink-muted);
+    font-size: 0.86rem;
+    line-height: 1.42;
+    margin: 4px 0 0;
+  }
 
   /* ── Panels / Cards ───────────────────────────────────────────────── */
   .panel,
