@@ -3279,6 +3279,20 @@
     white-space: nowrap;
   }
 
+  /* Only the Task cell (.row-heading) wraps; the sibling columns are pinned to
+     one line by the nowrap rules above. With the shared `.history-table td`
+     `vertical-align: middle`, those single-line values float to the centre of a
+     two-line row, so the status badge, List, Period and Due drift below the
+     title's first line and the horizontal scan line breaks on every wrapped row
+     (most task names run two lines). Top-align the index table so every value
+     meets the first line of the task name. Scoped to the responsive (History
+     index) table via the extra class: the occurrence-page `.history-table`,
+     whose cells are uniformly two-line, keeps its centred default. Mobile is
+     unaffected — there `.responsive-table td` is display:block. */
+  .history-table.responsive-table td {
+    vertical-align: top;
+  }
+
   /* ── Segmented control ────────────────────────────────────────────── */
   .segmented {
     display: flex;
