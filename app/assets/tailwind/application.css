@@ -2051,7 +2051,14 @@
   /* ── Action / quick-action grids ──────────────────────────────────── */
   .action-grid {
     display: grid;
-    gap: 8px;
+    /* The between-card gutter must clear each .action-card's own 14px padding, so
+       two separately-tappable routing cards never sit closer than the elements
+       inside one. At 8px the gutter was tighter than the in-card padding,
+       inverting Gestalt proximity — the cards fused into one ribbed strip, worst
+       when stacked on mobile. 16px restores between-card > within-card rhythm,
+       matching the sibling .settings-hub / .task-builder-menu chooser grids that
+       document the same card pattern. */
+    gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
   .action-card {
