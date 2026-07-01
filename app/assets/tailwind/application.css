@@ -3119,6 +3119,13 @@
     background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
+    /* Resting elevation e1, matching every other whole-card navigation surface
+       (.home-surface-card, .follow-up-card, .tasks-kpi, and the identically
+       shaped .tasks-list-picker-card on the Tasks dashboard). Each row here is a
+       full-card link to a detail page, separated from its neighbours by gaps —
+       it reads as a card on the canvas, not a divided table row — so without the
+       shadow these management rows sat flatter than their dashboard twin. */
+    box-shadow: var(--shadow-e1);
     color: var(--ink);
     display: grid;
     gap: 12px;
