@@ -1425,16 +1425,21 @@
   }
   .log-book-date-arrow-disabled:hover { background: transparent; }
 
-  /* Lightweight status strip — replaces the 3 KPI tiles on the daily view. */
+  /* Lightweight status strip — replaces the 3 KPI tiles on the daily view.
+     On desktop it shares the header row with the taller date-pager box, so it
+     center-aligns against the pager (align-self) rather than floating to the
+     row's top edge. The 8px top gap is only wanted in the mobile stacked
+     layout (pager above, strip below) and is restored there in the ≤640px
+     block — on desktop it would push the strip below the pager's centre. */
   .log-book-status-strip {
     align-items: center;
+    align-self: center;
     color: var(--ink-2);
     display: flex;
     flex-wrap: wrap;
     font-size: 0.9rem;
     gap: 6px 14px;
     justify-content: space-between;
-    margin-top: 8px;
     padding: 0 2px;
   }
   .log-book-status-strip:empty { display: none; }
@@ -6374,6 +6379,11 @@
     }
     .log-book-header-actions {
       justify-content: flex-end;
+    }
+    /* Stacked single-column header: the strip sits below the pager, so it needs
+       the top gap the desktop centred layout drops. */
+    .log-book-status-strip {
+      margin-top: 8px;
     }
 
     .page-heading .button,
