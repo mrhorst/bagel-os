@@ -5544,6 +5544,11 @@
     background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
+    /* Resting elevation e1, matching every other whole-card navigation surface
+       (.home-surface-card, .follow-up-card) and the .tasks-kpi tiles that sit
+       directly above these on this same screen. Without it the primary tap
+       targets read flatter than their own summary tiles — the odd surface out. */
+    box-shadow: var(--shadow-e1);
     color: var(--ink);
     display: grid;
     gap: 12px;
