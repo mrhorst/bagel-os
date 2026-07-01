@@ -7,6 +7,11 @@ class Recipe < ApplicationRecord
   has_many :recipe_ingredients, dependent: :destroy
   has_many :inventory_items, through: :recipe_ingredients
 
+  # Reusable choice slots attached to this item (meat, cheese, bread, sides…).
+  # The join carries the per-recipe ordering; the groups themselves are shared.
+  has_many :recipe_modifier_groups, -> { ordered }, dependent: :destroy, inverse_of: :recipe
+  has_many :modifier_groups, through: :recipe_modifier_groups
+
   validates :name, presence: true
   validates :name, uniqueness: { case_sensitive: false }, if: -> { name.present? }
   validates :yield_quantity, numericality: { greater_than: 0 }, allow_nil: true

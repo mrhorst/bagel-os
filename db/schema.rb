@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_29_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_000003) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -258,6 +258,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000003) do
     t.index ["active"], name: "index_log_book_sections_on_active"
     t.index ["created_by_id"], name: "index_log_book_sections_on_created_by_id"
     t.index ["position", "title"], name: "index_log_book_sections_on_position_and_title"
+  end
+
+  create_table "modifier_groups", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "kind", default: "ingredient", null: false
+    t.integer "max_select", default: 1, null: false
+    t.integer "min_select", default: 1, null: false
+    t.string "name", null: false
+    t.integer "position"
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_modifier_groups_on_name", unique: true
+  end
+
+  create_table "modifier_options", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "default_choice", default: false, null: false
+    t.integer "inventory_item_id"
+    t.integer "modifier_group_id", null: false
+    t.string "name"
+    t.integer "position"
+    t.decimal "quantity", precision: 12, scale: 4
+    t.string "unit"
+    t.datetime "updated_at", null: false
+    t.index ["inventory_item_id"], name: "index_modifier_options_on_inventory_item_id"
+    t.index ["modifier_group_id"], name: "index_modifier_options_on_modifier_group_id"
   end
 
   create_table "normalization_reviews", force: :cascade do |t|
@@ -589,6 +614,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000003) do
     t.index ["recipe_id"], name: "index_recipe_ingredients_on_recipe_id"
   end
 
+  create_table "recipe_modifier_groups", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "modifier_group_id", null: false
+    t.integer "position"
+    t.integer "recipe_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["modifier_group_id"], name: "index_recipe_modifier_groups_on_modifier_group_id"
+    t.index ["recipe_id", "modifier_group_id"], name: "idx_on_recipe_id_modifier_group_id_f47cc1c5b8", unique: true
+    t.index ["recipe_id"], name: "index_recipe_modifier_groups_on_recipe_id"
+  end
+
   create_table "recipes", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -836,6 +872,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000003) do
   add_foreign_key "log_book_responses", "users", column: "follow_up_resolved_by_id"
   add_foreign_key "log_book_responses", "users", column: "last_submitted_by_id"
   add_foreign_key "log_book_sections", "users", column: "created_by_id"
+  add_foreign_key "modifier_options", "inventory_items"
+  add_foreign_key "modifier_options", "modifier_groups"
   add_foreign_key "normalization_reviews", "products"
   add_foreign_key "normalization_reviews", "receipt_line_items"
   add_foreign_key "order_guide_items", "inventory_items"
@@ -865,6 +903,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_000003) do
   add_foreign_key "recipe_ingredient_substitutes", "recipe_ingredients"
   add_foreign_key "recipe_ingredients", "inventory_items"
   add_foreign_key "recipe_ingredients", "recipes"
+  add_foreign_key "recipe_modifier_groups", "modifier_groups"
+  add_foreign_key "recipe_modifier_groups", "recipes"
   add_foreign_key "sessions", "users"
   add_foreign_key "shares", "collections"
   add_foreign_key "supplier_product_packs", "products"
