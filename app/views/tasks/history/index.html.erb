@@ -61,7 +61,7 @@
             </td>
             <td data-label="List"><%= occurrence.snapshot_list_name %></td>
             <td data-label="Period"><%= task_period_label(occurrence) %></td>
-            <td data-label="Due"><%= task_due_label(occurrence) %></td>
+            <td data-label="Due"><%= task_due_label(occurrence, prefix: false) %></td>
             <td data-label="Completion">
               <% if occurrence.active_completion.present? %>
                 <%= task_completion_summary(occurrence.active_completion) %>
