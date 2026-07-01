@@ -3535,9 +3535,13 @@
     object-fit: cover;
     width: 100%;
   }
+  /* Empty-cover placeholder for a collection with no cover asset yet. A
+     monochrome stroke SVG (not a platform emoji) so it stays in the app's
+     cool-gray icon language; --ink-muted on the --surface-3 cover recedes it as
+     a placeholder without the washed-out look of an opacity-dimmed glyph. */
   .collection-cover-empty {
-    font-size: 2rem;
-    opacity: 0.5;
+    color: var(--ink-muted);
+    display: inline-flex;
   }
   .collection-card-meta {
     display: flex;
