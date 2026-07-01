@@ -4,10 +4,18 @@
   renders its own add form, so — like the ingredient forms — the field ids are
   namespaced (here by the ingredient's dom_id) to stay unique and keep every
   <label for> wired to its own field. The amount/unit are optional: blank means
-  the substitute uses the line's own amount. %>
+  the substitute uses the line's own amount.
+
+  Submit natively (not via Turbo), exactly like the ingredient forms: the
+  controller's success redirect carries a #ingredient-line-N fragment so the
+  reader lands back on the line they were annotating. Turbo Drive resolves the
+  post with fetch, strips that fragment from the redirect Location, and resets
+  scroll to the top — so under Turbo, adding a substitute to a line far down a
+  long recipe throws the reader back to the page top every time. A native submit
+  honors the fragment and keeps their place. %>
 <%= form_with model: substitute, namespace: dom_id(ingredient, "newsub"),
       url: recipe_ingredient_substitutes_path(recipe, ingredient),
-      class: "inline-ingredient-form" do |form| %>
+      class: "inline-ingredient-form", data: { turbo: false } do |form| %>
   <% if substitute.errors.any? %>
     <p class="inline-form-error" role="alert"><%= substitute.errors.full_messages.to_sentence %></p>
   <% end %>
