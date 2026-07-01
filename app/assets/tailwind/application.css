@@ -460,6 +460,17 @@
     background: color-mix(in oklch, var(--surface-3) 82%, var(--ink));
     border-color: color-mix(in oklch, var(--ink) 25%, var(--line-2));
   }
+  /* Mobile: the file-picker button is the primary control on the upload forms
+     (receipt CSV import, photo add) and the photo-to-complete-a-task page, but
+     at its base 36px it sits under the 44px iOS/WCAG 2.5.5 minimum touch target.
+     Give it a 44px min-height on mobile only; desktop keeps the denser mouse
+     target. Same mobile-only bump the library filter chips use below. The
+     sr-only task-row photo input renders no button, so it's unaffected. */
+  @media (max-width: 640px) {
+    input[type='file']::file-selector-button {
+      min-height: 44px;
+    }
+  }
 
   input:focus,
   select:focus,
