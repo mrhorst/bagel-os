@@ -19,6 +19,7 @@ module Admin
         sync_module_permissions(@user, params[:module_names])
         redirect_to admin_users_path, notice: "User #{@user.email_address} created."
       else
+        @selected_module_names = submitted_module_names
         render :new, status: :unprocessable_entity
       end
     end
@@ -33,6 +34,7 @@ module Admin
       # friendlier error.
       if @user.owner? && desired_role.present? && desired_role != "admin"
         @user.errors.add(:role, "the owner must stay an admin")
+        @selected_module_names = submitted_module_names
         return render :edit, status: :unprocessable_entity
       end
 
@@ -43,6 +45,7 @@ module Admin
         sync_module_permissions(@user, params[:module_names])
         redirect_to admin_users_path, notice: "User updated."
       else
+        @selected_module_names = submitted_module_names
         render :edit, status: :unprocessable_entity
       end
     end
@@ -95,6 +98,14 @@ module Admin
 
     def update_params
       params.require(:user).permit(:email_address, :name)
+    end
+
+    # The modules the admin ticked on this submit, so a form re-rendered after a
+    # failed save keeps their selection instead of silently reverting to the
+    # user's persisted permissions (or none, for a brand-new user) — which would
+    # make them re-check every box and risk creating a no-access employee.
+    def submitted_module_names
+      Array(params[:module_names]).map(&:to_s) & User::MODULES
     end
 
     # Whitelist role values explicitly — never mass-assigned from params.
