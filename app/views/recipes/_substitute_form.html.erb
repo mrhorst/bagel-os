@@ -17,11 +17,11 @@
         { include_blank: "No item" }, { class: "compact-select" } %>
   <%= form.label :name, "Substitute name", class: "sr-only" %>
   <%= form.text_field :name, class: "compact-input", autocomplete: "off", placeholder: "or name" %>
-  <%= form.label :quantity, "Amount", class: "sr-only" %>
+  <%= form.label :quantity, "Substitute amount", class: "sr-only" %>
   <%= form.number_field :quantity, step: "0.0001", min: "0", class: "compact-input", placeholder: "amt" %>
-  <%= form.label :unit, "Unit", class: "sr-only" %>
+  <%= form.label :unit, "Substitute unit", class: "sr-only" %>
   <%= form.text_field :unit, class: "compact-input", autocomplete: "off", placeholder: "unit" %>
-  <%= form.label :note, "Note", class: "sr-only" %>
+  <%= form.label :note, "Substitute note", class: "sr-only" %>
   <%= form.text_field :note, class: "compact-input", autocomplete: "off", placeholder: "note" %>
   <%= form.submit "Add substitute", class: "button small" %>
 <% end %>
