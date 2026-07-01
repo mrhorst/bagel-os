@@ -25,13 +25,18 @@ module TasksHelper
     end
   end
 
-  def task_due_label(occurrence)
+  # Under a labelled column or a <dt>Due</dt>, the leading "Due " restates the
+  # label on every row — noise the History table and the occurrence detail don't
+  # need. Pass prefix: false there; the Tasks dashboard row (an inline value with
+  # no adjacent "Due" label) keeps the default prefix so the time stays legible.
+  def task_due_label(occurrence, prefix: true)
     if occurrence.period_kind == "month"
       "This month"
     elsif occurrence.due_at.present?
-      "Due #{occurrence.due_at.strftime("%-I:%M %p")}"
+      time = occurrence.due_at.strftime("%-I:%M %p")
+      prefix ? "Due #{time}" : time
     else
-      "Due today"
+      prefix ? "Due today" : "Today"
     end
   end
 
