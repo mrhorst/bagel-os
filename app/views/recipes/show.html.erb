@@ -109,7 +109,9 @@
     <p class="empty-state">No ingredients yet. Add the first line below.</p>
   <% end %>
 
-  <% if @ingredients.any? %>
+  <%# The summary also appears for an all-choices item (no fixed lines but
+      ingredient-kind guest choices) — its cost lives entirely in the choices. %>
+  <% if @ingredients.any? || @modifier_costing.groups.any? %>
     <div class="recipe-cost-summary">
       <%# Total cost — complete only when every line is costed. %>
       <% if @costing.complete? %>
@@ -164,7 +166,45 @@
         <% end %>
       <% end %>
 
-      <p class="muted small">Estimates only — actual cost and weight vary with pack size, yield, and waste. Any line we can't cost or weigh is marked uncertain above with the reason.</p>
+      <%# Guest choices: per ingredient-kind choice, the standard pick's cost
+          and the swing across its options. Preparation choices never appear —
+          they have no cost. Same never-guess rule as the lines above: a choice
+          with any uncostable option is uncertain, with the reason. %>
+      <% if @modifier_costing.groups.any? %>
+        <% @modifier_costing.groups.each do |group_cost| %>
+          <div class="recipe-cost-total">
+            <span>
+              <%= group_cost.group.name %>
+              <span class="muted">(<%= group_cost.group.selection_summary %><% if group_cost.group.default_option %> · standard <%= group_cost.group.default_option.display_name %><% end %>)</span>
+            </span>
+            <% if group_cost.costed? %>
+              <strong class="tnum">
+                <%= money(group_cost.standard_cost) %><% if group_cost.min_cost != group_cost.max_cost %><span class="muted"> · <%= money(group_cost.min_cost) %>–<%= money(group_cost.max_cost) %></span><% end %>
+              </strong>
+            <% else %>
+              <strong class="muted">Uncertain</strong>
+            <% end %>
+          </div>
+          <% unless group_cost.costed? %>
+            <p class="muted small"><%= group_cost.reason %></p>
+          <% end %>
+        <% end %>
+
+        <% if @modifier_costing.standard_total %>
+          <div class="recipe-cost-total">
+            <span>Total with standard choices</span>
+            <strong class="tnum"><%= money(@modifier_costing.standard_total) %></strong>
+          </div>
+          <% if @modifier_costing.min_total != @modifier_costing.max_total %>
+            <div class="recipe-cost-total">
+              <span>Across all choices</span>
+              <strong class="tnum"><%= money(@modifier_costing.min_total) %>–<%= money(@modifier_costing.max_total) %></strong>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <p class="muted small">Estimates only — actual cost and weight vary with pack size, yield, and waste. Any line we can't cost or weigh is marked uncertain above with the reason.<% if @modifier_costing.groups.any? %> Choice ranges assume any option can be taken for each pick.<% end %></p>
     </div>
   <% end %>
 </section>

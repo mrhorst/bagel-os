@@ -52,6 +52,31 @@ class RecipeModifierGroupsAttachTest < ActionDispatch::IntegrationTest
     assert_select "#modifiers td[data-label='Options']", text: /Bagel \(default\) or Kaiser/
   end
 
+  test "the cost summary covers ingredient choices but never preparation ones" do
+    @recipe.recipe_modifier_groups.create!(modifier_group: @bread)
+    egg_style = ModifierGroup.create!(name: "Egg style", kind: :preparation)
+    egg_style.modifier_options.create!(name: "Over medium", default_choice: true)
+    @recipe.recipe_modifier_groups.create!(modifier_group: egg_style)
+
+    get recipe_path(@recipe)
+    assert_response :success
+    # Bread's options are free-text with no price source, so the choice reads
+    # uncertain with the blocking option's reason — never an invented number.
+    assert_select ".recipe-cost-summary .recipe-cost-total span", text: /Bread/
+    assert_select ".recipe-cost-summary p.muted.small", text: /Bagel: Not linked to an inventory item/
+    # A preparation choice has no cost and stays out of the summary.
+    assert_select ".recipe-cost-summary .recipe-cost-total span", text: /Egg style/, count: 0
+  end
+
+  test "an all-choices recipe still gets a cost summary" do
+    empty_recipe = Recipe.create!(name: "All-choices item", active: true, position: 999)
+    empty_recipe.recipe_modifier_groups.create!(modifier_group: @bread)
+
+    get recipe_path(empty_recipe)
+    assert_response :success
+    assert_select ".recipe-cost-summary .recipe-cost-total span", text: /Bread/
+  end
+
   test "the attach select offers only groups not already attached" do
     cheese = ModifierGroup.create!(name: "Cheese")
     @recipe.recipe_modifier_groups.create!(modifier_group: @bread)

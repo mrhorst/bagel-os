@@ -20,5 +20,6 @@ module RecipeShowData
     @attachable_modifier_groups = ModifierGroup.ordered.where.not(id: @modifier_attachments.map(&:modifier_group_id))
     @costing = Purchasing::RecipeCosting.new(@recipe)
     @weight = Purchasing::RecipeWeight.new(@recipe)
+    @modifier_costing = Purchasing::ModifierCosting.new(@recipe, base: @costing)
   end
 end

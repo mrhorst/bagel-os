@@ -46,6 +46,9 @@
           <th>Option</th>
           <th>Amount</th>
           <th>Unit</th>
+          <% if @modifier_group.ingredient? %>
+            <th class="numeric">Est. cost</th>
+          <% end %>
           <th>Default</th>
           <th>Edit</th>
           <th>Remove</th>
@@ -66,6 +69,18 @@
                 "—" blank marker, matching the recipe ingredients table. %>
             <td data-label="Amount" class="tnum"><%= option.quantity.present? ? compact_decimal(option.quantity) : "—" %></td>
             <td data-label="Unit"><%= option.unit.presence || "—" %></td>
+            <% if @modifier_group.ingredient? %>
+              <% line_cost = @option_costs[option] %>
+              <td data-label="Est. cost" class="numeric">
+                <% if line_cost&.costed? %>
+                  <span class="tnum"><%= money(line_cost.cost) %></span>
+                <% else %>
+                  <%# Never invent a number — say why the option can't be costed. %>
+                  <span class="badge">Uncertain</span>
+                  <p class="muted small"><%= line_cost&.reason %></p>
+                <% end %>
+              </td>
+            <% end %>
             <td data-label="Default">
               <% if option.default_choice? %>
                 <span class="badge badge-ok">Default</span>

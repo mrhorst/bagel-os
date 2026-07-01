@@ -73,6 +73,21 @@ class ModifierOptionsTest < ActionDispatch::IntegrationTest
     assert_redirected_to modifier_group_path(@group)
   end
 
+  test "an ingredient group shows a per-option cost column, a preparation group doesn't" do
+    # Bacon's product has no price yet, so the estimate is honest about it.
+    @group.modifier_options.create!(inventory_item: @bacon, quantity: 2, unit: "slice")
+
+    get modifier_group_path(@group)
+    assert_select "th", text: "Est. cost"
+    assert_select "td[data-label='Est. cost'] .badge", text: "Uncertain"
+
+    prep = ModifierGroup.create!(name: "Egg style", kind: :preparation)
+    prep.modifier_options.create!(name: "Over medium")
+
+    get modifier_group_path(prep)
+    assert_select "th", text: "Est. cost", count: 0
+  end
+
   test "the default option is badged on the show page" do
     @group.modifier_options.create!(inventory_item: @bacon, default_choice: true, position: 1)
     @group.modifier_options.create!(name: "Ham", position: 2)
