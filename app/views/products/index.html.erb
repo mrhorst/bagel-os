@@ -111,7 +111,7 @@
             <% unless product.active? %><span class="badge">Hidden</span><% end %>
           </td>
           <td data-label="Category"><%= product.category_name %></td>
-          <td class="hide-on-mobile" data-label="SKU"><%= product.supplier_sku_summary %></td>
+          <td class="hide-on-mobile" data-label="SKU"><%= sku_cell(product) %></td>
           <td class="numeric" data-label="Latest price"><%= money_cell(stats[:latest_price]) %></td>
           <td class="numeric hide-on-mobile" data-label="Avg"><%= money_cell(stats[:average_price]) %></td>
           <td class="numeric hide-on-mobile" data-label="Low"><%= money_cell(stats[:lowest_price]) %></td>
