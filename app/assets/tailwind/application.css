@@ -2269,6 +2269,16 @@
     min-height: 32px;
     padding: 5px 8px;
   }
+  /* The base `select` reserves 36px of right padding so the custom chevron
+     (drawn at `right 12px`, 16px wide) never collides with a long selected
+     label. The compact shorthand above resets that reserve to 8px, so a long
+     value ("Cleaning Supplies" on the Master Inventory guide column) ran
+     straight into the chevron. Restore the reserve for the select variant only
+     (text inputs have no chevron) — same specificity as the shorthand, so later
+     source order wins. Matches the base rule the 210px width floor below fits. */
+  .compact-select {
+    padding-right: 36px;
+  }
   /* Keep the rename field compact rather than letting the global
      `input { width: 100% }` stretch it to fill the whole RENAME table column —
      a full-width input dwarfs the row's actual data (name, count, status) and
@@ -2292,13 +2302,14 @@
     width: 180px;
   }
   /* The primary-guide <select> must show its full selected value. The custom
-     chevron reserves 36px of right padding, so a 130px floor left only ~94px
-     for text — clipping real guide names ("Cleaning Supplies", "Every 2
-     weeks") mid-word, and rendering at different widths across the per-section
-     tables. Give the select a floor wide enough for the longest guide label so
-     it never truncates and the column stays consistent down the page. */
+     chevron reserves 36px of right padding (restored on .compact-select above),
+     so the floor has to cover the longest guide label PLUS that reserve — at
+     180px the longest seed name ("Cleaning Supplies") ran its tail under the
+     chevron with no clearance. 210px fits the label and the 36px reserve with a
+     gap to spare, keeps every section's select the same width, and still leaves
+     the 300px Guide column room for the Save button beside it. */
   .inline-guide-form .compact-select {
-    min-width: 180px;
+    min-width: 210px;
   }
 
   /* Master Inventory renders one independent <table> per storage location, so
@@ -2322,8 +2333,8 @@
      otherwise it wraps to two lines and drops below the single-line headers
      beside it, breaking the header row's shared top baseline. */
   .inventory-section-table th:nth-child(2) {
-    width: 280px;
-  } /* Guide (select + Save) */
+    width: 300px;
+  } /* Guide (210px select + 8px gap + Save, clear of the cell's 10px padding) */
   .inventory-section-table th:nth-child(4) {
     width: 16%;
   } /* Pack / count note */
