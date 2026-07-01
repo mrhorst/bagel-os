@@ -3885,6 +3885,17 @@
   .review-card {
     overflow: visible;
   }
+  /* Tabular numerals on the review card's data lines. The receipt meta
+     (quantity + price, e.g. "1 unit · $32.50") and the SKU/source-file line
+     are data surfaces, so their digits must align in fixed-width columns like
+     every other price/count/SKU in the app — the base card font is
+     proportional and the app-wide `tabular-nums` rule doesn't reach these
+     selectors. Scoped under `.review-card` (normalization only) so it never
+     touches the Log Book card that shares the base `.decision-card`. */
+  .review-card .decision-card-meta,
+  .review-card .decision-card-body p.small {
+    font-variant-numeric: tabular-nums;
+  }
 
   .review-focus {
     display: grid;
