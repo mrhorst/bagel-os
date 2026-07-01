@@ -6242,6 +6242,17 @@
     .responsive-table td .badge:not(.badge-ok):not(.badge-warning):not(.badge-danger) {
       background: var(--surface-2);
     }
+    /* An inline `code` chip (a filename/slug reference — e.g. the export
+       filenames on Reports, the slug on Marketing tags) fills with --surface-3,
+       the same token the stacked card uses, so on mobile its fill collapses into
+       the card and the chip survives only as a faint hairline outline — the same
+       vanishing-chip problem the neutral .badge fix above solves. Lift it one
+       surface step so the reference stays a legible chip on the card. Desktop is
+       untouched: there the chip sits on the brighter --surface-2 panel, where
+       --surface-3 already separates. */
+    .responsive-table td code {
+      background: var(--surface-2);
+    }
     /* Optional: hide low-priority columns on mobile via .hide-on-mobile */
     .responsive-table td.hide-on-mobile,
     .responsive-table th.hide-on-mobile {
