@@ -52,6 +52,10 @@ class RecipeIngredientSubstitutesTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_select ".inline-form-error"
+    # The native submit lands the browser at the page top; the re-render wires the
+    # scroll-into-view controller onto the annotated row so the rejected
+    # substitute's error is pulled into view instead of stranded below the fold.
+    assert_select "tr#ingredient-line-#{@line.id}[data-controller=?]", "scroll-into-view"
   end
 
   test "removes a substitute" do
