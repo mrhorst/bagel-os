@@ -60,7 +60,11 @@
               invalid instance so the row keeps the typed values and shows the
               error instead of reverting. %>
           <% row = (@editing_option if @editing_option&.id == option.id) || option %>
-          <tr id="option-line-<%= option.id %>">
+          <%# A rejected inline edit re-renders the page at the top (native
+              submit, no place-preserving fragment on the 422); scroll this row
+              back into view so its error is seen, same as the recipe rows. %>
+          <% row_errored = @editing_option&.id == option.id %>
+          <tr id="option-line-<%= option.id %>"<%= " data-controller=scroll-into-view" if row_errored %>>
             <td class="row-heading" data-label="Option">
               <%= option.display_name %>
               <% if option.inventory_item %><span class="badge badge-compact">Inventory</span><% end %>
@@ -131,7 +135,11 @@
   <% end %>
 </section>
 
-<section class="panel narrow" id="add-option">
+<%# When a rejected add re-renders the page, the native submit lands at the top
+    and this form (with its error) sits below the fold — scroll it back into view
+    so the error is seen, not silently missed. Same guard as the recipe forms. %>
+<section class="panel narrow" id="add-option"
+    <%= "data-controller=scroll-into-view" if @new_option&.errors&.any? %>>
   <h2>Add option</h2>
   <%= render "modifier_groups/option_form",
         modifier_group: @modifier_group, option: @new_option, inventory_items: @inventory_items, submit_label: "Add option", stacked: true %>
