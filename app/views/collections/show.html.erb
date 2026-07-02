@@ -41,11 +41,15 @@
   </div>
 
   <% if @share %>
-    <div class="share-link-row">
-      <%= text_field_tag :share_url, shared_collection_url(@share.token), readonly: true, class: "share-url", onclick: "this.select()" %>
+    <div class="share-link-row" data-controller="clipboard">
+      <%= text_field_tag :share_url, shared_collection_url(@share.token), readonly: true, class: "share-url",
+            data: { clipboard_target: "source" }, onclick: "this.select()" %>
+      <%= button_tag "Copy", type: "button", class: "button small primary",
+            data: { clipboard_target: "button", action: "clipboard#copy" } %>
       <%= link_to "Open", shared_collection_path(@share.token), class: "button small", target: "_blank", rel: "noopener" %>
       <%= button_to "Revoke", collection_share_path(@collection, @share), method: :delete, class: "button small",
             form: { data: { turbo_confirm: "Revoke this link? It will stop working immediately." } } %>
+      <span class="sr-only" role="status" aria-live="polite" data-clipboard-target="status"></span>
     </div>
     <p class="muted small">Anyone with this link can view and download — revoke it when you're done.</p>
   <% else %>
