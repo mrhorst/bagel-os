@@ -6345,7 +6345,13 @@
       gap: 6px;
       margin: 0;
     }
+    /* A stacked card's action button (Reports "Download", the Edit/View column
+       on admin/users, admin/tags, recipes) is the card's primary tap target on
+       touch, yet the base .button is only 36px tall — under the 44px minimum.
+       Span the card AND meet the floor so the full-width bar is comfortably
+       tappable; the label stays centred via the base .button inline-flex. */
     .responsive-table td .button {
+      min-height: 44px;
       width: 100%;
     }
     /* A neutral .badge fills with --surface-3 — the same token the stacked
