@@ -2189,6 +2189,14 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
+  /* A filter field promoted to its own full-width band. Used for a primary
+     free-text search so the remaining selects fill a balanced row rather than
+     leaving an odd field orphaned on a near-empty second row. Only meaningful
+     while .filters is a grid (desktop); on the mobile 1fr override below it is
+     already full width. */
+  .filters .field-full {
+    grid-column: 1 / -1;
+  }
   /* Filter toggles + actions each span the full filter grid so they read as
      their own bands beneath the labelled selects, instead of flowing into the
      auto-fit field columns as short, misaligned cells. Both classes appear only
