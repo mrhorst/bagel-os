@@ -3629,7 +3629,12 @@
     padding: 0;
   }
   .collection-card {
-    background: var(--surface);
+    /* Elevated card fill (--surface-2), matching every shadowed surface
+       (.panel/.metric). The card carries --shadow-e1, so it must lift off the
+       --surface page; filling it with --surface (the body colour) gave it zero
+       fill contrast and made the --surface-3 cover read as darker-than-page,
+       i.e. recessed rather than raised. */
+    background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-e1);
