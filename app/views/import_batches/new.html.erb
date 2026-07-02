@@ -1,4 +1,12 @@
 <% content_for :title, "Upload receipt CSV" %>
+<%# The desktop title "Upload receipt CSV" overflows the mobile sticky header
+    (back chevron + centered title share one 390px row), truncating to the
+    ambiguous "Upload receipt C…" — and since the in-page H1 is display:none on
+    mobile, that ellipsised string is the ONLY title a phone user sees. Give the
+    mobile header a short, self-contained title that fits without truncation and
+    mirrors the "Upload CSV" control on the Imports index that navigates here.
+    Same mechanism as inventory/new_count's mobile_title override. %>
+<% content_for :mobile_title, "Upload CSV" %>
 
 <% content_for :mobile_left_action do %>
   <%= link_to import_batches_path, class: "mobile-header-back", aria: { label: "Back to Imports" } do %>
