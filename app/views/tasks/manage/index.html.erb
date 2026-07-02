@@ -1,12 +1,23 @@
 <% content_for :title, "Tasks" %>
 
+<% active_tasks, archived_tasks = @tasks.partition(&:active?) %>
+
 <%
   has_lists = @task_lists.any?
-  add_action = if has_lists
-    link_to("Add task", setup_tasks_manage_tasks_path(origin: "manage"), class: "button primary")
-  else
-    link_to("Create a list first", tasks_manage_lists_path, class: "button")
-  end
+  # Header CTA. Orange (primary) belongs to exactly one control per screen. When
+  # lists exist but there are no active tasks yet, the empty-state card below
+  # already owns the single primary "Add your first task" — so the header drops
+  # its duplicate "Add task" primary rather than showing two competing orange
+  # CTAs to the same task-setup page (same rule the Photo library empty state
+  # follows). With active tasks the header carries the only primary; with no
+  # lists it points at list creation with a neutral button (the no-list panel
+  # owns the primary).
+  add_action =
+    if has_lists && active_tasks.any?
+      link_to("Add task", setup_tasks_manage_tasks_path(origin: "manage"), class: "button primary")
+    elsif !has_lists
+      link_to("Create a list first", tasks_manage_lists_path, class: "button")
+    end
 %>
 
 <%=
@@ -17,8 +28,6 @@
     back_label: "Settings",
     actions: add_action
 %>
-
-<% active_tasks, archived_tasks = @tasks.partition(&:active?) %>
 
 <% if active_tasks.any? %>
   <section class="manage-stack">
