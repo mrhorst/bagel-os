@@ -1,5 +1,14 @@
 <% content_for :title, "Photo library" %>
 
+<%# first_run = the genuinely empty library (no photos, and no active
+    filter/tag/search/favorites narrowing it). In that state the empty-state
+    card below owns the single orange primary "Add photos", so the header's
+    duplicate primary is suppressed — desktop then shows ONE primary, matching
+    the Follow-ups / Products empty screens whose header carries no competing
+    primary. When photos exist (or a filter merely returns nothing) the header
+    keeps the primary CTA. %>
+<% first_run = @assets.empty? && @scope == "all" && @active_tag.nil? && @query.blank? && !@favorites_only %>
+
 <section class="page-heading">
   <div>
     <h1>Photo library</h1>
@@ -13,8 +22,12 @@
     <%# On mobile the floating action button (bottom of this view) is the
         canonical "add" affordance, so this inline primary button is hidden
         there to avoid a duplicate "Add photos" CTA; it stays on desktop,
-        which has no FAB. %>
-    <%= link_to "Add photos", new_photo_asset_path, class: "button primary hide-for-fab" %>
+        which has no FAB. On the first-run empty screen the empty-state card
+        owns the primary, so this header duplicate is suppressed (see first_run
+        above) to keep a single primary. %>
+    <% unless first_run %>
+      <%= link_to "Add photos", new_photo_asset_path, class: "button primary hide-for-fab" %>
+    <% end %>
   </div>
 </section>
 
@@ -103,7 +116,7 @@
   <% end %>
 <% else %>
   <article class="panel empty-state">
-    <% if @scope == "all" && @active_tag.nil? && @query.blank? && !@favorites_only %>
+    <% if first_run %>
       <strong>No photos yet.</strong>
       <span>Add the first batch from your phone or library.</span>
       <%# Put the primary action where attention lands on the empty first-run
