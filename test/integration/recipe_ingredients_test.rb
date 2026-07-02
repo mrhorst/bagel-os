@@ -68,6 +68,39 @@ class RecipeIngredientsTest < ActionDispatch::IntegrationTest
     # The typed amount/unit survive the failed add.
     assert_select "input[name=?][value=?]", "recipe_ingredient[quantity]", "3"
     assert_select "input[name=?][value=?]", "recipe_ingredient[unit]", "cup"
+    # The add form submits natively, so a failed submit lands the browser at the
+    # page top with the error stranded below the fold. The re-render wires the
+    # scroll-into-view controller onto the add section so the browser pulls the
+    # error back into view — see app/javascript/controllers/scroll_into_view_controller.js.
+    assert_select "#add-ingredient[data-controller=?]", "scroll-into-view"
+  end
+
+  test "a clean recipe render does NOT wire the scroll-into-view controller" do
+    # The scroll nudge is only for the failure re-render; a normal page load must
+    # not jump the viewport to the add form.
+    @recipe.recipe_ingredients.create!(name: "Flour", quantity: 1, unit: "lb")
+
+    get recipe_path(@recipe)
+
+    assert_response :success
+    assert_select "#add-ingredient"
+    assert_select "#add-ingredient[data-controller]", count: 0
+    assert_select "tr[data-controller]", count: 0
+  end
+
+  test "a rejected inline edit wires the scroll-into-view controller onto the errored row" do
+    line = @recipe.recipe_ingredients.create!(name: "Water", quantity: 2, unit: "cup")
+
+    # A zero amount fails numericality (greater_than: 0), so the edit is rejected
+    # and the page re-renders in place at the top.
+    patch recipe_ingredient_path(@recipe, line), params: {
+      recipe_ingredient: { name: "Water", quantity: "0", unit: "cup" }
+    }
+
+    assert_response :unprocessable_entity
+    # The row that failed carries the scroll nudge so its inline error is seen,
+    # not left below the fold after the browser lands at the page top.
+    assert_select "tr#ingredient-line-#{line.id}[data-controller=?]", "scroll-into-view"
   end
 
   test "an ingredient linked to a since-archived item stays selected and editable" do

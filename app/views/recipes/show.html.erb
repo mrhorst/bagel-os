@@ -62,7 +62,11 @@
           <% row = (@editing_ingredient if @editing_ingredient&.id == ingredient.id) || ingredient %>
           <% line_cost = @costing.cost_for(ingredient) %>
           <% line_weight = @weight.weight_for(ingredient) %>
-          <tr id="ingredient-line-<%= ingredient.id %>">
+          <%# A rejected inline edit or a rejected substitute-add re-renders the
+              page at the top; scroll this row back into view so its error is seen
+              (same reason as the Add-ingredient form below). %>
+          <% row_errored = @editing_ingredient&.id == ingredient.id || @substitute_errors_for == ingredient.id %>
+          <tr id="ingredient-line-<%= ingredient.id %>"<%= " data-controller=scroll-into-view" if row_errored %>>
             <td class="row-heading" data-label="Ingredient">
               <%= ingredient.display_name %>
               <% if ingredient.inventory_item %><span class="badge badge-compact">Inventory</span><% end %>
@@ -276,7 +280,11 @@
   <% end %>
 </section>
 
-<section class="panel narrow" id="add-ingredient">
+<%# When a rejected add re-renders the page, the native submit lands at the top
+    and this form (with its error) sits below the fold — scroll it back into view
+    so the error is seen, not silently missed. %>
+<section class="panel narrow" id="add-ingredient"
+    <%= "data-controller=scroll-into-view" if @new_ingredient&.errors&.any? %>>
   <h2>Add ingredient</h2>
   <%= render "recipes/ingredient_form",
         recipe: @recipe, ingredient: @new_ingredient, inventory_items: @inventory_items, submit_label: "Add ingredient", stacked: true %>

@@ -2189,6 +2189,14 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
+  /* A filter field promoted to its own full-width band. Used for a primary
+     free-text search so the remaining selects fill a balanced row rather than
+     leaving an odd field orphaned on a near-empty second row. Only meaningful
+     while .filters is a grid (desktop); on the mobile 1fr override below it is
+     already full width. */
+  .filters .field-full {
+    grid-column: 1 / -1;
+  }
   /* Filter toggles + actions each span the full filter grid so they read as
      their own bands beneath the labelled selects, instead of flowing into the
      auto-fit field columns as short, misaligned cells. Both classes appear only
@@ -5377,6 +5385,15 @@
   .tasks-page-header-titles {
     min-width: 0;
   }
+  /* Desktop-only header action (the create button). Sits in the header's
+     reserved action column, right-aligned against the title + date pager.
+     On mobile this is hidden and the floating .mobile-fab takes over. */
+  .tasks-page-header-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
   .tasks-page-header-titles h1 {
     font-size: 1.4rem;
     line-height: 1.15;
@@ -6131,6 +6148,11 @@
       gap: 6px 8px;
       grid-template-columns: minmax(0, 1fr) auto auto;
     }
+    /* The create action lives in the floating .mobile-fab on a phone, so the
+       in-header desktop button is hidden here to avoid two + affordances. */
+    .tasks-page-header-actions {
+      display: none;
+    }
     .tasks-page-header-titles h1 {
       font-size: 1.3rem;
     }
@@ -6550,6 +6572,42 @@
     .actions .button:not(.small),
     .actions button:not(.small),
     .actions input[type='submit']:not(.small) {
+      min-height: 44px;
+    }
+
+    /* A `.form-footer` clusters a create/edit form's actions — a primary submit,
+       sometimes a Cancel link — but its buttons inherit the base .button 36px
+       height, under the 44px touch floor. It's the last big gap in the mobile
+       touch-target coverage: the footer's submit is the form's primary CTA on
+       every create/edit screen (Account "Save profile"/"Update password",
+       collections, products, admin users/tags, task lists, recipes, import
+       batches, log book sections). The footer's controls are already
+       full-width/clustered here, so lift only the tap height to 44px — the label
+       stays centred via the base inline-flex and no layout shifts. Matches the
+       .responsive-table td .button and header/action 44px fixes above; .small
+       secondaries stay compact; desktop keeps the denser 36px. */
+    .form-footer .button:not(.small),
+    .form-footer button:not(.small),
+    .form-footer input[type='submit']:not(.small) {
+      min-height: 44px;
+    }
+
+    /* The Review-queue decision card's three action columns (Assign / Create /
+       Resolve-ignore) are the screen's primary data-entry surface, and on mobile
+       they stack full-width (the .decision-card-actions grid collapses to one
+       column at 900px). Yet their submit buttons inherit the base .button 36px
+       height and their selects/text inputs the base 40px — both under the 44px
+       touch floor a thumb needs. No existing touch-target fix reaches
+       .decision-action (it isn't a .form-footer, a .responsive-table cell, or an
+       .actions cluster). Lift every control here to 44px on touch widths; they're
+       already full-width block controls, so only the tap height grows and no
+       layout shifts. Matches the .inline-guide-form and .form-footer fixes above;
+       desktop keeps the denser 36/40px. */
+    .decision-action .button:not(.small),
+    .decision-action button:not(.small),
+    .decision-action input[type='submit']:not(.small),
+    .decision-action select,
+    .decision-action input[type='text'] {
       min-height: 44px;
     }
 
