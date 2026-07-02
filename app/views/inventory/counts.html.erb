@@ -30,30 +30,30 @@
 
 <section class="panel">
   <% if @counts.any? %>
-    <table>
+    <table class="responsive-table">
       <thead>
         <tr>
-          <th>Counted at</th>
-          <th>Guide</th>
-          <th>Status</th>
-          <th class="numeric">Lines</th>
-          <th>Notes</th>
+          <th scope="col">Counted at</th>
+          <th scope="col">Guide</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="numeric">Lines</th>
+          <th scope="col">Notes</th>
         </tr>
       </thead>
       <tbody>
         <% @counts.each do |count| %>
           <tr>
-            <td><%= link_to count.counted_at.to_fs(:long), inventory_count_path(count) %></td>
-            <td>
+            <td class="row-heading" data-label="Counted at"><%= link_to count.counted_at.to_fs(:long), inventory_count_path(count) %></td>
+            <td data-label="Guide">
               <% if count.order_guide.present? %>
                 <%= link_to count.order_guide.name, order_guide_path(count.order_guide) %>
               <% else %>
                 <span class="muted">Legacy count</span>
               <% end %>
             </td>
-            <td><span class="badge"><%= count.status.humanize %></span></td>
-            <td class="numeric"><%= count.inventory_count_lines.size %></td>
-            <td><%= count.notes.presence || "n/a" %></td>
+            <td data-label="Status"><span class="badge"><%= count.status.humanize %></span></td>
+            <td class="numeric" data-label="Lines"><%= count.inventory_count_lines.size %></td>
+            <td data-label="Notes"><%= count.notes.presence || "n/a" %></td>
           </tr>
         <% end %>
       </tbody>
