@@ -23,8 +23,8 @@ class RecipeIngredientAddScrollTest < ApplicationSystemTestCase
       fill_in "Or type a name", with: "Chopped scallions"
       fill_in "Amount", with: "2"
       fill_in "Unit", with: "cup"
+      click_on "Add ingredient"
     end
-    submit_form "#add-ingredient form"
 
     assert_text "Ingredient added."
     # The URL carries the place-preserving fragment the redirect set…
@@ -44,8 +44,8 @@ class RecipeIngredientAddScrollTest < ApplicationSystemTestCase
 
     within "tr#ingredient-line-#{edited.id}" do
       fill_in "Amount", with: "3"
+      click_on "Save"
     end
-    submit_form "form[action='#{recipe_ingredient_path(recipe, edited)}']"
 
     assert_text "Ingredient updated."
     assert_equal "ingredient-line-#{edited.id}", URI(page.current_url).fragment
