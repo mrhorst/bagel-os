@@ -50,8 +50,16 @@
 
   <%= form_with model: @product, class: "stack product-edit-form" do |form| %>
     <article class="panel product-edit-panel">
+      <%# On a rejected save the controller re-renders this page in place (keeping
+          the typed input and its error), but a Turbo form re-render lands the
+          browser at the page TOP. The "Save product" / "Save and mark reviewed"
+          buttons live at the BOTTOM of this long form and the error banner sits
+          below the review-summary band, so that jump strands the error off-screen
+          and the failed save reads as a silent no-op. Scroll the error into view
+          so the person sees what to fix — mirroring the recipe form fix (#413) and
+          the app-wide "a rejected form shows its error" convention. %>
       <% if @product.errors.any? %>
-        <div class="flash flash-alert"><%= @product.errors.full_messages.to_sentence %></div>
+        <div class="flash flash-alert" data-controller="scroll-into-view"><%= @product.errors.full_messages.to_sentence %></div>
       <% end %>
 
       <section class="form-section">
