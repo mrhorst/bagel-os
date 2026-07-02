@@ -34,7 +34,13 @@
           </td>
           <td data-label="Modules">
             <% if user.admin? %>
-              <span class="muted small">All (admin)</span>
+              <%# "All (admin)" is present, load-bearing access — the widest a
+                  user can have — so it renders at full ink like the concrete
+                  module list below, not in the muted/small style this app
+                  reserves for absence ("No access", an empty name "—"). The
+                  role-derived qualifier stays parenthetical + muted so the
+                  meaningful word "All" leads. %>
+              All <span class="muted">(admin)</span>
             <% else %>
               <% mods = user.accessible_modules %>
               <%= mods.any? ? mods.map { |m| m.titleize }.join(", ") : content_tag(:span, "No access", class: "muted small") %>
