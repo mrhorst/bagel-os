@@ -225,7 +225,7 @@
           <th>Type</th>
           <th>Rule</th>
           <th>Options</th>
-          <th>Detach</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -246,7 +246,7 @@
                 <span class="muted">No options yet — add them in the library</span>
               <% end %>
             </td>
-            <td data-label="Detach">
+            <td class="row-actions" data-label="">
               <%= button_to "Detach", recipe_modifier_path(@recipe, attachment), method: :delete, class: "button small",
                     data: { turbo_confirm: "Detach #{group.name} from #{@recipe.name}? The modifier stays in the library." } %>
             </td>

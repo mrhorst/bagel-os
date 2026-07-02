@@ -50,8 +50,8 @@
             <th class="numeric">Est. cost</th>
           <% end %>
           <th>Default</th>
-          <th>Edit</th>
-          <th>Remove</th>
+          <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -88,11 +88,18 @@
                 <span class="muted">—</span>
               <% end %>
             </td>
-            <td data-label="Edit">
-              <%= render "modifier_groups/option_form",
-                    modifier_group: @modifier_group, option: row, inventory_items: @inventory_items, submit_label: "Save" %>
+            <%# The edit form hides behind a disclosure so a row reads as its
+                values, not a wall of inputs — on a phone an always-open form
+                doubled every card. A rejected edit re-opens it so the error
+                and the typed values are visible, same as the task form. %>
+            <td data-label="">
+              <details class="form-disclosure"<%= " open".html_safe if row.errors.any? %>>
+                <summary>Edit</summary>
+                <%= render "modifier_groups/option_form",
+                      modifier_group: @modifier_group, option: row, inventory_items: @inventory_items, submit_label: "Save" %>
+              </details>
             </td>
-            <td data-label="Remove">
+            <td class="row-actions" data-label="">
               <%= button_to "Remove", modifier_group_option_path(@modifier_group, option), method: :delete, class: "button small",
                     data: { turbo_confirm: "Remove #{option.display_name} from #{@modifier_group.name}?" } %>
             </td>

@@ -51,7 +51,7 @@
               <% end %>
             </td>
             <td data-label="Used by" class="tnum"><%= pluralize(group.recipes.size, "recipe") %></td>
-            <td data-label=""><%= link_to "View", modifier_group_path(group), class: "button small" %></td>
+            <td class="row-actions" data-label=""><%= link_to "View", modifier_group_path(group), class: "button small" %></td>
           </tr>
         <% end %>
       </tbody>
