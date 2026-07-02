@@ -71,6 +71,18 @@
       <% end %>
     </nav>
   </div>
+
+  <% if @viewing_today %>
+    <%# Desktop create affordance. On a phone this action lives in the floating
+        + button (.mobile-fab, hidden ≥640px); on desktop that FAB never renders,
+        so without this the primary action of the screen — add a task — has no
+        home on the larger viewport. Mirrors the FAB's destination and the
+        "Add task"/"Add list" buttons every sibling /tasks screen shows in its
+        own header. Hidden on mobile so the two never both appear. %>
+    <div class="tasks-page-header-actions">
+      <%= link_to "Add task or list", setup_tasks_manage_tasks_path, class: "button primary" %>
+    </div>
+  <% end %>
 </section>
 
 <% unless @viewing_today %>

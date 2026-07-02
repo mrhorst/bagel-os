@@ -5385,6 +5385,15 @@
   .tasks-page-header-titles {
     min-width: 0;
   }
+  /* Desktop-only header action (the create button). Sits in the header's
+     reserved action column, right-aligned against the title + date pager.
+     On mobile this is hidden and the floating .mobile-fab takes over. */
+  .tasks-page-header-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
   .tasks-page-header-titles h1 {
     font-size: 1.4rem;
     line-height: 1.15;
@@ -6125,6 +6134,11 @@
     .tasks-page-header-v2 {
       gap: 6px 8px;
       grid-template-columns: minmax(0, 1fr) auto auto;
+    }
+    /* The create action lives in the floating .mobile-fab on a phone, so the
+       in-header desktop button is hidden here to avoid two + affordances. */
+    .tasks-page-header-actions {
+      display: none;
     }
     .tasks-page-header-titles h1 {
       font-size: 1.3rem;
