@@ -10,7 +10,11 @@
 
 <article class="panel">
   <%= form_with url: products_path, method: :get, class: "filters", data: { controller: "auto-submit-form", action: "submit->auto-submit-form#submit", auto_submit_form: true, async_frame: "products", auto_submit_form_async_frame_value: "products" } do |form| %>
-    <div class="field">
+    <%# Search is the primary, free-text filter, so it takes its own full-width
+        band (see .field-full). That leaves the four refinement selects —
+        Category, Supplier, Sort by, Per page — to fill one balanced row instead
+        of wrapping 4+1 and orphaning "Per page" on a near-empty second row. %>
+    <div class="field field-full">
       <%= form.label :q, "Search" %>
       <%= form.search_field :q, value: params[:q], placeholder: "Search products", data: { action: "input->auto-submit-form#queueSearch" } %>
     </div>
