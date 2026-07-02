@@ -25,6 +25,9 @@ module Admin
     end
 
     def edit
+      # How many photos carry this tag, so the delete danger zone can name the
+      # blast radius of an irreversible action instead of a vague "all photos".
+      @photo_count = @tag.taggings.count
     end
 
     def update

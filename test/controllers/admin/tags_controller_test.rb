@@ -69,6 +69,33 @@ module Admin
       assert_equal "Anything edible or drinkable.", tags(:food).reload.instruction
     end
 
+    test "the delete danger zone names how many photos carry the tag" do
+      sign_in_as(users(:one))
+      2.times do |i|
+        asset = PhotoAsset.new.tap do |a|
+          a.photo.attach(io: file_fixture("photo_asset_sample.png").open, filename: "s#{i}.png", content_type: "image/png")
+          a.save!
+        end
+        asset.taggings.create!(tag: tags(:food), source: "manual", confirmed_at: Time.current)
+      end
+
+      get edit_admin_tag_path(tags(:food))
+      assert_response :success
+      # The warning copy and the confirm dialog both name the real blast radius.
+      assert_select ".panel-danger-zone p", text: /from the 2 photos it's on/
+      assert_select "[data-turbo-confirm*=?]", "It's on 2 photos"
+    end
+
+    test "the delete confirm for an unused tag stays plain with no photo count" do
+      sign_in_as(users(:one))
+      assert_equal 0, tags(:product).taggings.count
+
+      get edit_admin_tag_path(tags(:product))
+      assert_response :success
+      assert_select ".panel-danger-zone p", text: /isn't on any photos yet/
+      assert_select "[data-turbo-confirm=?]", "Delete Product?"
+    end
+
     test "deleting a tag removes it from photos and refreshes their status" do
       sign_in_as(users(:one))
       asset = PhotoAsset.new.tap do |a|
