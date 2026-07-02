@@ -45,10 +45,12 @@ module Purchasing
         .sort_by { |_name, total| -total.to_d }
     end
 
+    # Pluck the two needed columns instead of instantiating every
+    # PriceObservation — this walks the whole table.
     def monthly_spend
-      PriceObservation.order(:observed_at).group_by { |observation| observation.observed_at.beginning_of_month }.transform_values do |observations|
-        observations.sum { |observation| observation.line_total.to_d }
-      end
+      PriceObservation.order(:observed_at).pluck(:observed_at, :line_total)
+        .group_by { |observed_at, _total| observed_at.beginning_of_month }
+        .transform_values { |rows| rows.sum { |_observed_at, total| total.to_d } }
     end
   end
 end

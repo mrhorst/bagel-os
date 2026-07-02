@@ -10,11 +10,16 @@ module Agents
 
       def call
         store = CredentialStore.new
-        session = Authentication.resolve_session(store.read_token)
-        session&.destroy
+
+        # The env var and the credentials file can hold tokens for different
+        # sessions; revoke both so logout never strands a live session while
+        # deleting the only copy of its token.
+        tokens = [ ENV[CredentialStore::ENV_TOKEN], store.file_token ].compact.uniq
+        sessions = tokens.filter_map { |token| Authentication.resolve_session(token) }.uniq
+        sessions.each(&:destroy)
         cleared = store.clear
 
-        { logged_out: true, session_revoked: session.present?, token_cleared: cleared }
+        { logged_out: true, session_revoked: sessions.any?, sessions_revoked: sessions.size, token_cleared: cleared }
       end
     end
   end

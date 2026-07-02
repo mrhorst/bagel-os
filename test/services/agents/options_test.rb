@@ -19,6 +19,18 @@ module Agents
       assert_equal "5", options.value("limit")
     end
 
+    test "a negative number is consumed as a value, not a stray flag" do
+      options = Options.parse([ "--par", "-5" ])
+      assert_equal "-5", options.value("par")
+      assert_equal(-5, options.integer("par", 0))
+      refute options.flags.key?("5")
+    end
+
+    test "other dash-leading values still need the = form" do
+      options = Options.parse([ "--notes=- first item" ])
+      assert_equal "- first item", options.value("notes")
+    end
+
     test "short -h is recognised as help" do
       assert Options.parse([ "-h" ]).help?
       assert Options.parse([ "--help" ]).help?

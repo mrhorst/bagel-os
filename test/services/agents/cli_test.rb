@@ -55,6 +55,15 @@ module Agents
       assert_includes names, "Sesame Bagel"
     end
 
+    test "products:search is case-insensitive (bare LIKE breaks on production Postgres)" do
+      supplier = Supplier.create!(name: "Case Supplier")
+      product = Product.create!(canonical_name: "Cream Cheese", supplier: supplier)
+
+      _status, json, = run_cli("products:search", "cream cheese")
+      ids = json.dig("data", "products").map { |p| p["id"] }
+      assert_includes ids, product.id
+    end
+
     test "products:search matches a raw alias as well as the canonical name" do
       supplier = Supplier.create!(name: "Alias Supplier")
       product = Product.create!(canonical_name: "Cream Cheese", supplier: supplier)

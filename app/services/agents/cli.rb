@@ -60,11 +60,11 @@ module Agents
         return print_help && 0
       end
 
-      # `<command> --help` prints usage without running anything.
+      # Parse once: `<command> --help` prints usage without running anything,
+      # and the same parse decides --compact for the output below.
       command_class = lookup(name)
-      if command_class && Options.parse(tokens).help?
-        return print_command_help(command_class) && 0
-      end
+      options = Options.parse(tokens)
+      return print_command_help(command_class) && 0 if command_class && options.help?
 
       # Everything else runs through the shared dispatcher, with the session
       # resolved from the locally stored token.
@@ -72,7 +72,7 @@ module Agents
       result = Dispatcher.new(session: session, context: :cli).call(argv)
 
       if result.ok?
-        emit(result.payload, compact: argv.include?("--compact"))
+        emit(result.payload, compact: options.flag?("compact"))
         0
       else
         @err.puts(JSON.pretty_generate(result.payload))

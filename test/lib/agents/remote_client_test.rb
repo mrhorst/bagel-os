@@ -105,6 +105,14 @@ module Agents
       assert_not File.exist?(File.join(@config_dir, "credentials.json"))
     end
 
+    test "help <command> forwards as <command> --help so the server answers" do
+      transport = FakeTransport.new { [ 200, { ok: true, command: "tasks:create", data: { usage: [ "..." ] } }.to_json ] }
+      status, _out, = run_remote([ "help", "tasks:create" ], transport: transport)
+
+      assert_equal 0, status
+      assert_equal [ "tasks:create", "--help" ], JSON.parse(transport.calls.first[:body])["argv"]
+    end
+
     test "a connection failure is reported, not raised" do
       transport = FakeTransport.new { raise RemoteClient::ConnectionError, "Errno::ECONNREFUSED" }
       status, _out, err = run_remote([ "tasks:lists" ], transport: transport)

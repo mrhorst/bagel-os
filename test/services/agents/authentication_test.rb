@@ -88,6 +88,29 @@ module Agents
       assert_equal "unauthenticated", err.dig("error", "type")
     end
 
+    test "logout revokes both the env-token session and the file-token session" do
+      run_cli("login", "--email", "owner@example.com", "--password", "password123")
+      env_session = @user.sessions.create!(user_agent: "env", ip_address: nil)
+      ENV["BAGEL_AGENT_TOKEN"] = Authentication.token_for(env_session)
+      assert_equal 2, @user.sessions.count
+
+      _status, json, = run_cli("logout")
+      assert_equal 2, json.dig("data", "sessions_revoked")
+      assert_equal 0, @user.sessions.count
+    end
+
+    test "an expired token no longer authenticates" do
+      session = @user.sessions.create!(user_agent: "t", ip_address: nil)
+      ENV["BAGEL_AGENT_TOKEN"] = Authentication.verifier.generate(
+        { "sid" => session.id }, purpose: Authentication::VERIFIER_PURPOSE, expires_in: 1.second
+      )
+      travel 2.seconds do
+        status, _json, err = run_cli("tasks:lists")
+        assert_equal 1, status
+        assert_equal "unauthenticated", err.dig("error", "type")
+      end
+    end
+
     test "a revoked session's token no longer authenticates" do
       session = @user.sessions.create!(user_agent: "t", ip_address: nil)
       ENV["BAGEL_AGENT_TOKEN"] = Authentication.token_for(session)

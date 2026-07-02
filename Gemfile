@@ -24,6 +24,9 @@ gem "rubyzip", "~> 3.4", require: "zip"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Reduces boot times through caching; required in config/boot.rb.
+gem "bootsnap", require: false
+
 # Web Push (VAPID) delivery for installed-PWA notifications.
 gem "web-push", "~> 3.0"
 

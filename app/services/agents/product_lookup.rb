@@ -5,12 +5,15 @@ module Agents
   module ProductLookup
     module_function
 
+    # LOWER on both sides: SQLite's LIKE is case-insensitive but Postgres's is
+    # not, and production runs Postgres — a bare LIKE works in dev and silently
+    # stops matching "Cream Cheese" for "cream cheese" in prod.
     def search(query, limit: 25)
-      pattern = "%#{sanitize(query)}%"
-      alias_product_ids = ProductAlias.where("raw_name LIKE ? ESCAPE '\\'", pattern).select(:product_id)
+      pattern = "%#{sanitize(query.to_s.downcase)}%"
+      alias_product_ids = ProductAlias.where("LOWER(raw_name) LIKE ? ESCAPE '\\'", pattern).select(:product_id)
 
       Product
-        .where("canonical_name LIKE ? ESCAPE '\\'", pattern)
+        .where("LOWER(canonical_name) LIKE ? ESCAPE '\\'", pattern)
         .or(Product.where(id: alias_product_ids))
         .by_name
         .limit(limit)

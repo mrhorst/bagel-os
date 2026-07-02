@@ -51,5 +51,24 @@ module Agents
       assert_equal "unknown_command", result.error_type
       assert result.payload.dig(:error, :hint).present?
     end
+
+    test "mutations record the authenticated user in the audit trail" do
+      TaskList.create!(name: "Audit List", key: "audit-list", position: 0)
+      result = Dispatcher.new(session: @session).call(
+        [ "tasks:create", "--list", "Audit List", "--title", "Audited task", "--due-time", "09:00" ]
+      )
+      assert result.ok?, result.payload.inspect
+
+      version = Task.find_by!(title: "Audited task").versions.last
+      assert_equal @user.id.to_s, version.whodunnit
+    end
+
+    test "command --help returns usage without running or requiring auth" do
+      result = Dispatcher.new(session: nil).call([ "tasks:create-list", "--help" ])
+      assert result.ok?
+      assert_equal "tasks:create-list", result.payload.dig(:data, :command)
+      assert result.payload.dig(:data, :usage).any?
+      assert_not TaskList.exists?(name: "Audited-help")
+    end
   end
 end

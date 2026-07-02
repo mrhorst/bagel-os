@@ -34,9 +34,15 @@ module Agents
 
     # Returns a process exit status (0 success, 1 failure).
     def run(argv)
-      return print_help if argv.empty? || !(argv & %w[help -h --help]).empty?
+      # Only a leading help token means "show the client help" — `X --help`
+      # must forward so the server can answer with that command's usage, and a
+      # value that happens to contain "-h" must not trigger help.
+      return print_help if argv.empty? || %w[-h --help].include?(argv.first)
 
       case argv.first
+      when "help"
+        # `help X` → the same per-command usage a local run prints, via the API.
+        argv[1] ? forward([ argv[1], "--help" ]) : print_help
       when "login"  then login(argv[1..])
       when "logout" then logout(argv[1..])
       else forward(argv)
@@ -153,7 +159,14 @@ module Agents
       headers.each { |key, value| request[key] = value }
       request.body = body if body
 
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
+      # Explicit timeouts so a wedged server fails fast as a connection_error
+      # instead of hanging the agent on Net::HTTP's 60s defaults.
+      timeout = Integer(ENV.fetch("BAGEL_AGENT_HTTP_TIMEOUT", 10))
+      response = Net::HTTP.start(
+        uri.hostname, uri.port,
+        use_ssl: uri.scheme == "https",
+        open_timeout: timeout, read_timeout: timeout, write_timeout: timeout
+      ) do |http|
         http.request(request)
       end
       [ response.code.to_i, response.body.to_s ]
@@ -182,7 +195,10 @@ module Agents
 
     def write_credentials(token:, email:)
       FileUtils.mkdir_p(config_dir, mode: 0o700)
-      File.write(credentials_path, JSON.pretty_generate("token" => token, "email" => email))
+      # Owner-only from the first byte (no write-then-chmod window).
+      File.open(credentials_path, File::WRONLY | File::CREAT | File::TRUNC, 0o600) do |file|
+        file.write(JSON.pretty_generate("token" => token, "email" => email))
+      end
       File.chmod(0o600, credentials_path)
     end
 

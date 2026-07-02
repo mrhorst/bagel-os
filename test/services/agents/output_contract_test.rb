@@ -66,5 +66,21 @@ module Agents
       assert envelope["pagination"].present?
       assert_includes envelope["error_types"], "unauthenticated"
     end
+
+    test "schema documents the production-write confirmation and environment conventions" do
+      _status, json, = run_cli("schema")
+      envelope = json.dig("data", "envelope")
+      assert_includes envelope["error_types"], "confirmation_required"
+      assert_includes envelope["error_types"], "connection_error"
+      assert envelope["environment"].present?
+
+      global = json.dig("data", "global_options").map { |o| o["name"] }
+      assert_includes global, "yes"
+    end
+
+    test "every response names the environment it ran against" do
+      _status, json, = run_cli("whoami")
+      assert_equal "test", json["environment"]
+    end
   end
 end

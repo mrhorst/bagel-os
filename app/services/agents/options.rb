@@ -5,6 +5,9 @@ module Agents
   #
   # Supported flag forms (everything that is not a flag becomes a positional):
   #   --key value     --key=value     --flag (=> "true")     -h (alias of --help)
+  #
+  # Negative numbers are consumed as values (`--par -5`); any other value that
+  # begins with a dash must use the `=` form (`--notes="- first item"`).
   class Options
     HELP_KEYS = %w[help h].freeze
 
@@ -38,9 +41,12 @@ module Agents
 
     # A bare "--key" only swallows the following token as its value when that
     # token is not itself a flag, so "--missing-only --limit 5" keeps both.
+    # Negative numbers are the exception: "--par -5" means par = -5.
     def self.next_is_value?(tokens, index)
       nxt = tokens[index + 1]
-      !nxt.nil? && !nxt.start_with?("-")
+      return false if nxt.nil?
+
+      !nxt.start_with?("-") || nxt.match?(/\A-\d+(\.\d+)?\z/)
     end
 
     def initialize(positionals:, flags:)

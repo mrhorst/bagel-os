@@ -33,8 +33,9 @@ module Purchasing
       limit ? rows.first(limit) : rows
     end
 
-    def summary
-      rows = missing_products
+    # Accepts precomputed rows so a caller that already ran missing_products
+    # doesn't pay for the full scan twice.
+    def summary(rows: missing_products)
       {
         missing_count: rows.size,
         review_count: rows.count { |row| row.classification == "review_for_guide" },

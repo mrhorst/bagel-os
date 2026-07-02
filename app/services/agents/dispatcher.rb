@@ -32,7 +32,21 @@ module Agents
       end
 
       options = Options.parse(tokens)
+
+      # `<command> --help` answers with the command's schema + usage instead of
+      # running it, so remote agents get per-command help too. No auth needed.
+      # (The local CLI intercepts help earlier and prints text; this path
+      # serves the API.)
+      if options.help?
+        return success(name, command_class.to_schema.merge(usage: command_class.usage))
+      end
+
       Current.session = @session
+      # Attribute PaperTrail versions to the authenticated user, as the web
+      # controllers do — otherwise CLI/API mutations audit as whodunnit: nil.
+      # Always assign (even nil): the request store is thread-local, so a stale
+      # value could otherwise leak across API requests on a reused thread.
+      PaperTrail.request.whodunnit = @session&.user&.id
 
       if command_class.requires_auth? && @session.nil?
         return failure(name, "unauthenticated", "Not authenticated.", hint: "Run `bin/agent login` first, or set BAGEL_AGENT_TOKEN.")

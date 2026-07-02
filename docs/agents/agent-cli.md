@@ -60,7 +60,10 @@ The remote transport hits three endpoints on the app:
 | `DELETE /agent/session` | Log out: revoke the session (Bearer token). |
 
 Output is byte-for-byte the same envelope as a local run (same `Dispatcher`
-backs both), so an agent doesn't care which transport it used.
+backs both), so an agent doesn't care which transport it used. Remote requests
+time out after 10s (`BAGEL_AGENT_HTTP_TIMEOUT` to change) and fail with a
+`connection_error` envelope instead of hanging. The command endpoint is
+rate-limited (120/min) alongside the stricter login limit.
 
 ### Production-write guardrail
 
@@ -102,6 +105,11 @@ Token resolution order:
 Password resolution for `login`: `--password`, else `BAGEL_AGENT_PASSWORD`,
 else an interactive prompt (preferred — keeps it out of shell history). The
 config dir can be relocated with `BAGEL_OS_CONFIG_DIR`.
+
+Tokens expire after **30 days** (override with `BAGEL_AGENT_TOKEN_TTL_DAYS`;
+`0` disables expiry) — re-run `login` to mint a fresh one. `logout` revokes the
+session immediately, and covers both the env-var token and the file token when
+they differ.
 
 `help`, `schema`, `login`, `logout`, and `whoami` are the only commands that
 run unauthenticated. Everything else returns `type: "unauthenticated"` (exit 1)
@@ -169,7 +177,11 @@ float rounding error on prices.
 | ------------- | ----------------------------------- |
 | `--compact`   | Single-line JSON instead of pretty  |
 | `--dry-run`   | On a mutating command, resolve and report what *would* happen without writing |
+| `--yes`       | Confirm a mutating command against a production app (`BAGEL_AGENT_YES=1` equivalent) |
 | `--help`, `-h`| Print a command's usage and exit 0  |
+
+Option values: negative numbers pass plainly (`--par -5`); any other value that
+begins with a dash needs the `=` form (`--notes="- first item"`).
 
 ## Read commands
 

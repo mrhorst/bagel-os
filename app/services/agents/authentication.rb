@@ -11,6 +11,11 @@ module Agents
   module Authentication
     VERIFIER_PURPOSE = "agent_cli_session".freeze
 
+    # Tokens expire so a leaked one has a bounded life even if logout is never
+    # run (the Session row is still the revocation lever before that). Override
+    # with BAGEL_AGENT_TOKEN_TTL_DAYS; 0 disables expiry.
+    DEFAULT_TTL_DAYS = 30
+
     module_function
 
     # Verify credentials, open a Session, and return [session, token].
@@ -25,11 +30,11 @@ module Agents
 
     # A signed, tamper-proof bearer token for a session.
     def token_for(session)
-      verifier.generate({ "sid" => session.id }, purpose: VERIFIER_PURPOSE)
+      verifier.generate({ "sid" => session.id }, purpose: VERIFIER_PURPOSE, expires_in: token_ttl)
     end
 
     # Resolve a token back to its live Session, or nil if the token is blank,
-    # forged, or its session has been revoked.
+    # forged, expired, or its session has been revoked.
     def resolve_session(token)
       return nil if token.blank?
 
@@ -37,6 +42,11 @@ module Agents
       Session.find_by(id: payload["sid"])
     rescue ActiveSupport::MessageVerifier::InvalidSignature
       nil
+    end
+
+    def token_ttl
+      days = Integer(ENV.fetch("BAGEL_AGENT_TOKEN_TTL_DAYS", DEFAULT_TTL_DAYS))
+      days.positive? ? days.days : nil
     end
 
     def verifier

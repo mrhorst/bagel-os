@@ -7,8 +7,7 @@ module Agents
   #   POST   /agent/session   { email, password }  -> { ok, token, user, environment }
   #   DELETE /agent/session   (Bearer token)       -> { ok, logged_out }
   class SessionsController < ApiController
-    rate_limit to: 10, within: 3.minutes, only: :create,
-      with: -> { render json: { ok: false, error: { type: "rate_limited", message: "Too many login attempts. Try again later." } }, status: :too_many_requests }
+    rate_limit to: 10, within: 3.minutes, only: :create, with: -> { render_rate_limited }
 
     def create
       session, token = Authentication.login(

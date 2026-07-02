@@ -8,6 +8,10 @@ module Agents
   # output to a local run. The shared Dispatcher enforces auth and the
   # production-write guardrail.
   class CommandsController < ApiController
+    # Generous for a working agent (~2/s sustained) but stops a runaway loop
+    # from hammering the app.
+    rate_limit to: 120, within: 1.minute, with: -> { render_rate_limited }
+
     def create
       argv = Array(params[:argv]).map(&:to_s)
       result = Dispatcher.new(session: current_agent_session, context: :api).call(argv)
