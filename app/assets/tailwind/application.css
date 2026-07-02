@@ -6700,6 +6700,18 @@
       overflow-wrap: anywhere;
     }
 
+    /* The per-section "No note today" / "Flag for follow-up" toggles are the
+       only commit controls on each Log Book section, but the base .check row is
+       38px and the ≤640px .check override shrinks it further to 32px — under the
+       44px touch floor, and smaller on touch than on desktop. Restore a 44px tap
+       height for these rows only (the glyph is unchanged; .check already centres
+       its contents, so only the hit area grows), matching the
+       .log-book-date-arrow and .follow-ups-tab touch fixes. Scoped to
+       .log-book-section-card so the app-wide compact .check stays untouched. */
+    .log-book-section-card .check {
+      min-height: 44px;
+    }
+
     .radio.radio-segmented {
       padding-left: 6px;
       padding-right: 6px;
