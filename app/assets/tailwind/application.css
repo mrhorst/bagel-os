@@ -762,9 +762,13 @@
     font-size: 0.92rem;
     font-weight: 500;
     gap: 6px;
-    height: 38px;
+    /* 44px minimum: these header slots (account avatar, back link, contextual
+       actions) are the primary reach targets in the mobile top bar and must
+       clear the 44px touch-target floor. The visible avatar/icon stays smaller;
+       only the tappable box grows. */
+    height: 44px;
     justify-content: center;
-    min-width: 38px;
+    min-width: 44px;
     padding: 0 10px;
     text-decoration: none;
   }
@@ -5933,8 +5937,8 @@
       box-shadow: inset 0 1px 0 0 var(--glass-edge);
       display: grid;
       gap: 8px;
-      grid-template-columns: minmax(38px, auto) 1fr minmax(38px, auto);
-      min-height: 52px;
+      grid-template-columns: minmax(44px, auto) 1fr minmax(44px, auto);
+      min-height: 56px;
       padding: calc(env(safe-area-inset-top, 0px) + 6px) 12px 6px;
       position: sticky;
       top: 0;
