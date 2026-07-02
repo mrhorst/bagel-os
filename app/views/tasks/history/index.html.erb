@@ -24,7 +24,13 @@
       <%= form.label :task_list_id, "Task list" %>
       <%= form.select :task_list_id, options_from_collection_for_select(@task_lists, :id, :name, @task_list_id), { include_blank: "Any list" } %>
     </div>
-    <%= form.submit "Filter", class: "button primary" %>
+    <%# Seat the submit on its own full-width band at intrinsic width (see
+        .filter-actions) instead of letting the base input width:100% stretch it
+        to a full grid column, where it stranded oversized on a near-empty second
+        row. Mirrors the Products filter's action band. %>
+    <div class="filter-actions">
+      <%= form.submit "Filter", class: "button primary" %>
+    </div>
   <% end %>
 </section>
 
