@@ -51,6 +51,29 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert employee.can_access?("order_guides")
   end
 
+  test "a failed create keeps the admin's module selections checked" do
+    assert_no_difference -> { User.count } do
+      post admin_users_path, params: {
+        user: {
+          email_address: "typo@example.com",
+          name: "Typo Hire",
+          role: "employee",
+          password: "secret123",
+          password_confirmation: "secretXYZ" # mismatch → validation fails
+        },
+        module_names: %w[tasks inventory]
+      }
+    end
+
+    assert_response :unprocessable_entity
+    # The re-rendered form must keep the modules the admin already ticked, so
+    # they don't have to re-check them (and risk creating a no-access user).
+    assert_select "input[type=checkbox][name='module_names[]'][value=tasks][checked]"
+    assert_select "input[type=checkbox][name='module_names[]'][value=inventory][checked]"
+    # …and must not check a module the admin did not pick.
+    assert_select "input[type=checkbox][name='module_names[]'][value=products][checked]", false
+  end
+
   test "admin cannot demote the owner" do
     patch admin_user_path(users(:one)), params: {
       user: { email_address: users(:one).email_address, role: "employee" }

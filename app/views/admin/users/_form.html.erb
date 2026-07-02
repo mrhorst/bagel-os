@@ -43,19 +43,34 @@
     <p class="muted small">Share this password with the user out-of-band. They can change it after signing in.</p>
   <% end %>
 
-  <fieldset class="module-permissions-fieldset" <%= "disabled" if user.persisted? && user.admin? %>>
+  <% disabled_fieldset = user.persisted? && user.admin? %>
+  <fieldset class="module-permissions-fieldset" <%= "disabled" if disabled_fieldset %>>
     <legend>Module access</legend>
-    <% if user.persisted? && user.admin? %>
+    <% if disabled_fieldset %>
       <p class="muted small">Admins have access to every module. Change the role to "Employee" to restrict.</p>
     <% else %>
       <p class="muted small">Check the modules this user should see. Modules they can't access are completely hidden from their navigation.</p>
     <% end %>
 
-    <% accessible = user.persisted? ? user.accessible_modules : [] %>
+    <%# On a form re-rendered after a failed save, @selected_module_names carries
+        the boxes the admin just ticked, so their selection survives the round
+        trip instead of reverting to the persisted permissions (or none, for a
+        new user). On a fresh load it's nil and we fall back to the user's
+        persisted access. A disabled admin fieldset always mirrors "all modules". %>
+    <% checked_modules =
+         if disabled_fieldset
+           user.accessible_modules
+         elsif @selected_module_names
+           @selected_module_names
+         elsif user.persisted?
+           user.accessible_modules
+         else
+           []
+         end %>
     <div class="module-permissions-grid">
       <% User::MODULES.each do |mod| %>
         <label class="check">
-          <%= check_box_tag "module_names[]", mod, accessible.include?(mod) %>
+          <%= check_box_tag "module_names[]", mod, checked_modules.include?(mod) %>
           <span><%= mod.titleize %></span>
         </label>
       <% end %>

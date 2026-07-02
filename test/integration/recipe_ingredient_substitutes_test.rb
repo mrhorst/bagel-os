@@ -14,7 +14,9 @@ class RecipeIngredientSubstitutesTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to recipe_path(@recipe)
+    # Land back on the annotated line, not the page top, so building out a line's
+    # substitutes on a long recipe doesn't bounce the reader up every time.
+    assert_redirected_to recipe_path(@recipe, anchor: "ingredient-line-#{@line.id}")
     sub = @line.substitutes.order(:id).last
     assert_equal "Margarine", sub.name
     assert_equal BigDecimal("3"), sub.quantity
@@ -27,6 +29,18 @@ class RecipeIngredientSubstitutesTest < ActionDispatch::IntegrationTest
     get recipe_path(@recipe)
     assert_response :success
     assert_select ".substitute-list", text: /Margarine/
+  end
+
+  test "the add-substitute form submits natively so its place-preserving anchor lands" do
+    # The success redirect carries a #ingredient-line-N fragment; Turbo Drive
+    # would strip that fragment and reset scroll to the top. A native submit
+    # (data-turbo=false) is what lets the browser honor the fragment — mirroring
+    # the ingredient add/edit forms. Guard the attribute so a Turbo regression is
+    # caught here rather than as a silent jump-to-top in the browser.
+    get recipe_path(@recipe)
+    assert_response :success
+    assert_select "form.inline-ingredient-form[action=?][data-turbo='false']",
+      recipe_ingredient_substitutes_path(@recipe, @line)
   end
 
   test "rejecting a substitute with no item and no name re-renders in place keeping input" do

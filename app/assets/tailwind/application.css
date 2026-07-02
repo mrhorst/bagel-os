@@ -460,6 +460,17 @@
     background: color-mix(in oklch, var(--surface-3) 82%, var(--ink));
     border-color: color-mix(in oklch, var(--ink) 25%, var(--line-2));
   }
+  /* Mobile: the file-picker button is the primary control on the upload forms
+     (receipt CSV import, photo add) and the photo-to-complete-a-task page, but
+     at its base 36px it sits under the 44px iOS/WCAG 2.5.5 minimum touch target.
+     Give it a 44px min-height on mobile only; desktop keeps the denser mouse
+     target. Same mobile-only bump the library filter chips use below. The
+     sr-only task-row photo input renders no button, so it's unaffected. */
+  @media (max-width: 640px) {
+    input[type='file']::file-selector-button {
+      min-height: 44px;
+    }
+  }
 
   input:focus,
   select:focus,
@@ -751,9 +762,13 @@
     font-size: 0.92rem;
     font-weight: 500;
     gap: 6px;
-    height: 38px;
+    /* 44px minimum: these header slots (account avatar, back link, contextual
+       actions) are the primary reach targets in the mobile top bar and must
+       clear the 44px touch-target floor. The visible avatar/icon stays smaller;
+       only the tappable box grows. */
+    height: 44px;
     justify-content: center;
-    min-width: 38px;
+    min-width: 44px;
     padding: 0 10px;
     text-decoration: none;
   }
@@ -3468,6 +3483,25 @@
     color: var(--surface);
   }
 
+  /* Mobile: the scope tabs and the tag/favorites chips are the primary way to
+     filter the library on a phone, but at their base padding they render only
+     ~30px tall — under the 44px iOS/WCAG 2.5.5 minimum touch target. Give them
+     a 44px min-height on mobile only (desktop keeps its denser mouse target),
+     which also lines the two stacked filter rows up to a common height. Scoped
+     to the library's own filter wrappers, so the shared `.segmented` (products)
+     and `.tag-chip` (photo detail) components elsewhere are left untouched. */
+  @media (max-width: 640px) {
+    .photo-library-filters a,
+    .tag-filter .tag-chip {
+      align-items: center;
+      display: inline-flex;
+      /* Flexbox collapses the whitespace between the label text node and the
+         `(0)` count span; restore it so "All (0)" doesn't read as "All(0)". */
+      gap: 0.28em;
+      min-height: 44px;
+    }
+  }
+
   /* Tags are the one place pills are allowed (alongside the bottom-tab badges),
      so tag pills keep the fully-rounded shape even though the base .badge they
      reuse is now a rounded-rect status chip. */
@@ -5916,8 +5950,8 @@
       box-shadow: inset 0 1px 0 0 var(--glass-edge);
       display: grid;
       gap: 8px;
-      grid-template-columns: minmax(38px, auto) 1fr minmax(38px, auto);
-      min-height: 52px;
+      grid-template-columns: minmax(44px, auto) 1fr minmax(44px, auto);
+      min-height: 56px;
       padding: calc(env(safe-area-inset-top, 0px) + 6px) 12px 6px;
       position: sticky;
       top: 0;
@@ -6324,7 +6358,13 @@
       gap: 6px;
       margin: 0;
     }
+    /* A stacked card's action button (Reports "Download", the Edit/View column
+       on admin/users, admin/tags, recipes) is the card's primary tap target on
+       touch, yet the base .button is only 36px tall — under the 44px minimum.
+       Span the card AND meet the floor so the full-width bar is comfortably
+       tappable; the label stays centred via the base .button inline-flex. */
     .responsive-table td .button {
+      min-height: 44px;
       width: 100%;
     }
     /* A neutral .badge fills with --surface-3 — the same token the stacked
@@ -6352,6 +6392,14 @@
     /* Optional: hide low-priority columns on mobile via .hide-on-mobile */
     .responsive-table td.hide-on-mobile,
     .responsive-table th.hide-on-mobile {
+      display: none;
+    }
+    /* Same utility for a non-table element — e.g. a header action that the
+       mobile header's back chevron already covers, so it isn't a redundant
+       third full-width button pushing content below the fold. The `:not(td/th)`
+       guard keeps the table-cell rule above authoritative for columns, and the
+       two negations lift this past a bare `.button` in the `display` cascade. */
+    .hide-on-mobile:not(td):not(th) {
       display: none;
     }
 
@@ -6411,6 +6459,21 @@
     .inline-guide-form input[type='submit'] {
       min-width: 0;
       width: 100%;
+    }
+    /* Re-stacked full-width above, these inline-form controls are the screen's
+       primary data-entry targets — guide rename (Order Guides) and the primary-
+       guide picker (Master Inventory) — yet at their compact 30–32px desktop
+       height they sit under the 44px touch floor a thumb needs. They're already
+       full-width block controls here, so lifting them to 44px grows only the tap
+       area and blows up no layout, matching the .log-book-date-arrow and header-
+       action touch fixes. `input.compact-input` keeps the `input` qualifier so it
+       outranks the 0,2,1 base rename-field rule; the app-wide compact secondary-
+       button decision is untouched — this is scoped to .inline-guide-form. */
+    .inline-guide-form input.compact-input,
+    .inline-guide-form .compact-select,
+    .inline-guide-form .button,
+    .inline-guide-form input[type='submit'] {
+      min-height: 44px;
     }
 
     .log-book-header {
@@ -6658,6 +6721,18 @@
     .log-book-section-card .check span {
       min-width: 0;
       overflow-wrap: anywhere;
+    }
+
+    /* The per-section "No note today" / "Flag for follow-up" toggles are the
+       only commit controls on each Log Book section, but the base .check row is
+       38px and the ≤640px .check override shrinks it further to 32px — under the
+       44px touch floor, and smaller on touch than on desktop. Restore a 44px tap
+       height for these rows only (the glyph is unchanged; .check already centres
+       its contents, so only the hit area grows), matching the
+       .log-book-date-arrow and .follow-ups-tab touch fixes. Scoped to
+       .log-book-section-card so the app-wide compact .check stays untouched. */
+    .log-book-section-card .check {
+      min-height: 44px;
     }
 
     .radio.radio-segmented {

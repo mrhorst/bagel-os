@@ -364,11 +364,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_000003) do
     t.text "notes"
     t.integer "order_guide_id", null: false
     t.integer "order_guide_section_id"
-    t.decimal "par", precision: 12, scale: 4
     t.integer "position", default: 0, null: false
     t.integer "preferred_supplier_id"
     t.boolean "primary_guide", default: false, null: false
-    t.decimal "reorder_point", precision: 12, scale: 4
     t.string "tracking_mode", default: "counted", null: false
     t.datetime "updated_at", null: false
     t.index ["inventory_item_id", "primary_guide"], name: "idx_order_guide_memberships_one_active_primary", unique: true, where: "active = TRUE AND primary_guide = TRUE"
