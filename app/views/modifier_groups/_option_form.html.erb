@@ -1,0 +1,81 @@
+<%# locals: modifier_group, option, inventory_items, submit_label, stacked (default false)
+
+  Shared by the inline per-row edit and the "Add option" form at the bottom of
+  the modifier show page. Like a recipe line, an option can link to an
+  inventory item OR carry a free-text name; amount and unit are optional and
+  never inferred. %>
+<% stacked = local_assigns.fetch(:stacked, false) %>
+<%# Keep an already-linked but since-archived inventory item selectable, for
+    the same reason as the recipe ingredient form: dropping it from the select
+    would silently blank the link and dead-end the row on save. %>
+<% item_options = inventory_items.to_a %>
+<% linked_item = option.inventory_item %>
+<% if linked_item && item_options.exclude?(linked_item) %>
+  <% item_options += [ linked_item ] %>
+<% end %>
+<% item_label = ->(item) { item.active? ? item.name : "#{item.name} (archived)" } %>
+<%# Namespace field ids by the record's dom_id so every row's inline form and
+    the bottom add form emit unique ids and each label focuses its own field —
+    the same guard as the recipe ingredient form. Names are unaffected. %>
+<%# Submit natively (not via Turbo) so the controller's place-preserving
+    redirect fragment (#add-option on add, #option-line-N on edit) is honored
+    by the browser — see the fuller note in recipes/_ingredient_form. %>
+<%= form_with model: option, namespace: dom_id(option),
+      url: (option.persisted? ? modifier_group_option_path(modifier_group, option) : modifier_group_options_path(modifier_group)),
+      data: { turbo: false },
+      class: (stacked ? "stacked-form" : "inline-ingredient-form") do |form| %>
+  <% if option.errors.any? %>
+    <% if stacked %>
+      <div class="flash flash-alert"><%= option.errors.full_messages.to_sentence %></div>
+    <% else %>
+      <p class="inline-form-error" role="alert"><%= option.errors.full_messages.to_sentence %></p>
+    <% end %>
+  <% end %>
+
+  <% if stacked %>
+    <div class="field">
+      <%= form.label :inventory_item_id, "Inventory item" %>
+      <%= form.select :inventory_item_id,
+            options_for_select(item_options.map { |i| [ item_label.call(i), i.id ] }, option.inventory_item_id),
+            { include_blank: "Not an inventory item" }, { class: "compact-select" } %>
+    </div>
+    <div class="field">
+      <%= form.label :name, "Or type a name" %>
+      <p class="muted small">Use this for a preparation choice ("Over medium") or something not tracked in inventory. Required only when no inventory item is chosen.</p>
+      <%= form.text_field :name, autocomplete: "off", placeholder: "Over medium" %>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <%= form.label :quantity, "Amount per pick" %>
+        <%= form.number_field :quantity, step: "0.0001", min: "0", placeholder: "Leave blank if unknown" %>
+      </div>
+      <div class="field">
+        <%= form.label :unit %>
+        <%= form.text_field :unit, autocomplete: "off", placeholder: "slice, each, oz" %>
+      </div>
+    </div>
+    <label class="check">
+      <%= form.check_box :default_choice %>
+      <span>Default — the standard pick when the guest doesn't say</span>
+    </label>
+    <div class="form-footer">
+      <%= form.submit submit_label, class: "button primary" %>
+    </div>
+  <% else %>
+    <%= form.label :inventory_item_id, "Inventory item", class: "sr-only" %>
+    <%= form.select :inventory_item_id,
+          options_for_select(item_options.map { |i| [ item_label.call(i), i.id ] }, option.inventory_item_id),
+          { include_blank: "No item" }, { class: "compact-select" } %>
+    <%= form.label :name, "Name", class: "sr-only" %>
+    <%= form.text_field :name, class: "compact-input", autocomplete: "off", placeholder: "or name" %>
+    <%= form.label :quantity, "Amount", class: "sr-only" %>
+    <%= form.number_field :quantity, step: "0.0001", min: "0", class: "compact-input", placeholder: "amt" %>
+    <%= form.label :unit, "Unit", class: "sr-only" %>
+    <%= form.text_field :unit, class: "compact-input", autocomplete: "off", placeholder: "unit" %>
+    <label class="check">
+      <%= form.check_box :default_choice %>
+      <span>Default</span>
+    </label>
+    <%= form.submit submit_label, class: "button small" %>
+  <% end %>
+<% end %>
