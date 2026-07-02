@@ -6565,6 +6565,25 @@
       min-height: 44px;
     }
 
+    /* The Review-queue decision card's three action columns (Assign / Create /
+       Resolve-ignore) are the screen's primary data-entry surface, and on mobile
+       they stack full-width (the .decision-card-actions grid collapses to one
+       column at 900px). Yet their submit buttons inherit the base .button 36px
+       height and their selects/text inputs the base 40px — both under the 44px
+       touch floor a thumb needs. No existing touch-target fix reaches
+       .decision-action (it isn't a .form-footer, a .responsive-table cell, or an
+       .actions cluster). Lift every control here to 44px on touch widths; they're
+       already full-width block controls, so only the tap height grows and no
+       layout shifts. Matches the .inline-guide-form and .form-footer fixes above;
+       desktop keeps the denser 36/40px. */
+    .decision-action .button:not(.small),
+    .decision-action button:not(.small),
+    .decision-action input[type='submit']:not(.small),
+    .decision-action select,
+    .decision-action input[type='text'] {
+      min-height: 44px;
+    }
+
     .panel {
       padding: 14px;
     }
