@@ -10,8 +10,17 @@ import { Controller } from "@hotwired/stimulus"
 // Attach this to the errored form/row and it scrolls itself back into view on
 // connect, mirroring the success path's place-preserving scroll, so the person
 // actually sees the error they need to fix.
+//
+// The scroll is deferred to the next frame on purpose. A native-submit re-render
+// (the recipe forms) is already settled by connect, but a Turbo-driven re-render
+// (e.g. the product edit form) resets scroll to the page TOP in its own render
+// pass, which runs AFTER Stimulus connect — so a connect-time scroll would be
+// undone a beat later. requestAnimationFrame runs after that render pass, so the
+// element wins the final scroll position in both cases.
 export default class extends Controller {
   connect() {
-    this.element.scrollIntoView({ block: "center", behavior: "auto" })
+    requestAnimationFrame(() => {
+      this.element.scrollIntoView({ block: "center", behavior: "auto" })
+    })
   }
 }
