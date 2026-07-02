@@ -5887,6 +5887,19 @@
       text-align: center;
       width: 100%;
     }
+    /* A `button_to` action in these clusters (Delete on a modifier, the
+       favorite toggle on a photo) wraps its button in a <form>, and the form —
+       not the button — is the flex item. The width:100% above then fills only
+       the form's shrink-wrapped width, so the action renders as a stray small
+       pill among full-width siblings. Dissolve the form so its button becomes
+       the flex item and stretches like the link buttons beside it. */
+    .hero-actions form,
+    .dashboard-hero-actions form,
+    .block-header-actions form,
+    .block-panel-actions form,
+    .topbar-actions form {
+      display: contents;
+    }
 
     .button-row .button {
       flex: 1 1 160px;
