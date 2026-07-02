@@ -1232,6 +1232,27 @@
     margin: 4px 0 0;
   }
 
+  /* "or" separator between two alternative fields (e.g. the photo upload's
+     camera field vs. library field). A centred demoted-helper "or" flanked by
+     hairlines, so the two identical-looking file inputs read as a single
+     camera-OR-library choice rather than an ambiguous stack. Scoped to its own
+     class — no shared token or component touched. */
+  .upload-or {
+    align-items: center;
+    color: var(--ink-muted);
+    display: flex;
+    font-size: 0.86rem;
+    gap: 12px;
+    margin: 2px 0;
+  }
+  .upload-or::before,
+  .upload-or::after {
+    background: var(--line-2);
+    content: '';
+    flex: 1;
+    height: 1px;
+  }
+
   /* ── Panels / Cards ───────────────────────────────────────────────── */
   .panel,
   .metric {

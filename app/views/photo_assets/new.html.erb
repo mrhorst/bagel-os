@@ -28,8 +28,13 @@
             accept: "image/*", capture: "environment" %>
       <p class="field-hint">On a phone this opens the camera, one shot at a time.</p>
     </div>
+    <%# Visual separator so the two file fields read as two alternative ways in —
+        camera OR library — instead of an ambiguous stack of identical-looking
+        boxes. Decorative: the "either/or (or both)" relationship is carried for
+        assistive tech by the two field labels and the library field's hint. %>
+    <div class="upload-or" aria-hidden="true">or</div>
     <div class="field">
-      <%= label_tag "photo_asset_photos", "Or choose from your library" %>
+      <%= label_tag "photo_asset_photos", "Choose from your library" %>
       <%= file_field_tag "photo_asset[photos][]", id: "photo_asset_photos",
             accept: "image/*", multiple: true %>
       <p class="field-hint">Pick one or more images you already have. You can use both fields together.</p>
