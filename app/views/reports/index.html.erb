@@ -13,7 +13,10 @@
       <tr>
         <th>Report</th>
         <th>Description</th>
-        <th></th>
+        <%# The action column stays visually unlabelled to match the table's clean
+            header, but an empty <th> reads as a nameless column to assistive tech.
+            An sr-only label names it without changing the visible layout. %>
+        <th><span class="sr-only">Download</span></th>
       </tr>
     </thead>
     <tbody>
@@ -29,8 +32,12 @@
               attachment link: a same-window nav to an attachment strands a
               chrome-less installed PWA on a page it can't render. target=_blank
               is the no-JS fallback. See download_controller.js. %>
+          <%# Every row's link reads "Download" out of context; name the report in
+              the accessible label so the seven exports are distinguishable to
+              screen-reader users (WCAG 2.4.4). The visible word stays "Download". %>
           <td class="numeric"><%= link_to "Download", report_path(report),
                 class: "button", target: "_blank", rel: "noopener",
+                "aria-label": "Download #{report.humanize} CSV",
                 data: { controller: "download", action: "download#save",
                         download_filename_value: "#{report}.csv" } %></td>
         </tr>
