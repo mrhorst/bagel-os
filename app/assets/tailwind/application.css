@@ -1198,8 +1198,13 @@
      the text block absorbs the shrink (it has min-width:0 above and breaks
      anywhere). Mirrors the `.panel-heading .button` flex-shrink guard below.
      Only bites in the >900px row layout — under that `.page-heading` stacks to
-     a column and `.hero-actions` goes full-width, so wrapping is moot. */
-  .page-heading > .hero-actions {
+     a column and the action cluster goes full-width, so wrapping is moot.
+     Applies to both header action clusters — the hero variant AND the plain
+     `.actions` div (e.g. Log Sections' "Back to Log Book" + orange "New
+     section"), which is the identical flex row and was dropping its primary
+     onto a second row below the secondary whenever the title/subtitle grew. */
+  .page-heading > .hero-actions,
+  .page-heading > .actions {
     flex-shrink: 0;
   }
   /* `.small` on a paragraph means "demoted helper text" — supporting copy that
