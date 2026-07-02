@@ -6540,6 +6540,23 @@
       min-height: 44px;
     }
 
+    /* A `.form-footer` clusters a create/edit form's actions — a primary submit,
+       sometimes a Cancel link — but its buttons inherit the base .button 36px
+       height, under the 44px touch floor. It's the last big gap in the mobile
+       touch-target coverage: the footer's submit is the form's primary CTA on
+       every create/edit screen (Account "Save profile"/"Update password",
+       collections, products, admin users/tags, task lists, recipes, import
+       batches, log book sections). The footer's controls are already
+       full-width/clustered here, so lift only the tap height to 44px — the label
+       stays centred via the base inline-flex and no layout shifts. Matches the
+       .responsive-table td .button and header/action 44px fixes above; .small
+       secondaries stay compact; desktop keeps the denser 36px. */
+    .form-footer .button:not(.small),
+    .form-footer button:not(.small),
+    .form-footer input[type='submit']:not(.small) {
+      min-height: 44px;
+    }
+
     .panel {
       padding: 14px;
     }
