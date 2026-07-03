@@ -102,7 +102,7 @@ class LogBookWorkflowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "No Log Sections yet", response.body
-    assert_select ".form-footer a[href=?]", new_log_book_section_path, text: "Create first section"
+    assert_select ".empty-state a[href=?]", new_log_book_section_path, text: "Create first section"
   end
 
   test "archived sections stay visible on old entries but disappear from today's form" do
