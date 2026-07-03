@@ -29,11 +29,15 @@
           one primary action (matches the sibling New Count screen's header). %>
       <%= link_to "New count", new_inventory_count_path, class: "button" %>
     <% end %>
-    <%# The mobile chevron returns to Inventory; mirror it with a desktop-visible
+    <%# Desktop-only back control: mirror the mobile chevron with a desktop-visible
         control so a wide-screen user isn't left clicking the already-active
         "Inventory" sidebar item to get back — matching "All guides"/"All imports"
-        on the sibling Order Guides / Imports detail pages. %>
-    <%= link_to "Back to Inventory", inventory_path, class: "button" %>
+        on the sibling Order Guides / Imports detail pages. Hidden on mobile
+        (`hide-on-mobile`), where the header's "‹ Inventory" chevron already returns
+        here, so it doesn't become a redundant full-width button stacked above and
+        pushing the guide chooser below the fold — matching the sibling Master
+        Inventory / New Count screens' identical back control. %>
+    <%= link_to "Back to Inventory", inventory_path, class: "button hide-on-mobile" %>
   </div>
 </div>
 
