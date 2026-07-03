@@ -1,24 +1,5 @@
-require "csv"
-
 class OrderGuidesController < ApplicationController
   require_module_access :order_guides
-
-  CSV_EXAMPLE_HEADERS = %w[
-    guide_name
-    item_name
-    section
-    category
-    count_unit
-    pack_size
-    primary_guide
-    position
-    notes
-  ].freeze
-  CSV_EXAMPLE_ROWS = [
-    [ "Daily", "Eggs", "Walk-in cooler", "Eggs", "case", "case", "yes", "1", "Count before morning order." ],
-    [ "Weekly", "Coffee beans", "Dry storage", "Coffee / tea", "bag", "bag", "yes", "2", "Use generic roast names." ],
-    [ "Every 2 weeks", "To-go cups", "Paper and packaging", "Packaging", "sleeve", "case", "yes", "3", "Staff-facing names." ]
-  ].freeze
 
   def index
     load_guides_index
@@ -80,15 +61,6 @@ class OrderGuidesController < ApplicationController
     guide.archive!
 
     redirect_to order_guides_path, notice: "Order guide archived."
-  end
-
-  def csv_example
-    csv = CSV.generate(headers: true) do |output|
-      output << CSV_EXAMPLE_HEADERS
-      CSV_EXAMPLE_ROWS.each { |row| output << row }
-    end
-
-    send_data csv, filename: "order-guide-import-example.csv", type: "text/csv"
   end
 
   private

@@ -13,13 +13,6 @@
     <p>Named operating lists for purchasing, counted inventory, and staff ordering workflows.</p>
   </div>
   <div class="actions">
-    <%# Fetch-and-share via download_controller so a same-window attachment nav
-        can't strand an installed PWA on a chrome-less page. target=_blank is the
-        no-JS fallback. See download_controller.js. %>
-    <%= link_to "CSV example", csv_example_order_guides_path,
-          class: "button small", target: "_blank", rel: "noopener",
-          data: { controller: "download", action: "download#save",
-                  download_filename_value: "order-guide-import-example.csv" } %>
     <%= link_to "Inventory", inventory_path, class: "button small" %>
   </div>
 </div>

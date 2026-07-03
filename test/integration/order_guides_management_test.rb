@@ -27,13 +27,6 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
 
     get order_guides_path
     assert_response :success
-    assert_select "a", text: "CSV example"
-    # The CSV example link must use the PWA-safe download pattern so a same-window
-    # attachment nav can't strand an installed PWA on a chrome-less page.
-    assert_select(
-      %(a[href="#{csv_example_order_guides_path}"][data-controller~="download"][data-action~="download#save"][target="_blank"][rel="noopener"]),
-      count: 1
-    )
     assert_no_match "Import current PDFs", response.body
     assert_select "h2", text: "Items by guide"
     assert_match "Cream Cheese", response.body
@@ -163,15 +156,6 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".note-block", count: 0
-  end
-
-  test "downloads csv example for order guide import shape" do
-    get csv_example_order_guides_path
-
-    assert_response :success
-    assert_equal "text/csv", response.media_type
-    assert_includes response.body, "guide_name,item_name,section,category,count_unit,pack_size,primary_guide,position,notes"
-    assert_includes response.body, "Daily,Eggs,Walk-in cooler"
   end
 
   test "adds removes and re-adds existing inventory items from a guide" do

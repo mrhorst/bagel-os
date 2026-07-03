@@ -57,15 +57,8 @@ namespace :qa do
       entry: "/log-book/settings", drill: [ "a[href*='/log-book/sections']" ] },
     { slug: "products-edit", label: "Products → product → edit → back to product → back",
       entry: "/products", drill: [ "a[href*='/products/']:not([href$='/edit'])", "a[href$='/edit']" ] },
-    # Exclude the "CSV example" download link (/order_guides/csv_example): it
-    # matches a[href*='/order_guides/'] and renders FIRST (in the page heading),
-    # so the bare selector drilled into a CSV download — a non-navigating
-    # send_data that the walk could only reach via fallback-visit — and never
-    # touched a real guide. The back-walk + referrer probe then exercised the
-    # INDEX chevron, not the guide show page's "Back to Order Guides" arrow this
-    # flow is named to test. Skip it so the drill reaches an actual guide.
     { slug: "order-guides", label: "Order guides → guide → back",
-      entry: "/order_guides", drill: [ "a[href*='/order_guides/']:not([href$='/csv_example'])" ] },
+      entry: "/order_guides", drill: [ "a[href*='/order_guides/']" ] },
     { slug: "inventory-count-new", label: "Inventory counts → new count → back",
       entry: "/inventory/counts", drill: [ "a[href*='/inventory/counts/new']" ] },
     { slug: "admin-tags-new", label: "Admin tags → new tag → back",
