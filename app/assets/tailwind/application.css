@@ -6063,6 +6063,22 @@
       display: none;
     }
 
+    /* On mobile the in-page h1 and back-arrow are both hidden (surfaced in the
+       app header), so the two-column grid (minmax(0,1fr) auto) leaves only the
+       subtitle in column 1 — squeezed next to the right-aligned action cluster,
+       which forces the subtitle to wrap awkwardly against the button (e.g.
+       "Add list" on Task lists, "Add task" on Manage tasks). Collapse to one
+       column so the actions drop to their own full-width row beneath the
+       subtitle and align left under it — matching how .page-heading stacks on
+       narrow screens. */
+    .subpage-header {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .subpage-header-actions {
+      justify-content: flex-start;
+    }
+
     .filters {
       grid-template-columns: 1fr;
     }
