@@ -87,10 +87,10 @@
 
 <section class="home-hero">
   <h1><%= dashboard_greeting %></h1>
-  <p><%= dashboard_today_headline %> · Pick a surface to jump in.</p>
+  <p><%= dashboard_today_headline %> · Pick an area to jump in.</p>
 </section>
 
-<section class="home-surface-grid" aria-label="App surfaces">
+<section class="home-surface-grid" aria-label="App areas">
   <% surfaces.each do |surface| %>
     <%= link_to surface[:path], class: "home-surface-card home-surface-card-#{surface[:tone]}" do %>
       <div class="home-surface-card-head">
