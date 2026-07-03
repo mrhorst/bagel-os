@@ -59,7 +59,11 @@
 
 <% if @assets.any? %>
   <ul class="photo-grid" aria-label="Photos in <%= @collection.name %>">
-    <%= render partial: "photo_assets/photo_card", collection: @assets, as: :asset %>
+    <%# Thread the collection origin into each card so the photo detail page's
+        back affordance returns here instead of overshooting to the library
+        (the library index does the same with its active filters). %>
+    <%= render partial: "photo_assets/photo_card", collection: @assets, as: :asset,
+          locals: { card_params: { from_collection: @collection.id } } %>
   </ul>
 <% else %>
   <p class="empty-state">

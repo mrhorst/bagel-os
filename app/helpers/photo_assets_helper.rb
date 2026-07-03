@@ -24,6 +24,19 @@ module PhotoAssetsHelper
     params.permit(:scope, :tag, :q, :favorites).to_h.reject { |_, value| value.blank? }
   end
 
+  # The photo detail page is reached from two origins: the library (which
+  # threads its active filters, above) and a collection show page. A photo opened
+  # from a collection carries from_collection=<id> in its card link so its back
+  # affordance returns to that collection instead of overshooting to the library.
+  # The id is resolved to a real Collection server-side — never a raw path — so a
+  # stale, forged, or missing value simply falls back to the library, the same
+  # safe default as a bookmark, deep link, or cold PWA load.
+  def photo_back_origin_collection
+    return nil if params[:from_collection].blank?
+
+    Collection.find_by(id: params[:from_collection])
+  end
+
   # Phone uploads aren't always variable (e.g. HEIC without libheif); fall
   # back to the original blob rather than raising at render time.
   def photo_asset_image(asset, transform, **options)
