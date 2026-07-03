@@ -1,15 +1,16 @@
 <% content_for :title, "Log Sections" %>
 
-<%# On mobile the top-left chevron is the primary back affordance. Without this
-    override the layout's auto-chevron points at the module hub (Shift), skipping
-    Log Book — so it would overshoot the parent and contradict the "Back to Log
-    Book" button below. Send it up exactly one level, to Log Book. %>
+<%# On mobile the top-left chevron is the primary back affordance. Sections is
+    reached only from the Log Book Settings hub (which renders it alongside
+    History), so "up one level" is Settings — not Log Book, which would overshoot
+    the hub the user came from and skip its sibling History card. Matches the
+    app's universal one-level-up convention. %>
 <% content_for :mobile_left_action do %>
-  <%= link_to log_book_path, class: "mobile-header-back", aria: { label: "Back to Log Book" } do %>
+  <%= link_to log_book_settings_path, class: "mobile-header-back", aria: { label: "Back to Settings" } do %>
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
       <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <span>Log Book</span>
+    <span>Settings</span>
   <% end %>
 <% end %>
 
@@ -19,12 +20,13 @@
     <p>Choose what appears in the daily Log Book. Archiving hides a section from new days; old entries keep their values.</p>
   </div>
   <%# On mobile the top-left chevron (mobile_left_action above) is the primary
-      "Back to Log Book" affordance, so this in-heading back button is a duplicate
+      "Back to Settings" affordance, so this in-heading back button is a duplicate
       there — hide it on mobile via .log-book-heading-actions (the same pattern
-      Log Book settings uses) and keep it as the desktop back path. "New section"
+      Log Book settings uses) and keep it as the desktop back path. It moves in
+      lockstep with the chevron: up one level to the Settings hub. "New section"
       stays visible at every width. %>
   <div class="actions">
-    <%= link_to "Back to Log Book", log_book_path, class: "button small log-book-heading-actions" %>
+    <%= link_to "Back to Settings", log_book_settings_path, class: "button small log-book-heading-actions" %>
     <%= link_to "New section", new_log_book_section_path, class: "button primary small" %>
   </div>
 </div>
