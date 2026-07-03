@@ -1852,6 +1852,19 @@
     vertical-align: middle;
   }
 
+  /* Reports export table: the filename reference (a `code` chip) sits under the
+     report title as a consistent second line. Authored inline after the title,
+     the chip wraps to its own line only on the longer filenames, so some rows
+     read "Title  file.csv" on one line and others break to two — ragged row
+     heights and an inconsistent title↔chip relationship down the column. Force
+     the chip onto its own line in every row so each reads title-over-filename,
+     matching the stacked mobile card. `fit-content` keeps it a chip, not a bar. */
+  .report-file {
+    display: block;
+    margin-top: 4px;
+    width: fit-content;
+  }
+
   /* ── Buttons ──────────────────────────────────────────────────────── */
   .button,
   button,
