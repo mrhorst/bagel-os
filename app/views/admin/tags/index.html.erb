@@ -21,7 +21,14 @@
     <p>The vocabulary your photos are filed under. Each rule tells the AI tagger when to suggest a tag.</p>
   </div>
   <div class="actions">
-    <%= link_to "New tag", new_admin_tag_path, class: "button primary" %>
+    <%# On the empty first-run screen the empty-state card below owns the single
+        primary CTA (matching Follow-ups, the Photo library, and Tasks), so the
+        header's duplicate is suppressed there to keep exactly one orange primary.
+        Once tags exist, the table carries no primary of its own, so the header
+        holds it. %>
+    <% if @tags.any? %>
+      <%= link_to "New tag", new_admin_tag_path, class: "button primary" %>
+    <% end %>
   </div>
 </section>
 
@@ -60,11 +67,11 @@
   <article class="panel empty-state">
     <strong>No tags yet.</strong>
     <span>Add the first one to start filing photos.</span>
-    <%# Put the primary action where attention lands on the empty first-run
-        screen, matching the embedded empty-state CTA on Follow-ups, the Photo
-        library, and Tasks. hide-for-fab keeps it desktop-only: on mobile the
-        page-heading "New tag" button already renders full-width at the top, so
-        an inline copy here would be a duplicate CTA. %>
-    <%= link_to "New tag", new_admin_tag_path, class: "button primary hide-for-fab" %>
+    <%# The empty-state card owns the single primary action on this first-run
+        screen, where attention lands (matching Follow-ups, the Photo library,
+        and Tasks). This screen has no floating action button, so the CTA stays
+        visible on mobile too; the header's duplicate primary is suppressed above
+        so the screen shows exactly one orange primary in both viewports. %>
+    <%= link_to "New tag", new_admin_tag_path, class: "button primary" %>
   </article>
 <% end %>
