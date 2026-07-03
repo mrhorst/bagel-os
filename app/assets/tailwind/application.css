@@ -6086,6 +6086,16 @@
       display: none;
     }
 
+    /* The hero panel's eyebrow is a superlabel for the H1 hidden just above it.
+       With the H1 gone (the mobile header is authoritative), the eyebrow would
+       orphan above the body copy — a category label with nothing left to
+       introduce — while merely echoing the mobile header's own screen title.
+       Drop it on mobile too so the hero opens cleanly on its body copy. Scoped
+       to .hero-panel, the only place .eyebrow appears. */
+    .hero-panel .eyebrow {
+      display: none;
+    }
+
     /* In-page back arrows are surfaced through the mobile header's left slot;
        hide the in-page versions on mobile to avoid double back buttons. */
     .subpage-back {
