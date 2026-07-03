@@ -188,7 +188,7 @@
   <% end %>
 </section>
 
-<section class="panel">
+<section class="panel" id="guide-gaps">
   <div class="panel-heading">
     <div>
       <h2>Receipt products not on current guides</h2>
@@ -225,7 +225,10 @@
             <td data-label="Last bought"><%= row.last_purchased_at&.to_date || "n/a" %></td>
             <td data-label="Add to guide">
               <% if @order_guides.active.any? %>
-                <%= form_with url: product_order_guide_memberships_path(row.product), scope: :membership, class: "guide-gap-form" do |form| %>
+                <%# return_to=gap_list keeps a successful add on this gap list
+                    (now one row shorter) instead of ejecting to the guide, so a
+                    batch of stragglers can be cleared without round-trips. %>
+                <%= form_with url: product_order_guide_memberships_path(row.product, return_to: "gap_list"), scope: :membership, class: "guide-gap-form" do |form| %>
                   <%= form.collection_select :order_guide_id, @order_guides.select(&:active?), :id, :name, { prompt: "Guide" }, { class: "compact-select", required: true } %>
                   <%= form.text_field :section_name, placeholder: "Section", class: "compact-input" %>
                   <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]], {}, { class: "compact-select" } %>

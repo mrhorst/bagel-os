@@ -32,7 +32,7 @@ class ProductOrderGuideMembershipsController < ApplicationController
       )
     end
 
-    redirect_to order_guide_path(guide), notice: "#{membership.inventory_item.name} added to #{guide.name}."
+    redirect_to add_to_guide_success_path(guide), notice: "#{membership.inventory_item.name} added to #{guide.name}."
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => error
     # This "Add to guide" form is rendered from two places: the product show
     # page AND the order-guides index gap list ("Receipt Products Not On Current
@@ -46,6 +46,27 @@ class ProductOrderGuideMembershipsController < ApplicationController
   end
 
   private
+
+  # This "Add to guide" form is rendered from two callers, and success should
+  # honor where the user came from — the same dual-origin intent the failure path
+  # already encodes:
+  #
+  #   • Gap list (order-guides index): the user is clearing a batch of off-guide
+  #     products, so stay on the gap list (now one row shorter) instead of
+  #     ejecting to a single guide on every add.
+  #   • Product workspace (default, no hint): landing on the guide is the
+  #     reasonable confirmation that the product joined it.
+  #
+  # The gap-list caller threads return_to=gap_list, matched here against a
+  # whitelist and mapped to a known internal path — never a raw URL — so a stale
+  # or forged value simply falls back to the guide.
+  def add_to_guide_success_path(guide)
+    if params[:return_to] == "gap_list"
+      order_guides_path(anchor: "guide-gaps")
+    else
+      order_guide_path(guide)
+    end
+  end
 
   # Keep the failure feedback human. A missing/blank guide selection is the common
   # mistake (the select defaults to its "Choose guide" prompt), so name the fix

@@ -55,6 +55,31 @@ class ProductOrderGuideMembershipsTest < ActionDispatch::IntegrationTest
     assert_not membership.setup_needed?
   end
 
+  test "a successful add from the gap list stays on the gap list, not the guide" do
+    product = @supplier.products.create!(canonical_name: "Bacon", needs_review: false)
+
+    # The gap-list form (order-guides index) threads return_to=gap_list so a
+    # successful add keeps the user on the list to clear the next straggler,
+    # instead of ejecting to the single guide on every add.
+    post product_order_guide_memberships_path(product, return_to: "gap_list"), params: {
+      membership: { order_guide_id: @guide.id, section_name: "Freezer", tracking_mode: "counted" }
+    }
+
+    assert_redirected_to order_guides_path(anchor: "guide-gaps")
+    assert_equal "Bacon added to Weekly.", flash[:notice]
+    assert product.reload.inventory_items.first.order_guide_memberships.exists?(order_guide: @guide)
+  end
+
+  test "a successful add without an origin hint lands on the guide (product-page caller)" do
+    product = @supplier.products.create!(canonical_name: "Bacon", needs_review: false)
+
+    post product_order_guide_memberships_path(product), params: {
+      membership: { order_guide_id: @guide.id, section_name: "Freezer", tracking_mode: "counted" }
+    }
+
+    assert_redirected_to order_guide_path(@guide)
+  end
+
   test "submitting without a guide gives a human message, not a raw lookup error" do
     product = @supplier.products.create!(canonical_name: "Olives", needs_review: false)
 
