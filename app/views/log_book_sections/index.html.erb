@@ -58,7 +58,12 @@
             <td class="numeric" data-label="Used in">
               <%= pluralize(usage_count, "entry") %>
             </td>
-            <td class="row-actions" data-label="Actions">
+            <%# Action-only cell: use an empty data-label so the mobile stacked
+                card suppresses the redundant "ACTIONS" eyebrow above the obvious
+                Edit/Archive buttons, matching every sibling table (admin/users,
+                recipes, modifier_groups) and the documented .responsive-table
+                td[data-label=""] rule. %>
+            <td class="row-actions" data-label="">
               <%= link_to "Edit", edit_log_book_section_path(section), class: "button small" %>
               <% if section.active? %>
                 <%= button_to "Archive",
