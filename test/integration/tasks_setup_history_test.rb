@@ -314,7 +314,7 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
       }
 
       assert_response :success
-      assert_select "h1", "History"
+      assert_select "h1", "Task History"
       assert_select "td", text: /Clean slicer/
       assert_select "td", text: /Completed by Maria/
 
