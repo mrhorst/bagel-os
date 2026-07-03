@@ -186,16 +186,19 @@
       <% end %>
     <% elsif @editable %>
       <%# Today, and no sections defined yet — the genuine "log book isn't set
-          up" onboarding case. Only here do we invite an admin to create one. %>
-      <p class="empty-state">
+          up" onboarding case. Only here do we invite an admin to create one.
+          The CTA lives INSIDE `.empty-state` so it inherits the component's
+          centered layout and `.empty-state .button` top gap — matching the
+          app-wide embedded empty-state pattern (Photo library #425, Manage
+          Tasks #427, New Count #432). A bare sibling button in a `.form-footer`
+          left-aligned it and dropped that gap. %>
+      <div class="empty-state">
         <strong>No Log Sections yet.</strong>
         <span>An admin can create sections like General Log, Maintenance, and Bagels Left.</span>
-      </p>
-      <% if current_user.admin? %>
-        <div class="form-footer">
+        <% if current_user.admin? %>
           <%= link_to "Create first section", new_log_book_section_path, class: "button primary" %>
-        </div>
-      <% end %>
+        <% end %>
+      </div>
     <% else %>
       <%# A past, read-only day that simply had nothing logged. Sections may
           well exist — they just weren't filled that day — so don't claim the
