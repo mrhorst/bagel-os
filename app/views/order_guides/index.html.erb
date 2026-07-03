@@ -142,7 +142,11 @@
               <h3><%= link_to guide.name, order_guide_path(guide) %></h3>
               <p class="muted"><%= pluralize(memberships.size, "active item") %></p>
             </div>
-            <%= link_to "Open", order_guide_path(guide), class: "button small" %>
+            <%# Same label as the Named guides table's row action above (and the
+                "View all N items" overflow link below): all three open this
+                guide's detail page, so they name the destination identically
+                instead of splitting it across "Open"/"View items". %>
+            <%= link_to "View items", order_guide_path(guide), class: "button small" %>
           </div>
 
           <% if memberships.any? %>
