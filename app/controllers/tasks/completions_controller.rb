@@ -108,6 +108,14 @@ module Tasks
     end
 
     def respond_with_error(error)
+      # A rejected undo (the confirm-undo guard, or a failed UndoCompletion)
+      # redirects back to reload the occurrence page. Carry the note the user
+      # already typed so they only fix the problem the alert names instead of
+      # retyping their reason — the same input preservation the create/edit
+      # forms give on a failed save. Only the detail-page undo form carries an
+      # :undone_note, so this is a no-op for the list-checkbox and complete paths.
+      flash[:undone_note] = params[:undone_note] if params[:undone_note].present?
+
       respond_to do |format|
         format.turbo_stream { change_redirect(params[:occurrence_id], alert: error.message) }
         format.html         { change_redirect(params[:occurrence_id], alert: error.message) }

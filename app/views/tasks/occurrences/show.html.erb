@@ -76,7 +76,9 @@
               page's arrow still points where the user came from, not the dashboard. %>
           <%= hidden_field_tag :back, @back_path %>
           <%= form.label :undone_note, "Undo note" %>
-          <%= form.text_field :undone_note, placeholder: "Optional undo note" %>
+          <%# Repopulate from a rejected submit (see CompletionsController#respond_with_error)
+              so a note survives the confirm-undo guard bounce; blank on a normal load. %>
+          <%= form.text_field :undone_note, value: flash[:undone_note], placeholder: "Optional undo note" %>
           <label class="check">
             <%= check_box_tag :confirm_undo, "1", false %>
             <span>Confirm undo</span>
