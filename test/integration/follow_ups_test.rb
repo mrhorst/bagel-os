@@ -125,6 +125,33 @@ class FollowUpsTest < ActionDispatch::IntegrationTest
     assert_equal users(:one), note.author
   end
 
+  test "a resolved follow-up still shows the note form and accepts a note without disturbing the resolution" do
+    # You must be able to annotate a closed item ("customer called back, all good")
+    # without reopening it — reopening discards the whole resolution. The note thread
+    # is append-only for the life of the item. (#388)
+    follow_up = FollowUp.create!(title: "Walk-in warm", urgency: "urgent", opened_at: 2.hours.ago, opened_by: users(:one),
+                                 status: "resolved", resolved_at: 1.hour.ago, resolved_by: users(:one),
+                                 resolved_via: "action_taken", resolution_note: "Swapped the thermostat")
+
+    # The form renders on the resolved detail page, not just for open items.
+    get follow_up_path(follow_up)
+    assert_response :success
+    assert_select "form.follow-up-note-form textarea[name='follow_up_note[body]']"
+
+    assert_difference -> { follow_up.notes.count }, 1 do
+      post follow_up_notes_path(follow_up), params: { follow_up_note: { body: "Customer called back, all good." } }
+    end
+    assert_redirected_to follow_up_path(follow_up)
+
+    follow_up.reload
+    # The note landed, and the resolution metadata is untouched.
+    assert_equal "Customer called back, all good.", follow_up.notes.last.body
+    assert_equal "resolved", follow_up.status
+    assert_equal "action_taken", follow_up.resolved_via
+    assert_equal "Swapped the thermostat", follow_up.resolution_note
+    assert_equal users(:one), follow_up.resolved_by
+  end
+
   test "empty note body is rejected" do
     follow_up = FollowUp.create!(title: "Door squeaks", urgency: "normal", opened_at: 1.hour.ago, opened_by: users(:one))
 
