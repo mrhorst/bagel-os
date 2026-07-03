@@ -17,6 +17,18 @@ class TagTest < ActiveSupport::TestCase
     assert tag.errors[:name].any?
   end
 
+  test "a blank name reports only the name error, not the derived-slug field" do
+    # The admin submits the new-tag form empty (a whitespace-only name slips past
+    # the field's HTML5 `required`). The single mistake is the missing name, so
+    # the banner must say exactly that — not pile on "Slug can't be blank" /
+    # "Slug must be lowercase…" for a field they were told to leave blank.
+    tag = Tag.new(name: "   ")
+    assert_not tag.valid?
+    assert tag.errors[:name].any?
+    assert_empty tag.errors[:slug]
+    assert_not_includes tag.errors.full_messages.to_sentence, "Slug"
+  end
+
   test "rejects a duplicate slug with a name-anchored message (no leaked Slug field)" do
     # An explicitly typed slug that collides still has to be rejected, but the
     # message must read in name terms and name the tag that actually owns the
@@ -52,20 +64,25 @@ class TagTest < ActiveSupport::TestCase
     assert_equal "not-a-slug", tag.slug
   end
 
-  test "rejects a slug that sanitizes to nothing" do
-    tag = Tag.new(name: "###")
-    assert_not tag.valid?
-    assert tag_includes_slug_error?(tag)
+  test "a name with no usable characters is rejected in name terms, not as a Slug field error" do
+    # A name that parameterizes to nothing — symbols ("###"), an emoji ("🌮"), or
+    # a non-latin script ("料理") — leaves the derived slug blank. The admin typed
+    # a name and left the slug blank exactly as instructed, so the error must name
+    # what they control (the name), never a "Slug can't be blank" / "Slug must be
+    # lowercase…" for a field they never touched. Mirrors the duplicate-slug case.
+    [ "###", "🌮", "料理" ].each do |unusable|
+      tag = Tag.new(name: unusable)
+      assert_not tag.valid?, "expected #{unusable.inspect} to be invalid"
+      assert_equal "", tag.slug
+      assert_includes tag.errors[:base],
+        %("#{unusable}" can't be turned into a tag — its name needs letters or numbers. Edit the name, or type a slug.)
+      assert_empty tag.errors[:slug], "expected no leaked Slug field error for #{unusable.inspect}"
+      assert_not_includes tag.errors.full_messages.to_sentence, "Slug"
+    end
   end
 
   test "active scope excludes inactive tags" do
     assert_includes Tag.active, tags(:food)
     assert_not_includes Tag.active, tags(:inactive_promo)
-  end
-
-  private
-
-  def tag_includes_slug_error?(tag)
-    tag.errors[:slug].any?
   end
 end

@@ -46,6 +46,34 @@ module Admin
       assert_response :unprocessable_entity
     end
 
+    test "a whitespace-only name re-renders naming the name, never leaking the derived Slug field" do
+      sign_in_as(users(:one))
+
+      # A whitespace-only name slips past the field's HTML5 `required` and reaches
+      # the server. The banner must name the real mistake (the missing name), not
+      # scold the Slug field the admin was told to leave blank.
+      assert_no_difference "Tag.count" do
+        post admin_tags_path, params: { tag: { name: "   " } }
+      end
+      assert_response :unprocessable_entity
+      assert_select "div.flash-alert li", text: /Name can't be blank/
+      assert_select "div.flash-alert", text: /Slug/, count: 0
+    end
+
+    test "a name with no usable characters re-renders in name terms, not as a Slug error" do
+      sign_in_as(users(:one))
+
+      # An emoji-only name (common for a non-English restaurant) is present but
+      # derives a blank slug. The admin must be pointed at their name, not handed
+      # a "Slug can't be blank" for a field they never typed in.
+      assert_no_difference "Tag.count" do
+        post admin_tags_path, params: { tag: { name: "🌮" } }
+      end
+      assert_response :unprocessable_entity
+      assert_select "div.flash-alert li", text: /can't be turned into a tag/
+      assert_select "div.flash-alert", text: /Slug/, count: 0
+    end
+
     test "a duplicate name with a blank slug re-renders with a name-anchored error, not a leaked Slug field" do
       sign_in_as(users(:one))
 
