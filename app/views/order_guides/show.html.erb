@@ -68,31 +68,35 @@
   </div>
 
   <% if @available_inventory_items.any? %>
+    <%# @membership_form is set only when OrderGuideMembershipsController#create
+        re-renders this page after a failed add — it carries the submitted values
+        back into the fields so a recoverable mistake doesn't wipe what was typed.
+        On a normal show it's nil and every field falls back to its default. %>
     <%= form_with url: order_guide_memberships_path(@order_guide), scope: :membership, class: "stacked-form" do |form| %>
       <div class="form-grid">
         <div class="field">
           <%= form.label :inventory_item_id, "Item" %>
-          <%= form.collection_select :inventory_item_id, @available_inventory_items, :id, :name, { prompt: "Choose inventory item" } %>
+          <%= form.collection_select :inventory_item_id, @available_inventory_items, :id, :name, { prompt: "Choose inventory item", selected: @membership_form&.dig(:inventory_item_id) } %>
         </div>
         <div class="field">
           <%= form.label :section_name, "Guide section" %>
-          <%= form.text_field :section_name, placeholder: "Dry storage, freezer, front bar" %>
+          <%= form.text_field :section_name, value: @membership_form&.dig(:section_name), placeholder: "Dry storage, freezer, front bar" %>
         </div>
         <div class="field">
           <%= form.label :tracking_mode, "Tracking" %>
-          <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]] %>
+          <%= form.select :tracking_mode, [["Counted", "counted"], ["Order only", "order_only"]], { selected: @membership_form&.dig(:tracking_mode).presence } %>
         </div>
         <div class="field">
           <%= form.label :expected_usage_quantity, "Expected usage" %>
-          <%= form.number_field :expected_usage_quantity, min: 0, step: "any", inputmode: "decimal" %>
+          <%= form.number_field :expected_usage_quantity, value: @membership_form&.dig(:expected_usage_quantity), min: 0, step: "any", inputmode: "decimal" %>
         </div>
         <div class="field">
           <%= form.label :buffer_quantity, "Buffer" %>
-          <%= form.number_field :buffer_quantity, min: 0, step: "any", inputmode: "decimal" %>
+          <%= form.number_field :buffer_quantity, value: @membership_form&.dig(:buffer_quantity), min: 0, step: "any", inputmode: "decimal" %>
         </div>
         <div class="field">
           <%= form.label :notes, "Guide note" %>
-          <%= form.text_field :notes, placeholder: "Optional staff note" %>
+          <%= form.text_field :notes, value: @membership_form&.dig(:notes), placeholder: "Optional staff note" %>
         </div>
       </div>
       <%= form.submit "Add to guide", class: "button primary" %>

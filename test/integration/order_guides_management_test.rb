@@ -228,7 +228,7 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
     assert_equal 1, guide.order_guide_memberships.where(inventory_item: item).count
   end
 
-  test "adding an item with no item chosen keeps the user on the guide, not the index" do
+  test "adding an item with no item chosen re-renders the guide in place and keeps every typed field" do
     guide = OrderGuide.create!(name: "Daily")
     InventoryItem.create!(name: "Eggs", key: "eggs")
 
@@ -236,15 +236,30 @@ class OrderGuidesManagementTest < ActionDispatch::IntegrationTest
       membership: {
         inventory_item_id: "", # user forgot to pick an item
         section_name: "Walk-in cooler",
-        expected_usage_quantity: "6"
+        tracking_mode: "order_only",
+        expected_usage_quantity: "6",
+        buffer_quantity: "2",
+        notes: "Count before the morning order."
       }
     }
 
-    # The failed add must return to the guide being edited — not bounce the
-    # user out to the all-guides index and lose their place.
-    assert_redirected_to order_guide_path(guide)
-    assert_equal "Choose an inventory item to add to this guide.", flash[:alert]
+    # The failed add must re-render the guide page in place — not redirect to a
+    # fresh GET that wipes the form — so the user keeps the fields they typed and
+    # only re-picks the item. This mirrors the input-preserving recovery the
+    # guide-name create/rename form on the sibling screen already documents.
+    assert_response :unprocessable_entity
+    assert_select "h1", text: "Daily"
+    assert_select ".flash-alert", text: "Choose an inventory item to add to this guide."
     assert_equal 0, guide.order_guide_memberships.active.count
+
+    # Every typed field survives the failed submit, bound back into the form.
+    assert_select "form[action=?]", order_guide_memberships_path(guide) do
+      assert_select "input[name=?][value=?]", "membership[section_name]", "Walk-in cooler"
+      assert_select "input[name=?][value=?]", "membership[expected_usage_quantity]", "6"
+      assert_select "input[name=?][value=?]", "membership[buffer_quantity]", "2"
+      assert_select "input[name=?][value=?]", "membership[notes]", "Count before the morning order."
+      assert_select "select[name=?] option[selected][value=?]", "membership[tracking_mode]", "order_only"
+    end
   end
 
   test "a failed add against a missing guide falls back to the index" do

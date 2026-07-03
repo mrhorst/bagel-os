@@ -25,7 +25,24 @@ class OrderGuideMembershipsController < ApplicationController
       else
         error.message.presence || "Choose an active guide and inventory item."
       end
-    redirect_to guide_or_index_path(order_guide), alert: alert
+
+    if order_guide
+      # Re-render the guide page in place (instead of redirecting to a fresh GET
+      # that wipes the form) so a recoverable mistake — most often submitting
+      # without picking an item — keeps every other field the user typed. This is
+      # the same input-preserving recovery OrderGuidesController#create/#update
+      # already document for the guide-name form on the sibling screen. The Add
+      # form isn't model-bound, so @membership_form carries the submitted values
+      # back into the fields explicitly.
+      flash.now[:alert] = alert
+      @membership_form = membership_params
+      load_guide_show_context(order_guide)
+      render "order_guides/show", status: :unprocessable_entity
+    else
+      # No guide to return to (it was missing or archived), so the index is the
+      # only sensible destination.
+      redirect_to order_guides_path, alert: alert
+    end
   end
 
   def update
@@ -75,6 +92,22 @@ class OrderGuideMembershipsController < ApplicationController
   # the guide itself could not be found.
   def guide_or_index_path(order_guide)
     order_guide ? order_guide_path(order_guide) : order_guides_path
+  end
+
+  # Build the same instance variables OrderGuidesController#show renders, so a
+  # failed add can re-render the guide page in place rather than redirecting.
+  def load_guide_show_context(order_guide)
+    @order_guide = order_guide
+    @memberships = @order_guide.order_guide_memberships
+      .active
+      .joins(:inventory_item)
+      .includes(:order_guide_section, inventory_item: [ :inventory_section, :product, :preferred_supplier ])
+      .order(:position, "inventory_items.name")
+    @sections = @order_guide.active_sections
+    active_item_ids = @memberships.map(&:inventory_item_id)
+    @available_inventory_items = InventoryItem.active
+      .where.not(id: active_item_ids)
+      .ordered
   end
 
   def membership_params
