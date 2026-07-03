@@ -1748,10 +1748,36 @@
     display: flex;
     gap: 12px;
     justify-content: space-between;
-    padding: 10px 12px;
+    /* Right padding reserves the gutter for the trailing disclosure chevron
+       (::after below) so the day's signals never run under it. */
+    padding: 10px 32px 10px 12px;
+    position: relative;
     text-decoration: none;
   }
   .log-book-recent-link:hover { background: var(--surface-3); text-decoration: none; }
+  /* Trailing disclosure chevron — each row is a whole-row navigation link to
+     that day's log, so it carries the same iOS settings-row "›" affordance as
+     a.action-card / .settings-card. Without it the row reads as an inert
+     date + status readout rather than a tappable route, the lone navigable list
+     in the app that didn't advertise itself. Absolutely positioned so it stays
+     out of the space-between flex flow (date left, signals right); drawn from a
+     mask so it tracks --ink-muted in both colour schemes. */
+  .log-book-recent-link::after {
+    background: var(--ink-muted);
+    content: "";
+    height: 13px;
+    mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='13'%20viewBox='0%200%208%2013'%3E%3Cpath%20d='M1.5%201.5%206.5%206.5%201.5%2011.5'%20fill='none'%20stroke='black'%20stroke-width='1.8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: background 120ms ease;
+    width: 8px;
+  }
+  .log-book-recent-link:hover::after { background: var(--ink); }
   .log-book-recent-row-current .log-book-recent-link {
     background: color-mix(in oklch, var(--accent-soft) 50%, var(--surface-2));
   }
