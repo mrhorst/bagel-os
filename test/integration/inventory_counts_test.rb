@@ -294,7 +294,9 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_response :success
     # Saving a count redirects to its guide's buy list; a count opened later
     # from history must offer that same next step instead of dead-ending.
-    assert_select "a[href='#{inventory_shopping_list_path(order_guide_id: @guide.id)}']", text: "View buy list"
+    # The link threads this count as the buy-list origin so its back control
+    # returns here instead of overshooting to Inventory.
+    assert_select "a[href='#{inventory_shopping_list_path(order_guide_id: @guide.id, return_to: "count", count_id: count.id)}']", text: "View buy list"
   end
 
   test "legacy count detail has no guide buy list link since it has no guide" do
