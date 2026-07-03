@@ -37,9 +37,9 @@
 </div>
 
 <% if @order_guide.blank? %>
-  <section class="panel">
-    <h2>Choose guide</h2>
-    <% if @order_guides.any? %>
+  <% if @order_guides.any? %>
+    <section class="panel">
+      <h2>Choose guide</h2>
       <div class="action-grid">
         <% @order_guides.each do |guide| %>
           <%= link_to new_inventory_count_path(order_guide_id: guide.id), class: "action-card" do %>
@@ -48,11 +48,18 @@
           <% end %>
         <% end %>
       </div>
-    <% else %>
-      <p class="empty-state">Create an order guide before starting an inventory count.</p>
+    </section>
+  <% else %>
+    <%# Empty state owns the single primary CTA. Use the app-wide embedded
+        empty-state pattern (article.panel.empty-state with the button as a
+        descendant) so the CTA inherits the centered layout and the
+        `.empty-state .button` top gap — a bare sibling button matches neither. %>
+    <article class="panel empty-state">
+      <strong>No order guides yet.</strong>
+      <span>Create an order guide first, then start a count from it.</span>
       <%= link_to "Create order guide", order_guides_path, class: "button primary" %>
-    <% end %>
-  </section>
+    </article>
+  <% end %>
 <% else %>
   <%= form_with url: inventory_counts_path, method: :post, class: "count-form" do %>
     <%= hidden_field_tag :order_guide_id, @order_guide.id %>
@@ -110,10 +117,11 @@
     <% end %>
 
     <% if @memberships.empty? %>
-      <section class="panel">
-        <p class="empty-state">This guide has no counted rows yet. Add counted items from the guide setup page.</p>
+      <article class="panel empty-state">
+        <strong>No counted rows in this guide yet.</strong>
+        <span>Add counted items on the guide setup page, then come back to start the count.</span>
         <%= link_to "Open guide setup", order_guide_path(@order_guide), class: "button primary" %>
-      </section>
+      </article>
     <% else %>
       <div class="sticky-actions">
         <%= submit_tag "Save count", class: "primary" %>
