@@ -44,7 +44,7 @@
         <% @order_guides.each do |guide| %>
           <%= link_to new_inventory_count_path(order_guide_id: guide.id), class: "action-card" do %>
             <strong><%= guide.name %></strong>
-            <span><%= pluralize(guide.order_guide_memberships.active.counted.count, "countable row") %></span>
+            <span><%= pluralize(guide.order_guide_memberships.active.counted.count, "item") %> to count</span>
           <% end %>
         <% end %>
       </div>
