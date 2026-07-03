@@ -95,8 +95,15 @@
     <%= link_to surface[:path], class: "home-surface-card home-surface-card-#{surface[:tone]}" do %>
       <div class="home-surface-card-head">
         <span class="home-surface-card-label"><%= surface[:label] %></span>
+        <%# The chip's number is repeated verbatim by the summary directly below
+            it ("10" over "10 records to clean up", "1" over "1 receipt to
+            review"), so a screen reader announces the count twice ("10 … 10
+            records to clean up") and reads a context-free "10" first. The chip
+            stays for the sighted glance — its presence separates a with-work card
+            from a clean one, its red fill flags the urgent one — but it's
+            decorative to AT, so hide it and let the summary carry the number. %>
         <% if surface[:count].to_i.positive? %>
-          <span class="home-surface-card-count"><%= dashboard_count(surface[:count]) %></span>
+          <span class="home-surface-card-count" aria-hidden="true"><%= dashboard_count(surface[:count]) %></span>
         <% end %>
       </div>
       <strong class="home-surface-card-summary"><%= surface[:summary] %></strong>
