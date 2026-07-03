@@ -71,7 +71,7 @@
           <td>
             <div class="button-row">
               <%= review_badge(line) %>
-              <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line), class: "button small #{'primary' if line.needs_review?}" %>
+              <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line, return_to: "import_batch"), class: "button small #{'primary' if line.needs_review?}" %>
             </div>
           </td>
         </tr>

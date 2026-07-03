@@ -18,7 +18,7 @@ class ImportBatchesLineActionsTest < ActionDispatch::IntegrationTest
     get import_batch_path(@batch)
 
     @batch.receipt_line_items.each do |line|
-      assert_select "a[href='#{edit_receipt_line_item_path(line)}']",
+      assert_select "a[href='#{edit_receipt_line_item_path(line, return_to: "import_batch")}']",
         { minimum: 1 },
         "receipt line #{line.line_number} must link to its editor from the import batch"
     end
@@ -33,6 +33,6 @@ class ImportBatchesLineActionsTest < ActionDispatch::IntegrationTest
 
     get import_batch_path(@batch)
 
-    assert_select "a[href='#{edit_receipt_line_item_path(line)}']", text: "Review"
+    assert_select "a[href='#{edit_receipt_line_item_path(line, return_to: "import_batch")}']", text: "Review"
   end
 end

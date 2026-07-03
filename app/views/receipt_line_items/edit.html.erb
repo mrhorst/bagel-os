@@ -84,7 +84,10 @@
     <% end %>
 
     <% if @line_item.purchase_kind == "case" %>
-      <%= form_with url: receipt_line_item_path(@line_item), method: :patch, class: "stack" do |form| %>
+      <%# Carry the origin through the save so the post-update redirect returns to
+          where the user came from, not to whichever page the product happens to
+          imply. %>
+      <%= form_with url: receipt_line_item_path(@line_item, return_to: params[:return_to].presence), method: :patch, class: "stack" do |form| %>
         <%= fields_for :supplier_product_pack, @case_pack do |pack_form| %>
           <div class="form-grid">
             <div>
@@ -116,7 +119,7 @@
 
         <div class="actions">
           <%= form.submit "Save line pricing", class: "button primary" %>
-          <%= link_to "Cancel", @line_item.product ? product_path(@line_item.product, anchor: dom_id(@line_item)) : import_batch_path(@line_item.import_batch, anchor: dom_id(@line_item)), class: "button" %>
+          <%= link_to "Cancel", line_item_return_path(@line_item), class: "button" %>
         </div>
       <% end %>
     <% else %>

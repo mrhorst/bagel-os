@@ -49,7 +49,7 @@ class ProductsFilterTest < ActionDispatch::IntegrationTest
     assert_select "table.purchase-history-table details.purchase-details"
     assert_select "table.purchase-history-table details.purchase-details dt", text: "Line ID"
     assert_select "a[href='#{import_batch_path(line.import_batch, anchor: "receipt_line_item_#{line.id}")}']", text: "View"
-    assert_select "a[href='#{edit_receipt_line_item_path(line)}']", text: "Edit"
+    assert_select "a[href='#{edit_receipt_line_item_path(line, return_to: "product")}']", text: "Edit"
   end
 
   test "product edit screen separates product review from line review" do

@@ -156,6 +156,39 @@ class ReceiptLineItemsEditTest < ActionDispatch::IntegrationTest
     assert unit_line.needs_review?
   end
 
+  test "saving a line reviewed from the receipt returns to the receipt, not the product" do
+    # The batch reviewer works a receipt's flagged lines top-to-bottom, so a save
+    # must return to the receipt review list — not eject to the product page just
+    # because the line happens to be matched.
+    get edit_receipt_line_item_path(@line_item, return_to: "import_batch")
+    assert_response :success
+    # The origin is threaded through the form action so the save preserves it.
+    assert_select "form[action=?]", receipt_line_item_path(@line_item, return_to: "import_batch")
+    # Cancel honors the same origin instead of keying off product existence.
+    assert_select "a.button[href=?]",
+      import_batch_path(@line_item.import_batch, anchor: "receipt_line_item_#{@line_item.id}")
+
+    patch receipt_line_item_path(@line_item, return_to: "import_batch"), params: {
+      supplier_product_pack: {
+        units_per_case: "4", inner_unit_label: "pack", inner_package_size: "5",
+        inner_unit_of_measure: "lb", standard_unit: "lb", notes: "Verified"
+      }
+    }
+
+    assert_redirected_to import_batch_path(@batch, anchor: "receipt_line_item_#{@line_item.id}")
+  end
+
+  test "saving a line reviewed from the product returns to the product" do
+    patch receipt_line_item_path(@line_item, return_to: "product"), params: {
+      supplier_product_pack: {
+        units_per_case: "4", inner_unit_label: "pack", inner_package_size: "5",
+        inner_unit_of_measure: "lb", standard_unit: "lb", notes: "Verified"
+      }
+    }
+
+    assert_redirected_to product_path(@product, anchor: "receipt_line_item_#{@line_item.id}")
+  end
+
   test "a unit line flagged for price can be resolved from the edit page (no dead-end)" do
     # A unit-kind line flagged for review but carrying a price review (the kind
     # the importer now emits, #172) must show the resolve UI — not the

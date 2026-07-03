@@ -40,12 +40,27 @@ class ReceiptLineItemsController < ApplicationController
     )
   end
 
+  # The editor is dual-origin — reached from the receipt review list (batch) and
+  # from a product's purchase history — and both the save redirect and the Cancel
+  # link must return the user to where they came from, not key off whether the
+  # line happens to have a product. Each caller threads a discrete return_to
+  # token, matched here against a whitelist (never a raw path):
+  #
+  #   • return_to=import_batch → the receipt, so a batch reviewer stays in the
+  #     top-to-bottom flag cleanup instead of being ejected to a product page.
+  #   • return_to=product (or no hint, with a matched product) → the product, the
+  #     reasonable landing when you acted on one line from the product workspace.
+  #
+  # With no hint and no product, the receipt is the only sensible target. Older
+  # links, bookmarks, and deep links keep the historical product-or-receipt
+  # default, so nothing but the two explicit origins changes.
   def line_item_return_path(line_item)
     anchor = "receipt_line_item_#{line_item.id}"
-    if line_item.product
-      product_path(line_item.product, anchor: anchor)
-    else
+    if params[:return_to] == "import_batch" || line_item.product.nil?
       import_batch_path(line_item.import_batch, anchor: anchor)
+    else
+      product_path(line_item.product, anchor: anchor)
     end
   end
+  helper_method :line_item_return_path
 end

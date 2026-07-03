@@ -327,7 +327,7 @@
             <td>
               <div class="button-row purchase-actions">
                 <%= link_to "View", import_batch_path(line.import_batch, anchor: dom_id(line)), class: "button small" %>
-                <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line), class: "button small #{'primary' if line.needs_review?}" %>
+                <%= link_to line.needs_review? ? "Review" : "Edit", edit_receipt_line_item_path(line, return_to: "product"), class: "button small #{'primary' if line.needs_review?}" %>
               </div>
             </td>
           </tr>
