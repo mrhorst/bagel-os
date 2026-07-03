@@ -5,7 +5,7 @@
     <div class="manage-row-title">
       <h3><%= task.title %></h3>
       <% if task.requires_photo_evidence? %>
-        <span class="badge badge-compact">Photo</span>
+        <span class="badge badge-compact">Photo required</span>
       <% end %>
       <% unless task.active? %>
         <span class="badge">Archived</span>

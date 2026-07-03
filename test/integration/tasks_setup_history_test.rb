@@ -241,7 +241,7 @@ class TasksSetupHistoryTest < ActionDispatch::IntegrationTest
       get tasks_manage_tasks_path
       assert_response :success
       assert_select "h1", "Tasks"
-      assert_select ".badge", "Photo"
+      assert_select ".badge", "Photo required"
       assert_select "h3", "Check display case"
     end
   end
