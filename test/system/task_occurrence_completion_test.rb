@@ -70,6 +70,22 @@ class TaskOccurrenceCompletionTest < ApplicationSystemTestCase
       "Back arrow forgot the originating list after undoing"
   end
 
+  test "a rejected undo keeps the note the user already typed" do
+    occurrence = open_occurrence_today
+    visit tasks_occurrence_path(occurrence)
+    click_on "Complete task"
+    assert_text "Completed by"
+
+    # Type an explanation for the undo but forget to tick the confirm-undo guard.
+    fill_in "Undo note", with: "Logged the wrong time"
+    click_on "Undo completion"
+
+    # The guard blocks the undo with an alert — but the note must survive the
+    # bounce so the user only has to tick the box, not retype their reason.
+    assert_text "Confirm undo before updating task history"
+    assert_field "Undo note", with: "Logged the wrong time"
+  end
+
   test "undoing a completion from the occurrence detail page reflects the undo" do
     occurrence = open_occurrence_today
     visit tasks_occurrence_path(occurrence)
