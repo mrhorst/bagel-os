@@ -70,7 +70,12 @@
         <h2>Receipt products not on guide</h2>
         <p class="muted">Top items to review against the current daily and weekly guides.</p>
       </div>
-      <%= link_to "Review", order_guides_path, class: "button" %>
+      <%# Only offer "Review" when there are gaps to act on — over the empty state
+          ("No receipt-backed gaps found") it invited review of work that isn't there,
+          and duplicated the hero's "Guide gaps" link to the same destination. %>
+      <% if @missing_products.any? %>
+        <%= link_to "Review", order_guides_path, class: "button" %>
+      <% end %>
     </div>
 
     <% if @missing_products.any? %>
