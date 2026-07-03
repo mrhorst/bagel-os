@@ -71,4 +71,33 @@ class InventoryBackNavigationTest < ActionDispatch::IntegrationTest
       "expected an in-content link back to Inventory on the master inventory page"
     assert_select "a.mobile-header-back[href=?]", inventory_path
   end
+
+  # The buy list is tri-origin. When reached from an order guide or a saved
+  # count, the caller threads a return_to hint so back returns to that origin
+  # instead of overshooting to Inventory. Default (no hint) stays Inventory.
+  test "the buy list opened from an order guide returns to that guide" do
+    get inventory_shopping_list_path(order_guide_id: @guide.id, return_to: "order_guide")
+    assert_response :success
+    assert_select "a.mobile-header-back[href=?]", order_guide_path(@guide)
+    assert_select "a.mobile-header-back[aria-label=?]", "Back to order guide"
+    assert in_content_links_to(order_guide_path(@guide)).any?,
+      "expected the desktop back button to point at the guide too"
+    assert_select "a.mobile-header-back[href=?]", inventory_path, count: 0
+  end
+
+  test "the buy list opened from a saved count returns to that count" do
+    count = InventoryCount.find_by!(order_guide: @guide)
+    get inventory_shopping_list_path(order_guide_id: @guide.id, return_to: "count", count_id: count.id)
+    assert_response :success
+    assert_select "a.mobile-header-back[href=?]", inventory_count_path(count)
+    assert_select "a.mobile-header-back[aria-label=?]", "Back to count"
+    assert_select "a.mobile-header-back[href=?]", inventory_path, count: 0
+  end
+
+  test "a stale or forged buy-list origin falls back to Inventory" do
+    get inventory_shopping_list_path(order_guide_id: @guide.id, return_to: "count", count_id: 999_999)
+    assert_response :success
+    assert_select "a.mobile-header-back[href=?]", inventory_path
+    assert_select "a.mobile-header-back[aria-label=?]", "Back to Inventory"
+  end
 end

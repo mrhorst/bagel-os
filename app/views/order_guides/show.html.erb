@@ -17,7 +17,9 @@
   <div class="actions">
     <% if @order_guide.active? %>
       <%= link_to "Start count", new_inventory_count_path(order_guide_id: @order_guide.id), class: "button primary" %>
-      <%= link_to "Buy list", inventory_shopping_list_path(order_guide_id: @order_guide.id), class: "button" %>
+      <%# Thread this guide as the buy-list origin so its back control returns
+          here instead of overshooting to Inventory. %>
+      <%= link_to "Buy list", inventory_shopping_list_path(order_guide_id: @order_guide.id, return_to: "order_guide"), class: "button" %>
     <% end %>
     <%= link_to "All guides", order_guides_path, class: "button" %>
   </div>

@@ -1,15 +1,18 @@
 <% content_for :title, @order_guide ? "#{@order_guide.name} Buy List" : "Shopping List" %>
 
-<%# On mobile the top-left chevron is the primary back affordance. Without this
-    override the layout's auto-chevron points at the module hub (Stock),
-    overshooting the Inventory index this page is opened from (its guide "Buy
-    list" links). Send it up exactly one level, to Inventory. %>
+<%# This page is tri-origin: reached from the Inventory index, an Order Guide,
+    or a saved Count. The back target is resolved once here (from the caller's
+    return_to hint, defaulting to Inventory) and shared by the mobile chevron and
+    the desktop button so they always agree. On mobile the chevron is the primary
+    back affordance; without this override the layout's auto-chevron overshoots
+    to the module hub (Stock). %>
+<% back_path, back_label, back_span = shopping_list_back_target(@order_guide) %>
 <% content_for :mobile_left_action do %>
-  <%= link_to inventory_path, class: "mobile-header-back", aria: { label: "Back to Inventory" } do %>
+  <%= link_to back_path, class: "mobile-header-back", aria: { label: back_label } do %>
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
       <path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <span>Inventory</span>
+    <span><%= back_span %></span>
   <% end %>
 <% end %>
 
@@ -37,7 +40,7 @@
         here, so it doesn't become a redundant full-width button stacked above and
         pushing the guide chooser below the fold — matching the sibling Master
         Inventory / New Count screens' identical back control. %>
-    <%= link_to "Back to Inventory", inventory_path, class: "button hide-on-mobile" %>
+    <%= link_to back_label, back_path, class: "button hide-on-mobile" %>
   </div>
 </div>
 

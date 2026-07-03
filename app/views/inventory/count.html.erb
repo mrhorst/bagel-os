@@ -23,7 +23,9 @@
         step instead of dead-ending, so the count-to-buy loop stays reachable.
         Legacy counts have no guide, so there is no guide-specific buy list. %>
     <% if @count.order_guide %>
-      <%= link_to "View buy list", inventory_shopping_list_path(order_guide_id: @count.order_guide_id), class: "button primary" %>
+      <%# Thread this count as the buy-list origin so its back control returns
+          here instead of overshooting to Inventory. %>
+      <%= link_to "View buy list", inventory_shopping_list_path(order_guide_id: @count.order_guide_id, return_to: "count", count_id: @count.id), class: "button primary" %>
     <% end %>
     <%= link_to "Count history", inventory_counts_path, class: "button" %>
   </div>
