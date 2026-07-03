@@ -2301,6 +2301,13 @@
     min-height: 38px;
   }
   .check input {
+    /* Tint the checked box with the brand accent so it matches `.radio input`
+       (the only other selection control) instead of falling back to the
+       browser-default blue — an off-palette colour that clashes with the
+       orange radios sitting on the very same forms (Log Book sections, task
+       setup, permission grids). A ticked checkbox is an affirmative selection,
+       the one meaning the accent already carries. */
+    accent-color: var(--accent);
     min-height: 18px;
     width: 18px;
   }
