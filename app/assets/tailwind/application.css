@@ -4091,10 +4091,26 @@
   }
   .decision-action {
     border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
     padding: 14px 16px;
   }
   .decision-action:last-child {
     border-right: 0;
+  }
+  /* The three actions are peer columns that stretch to a shared row height on
+     desktop (grid default), but the "Assign" column carries one fewer control
+     than "Create new" / "Resolve", so its submit button floated ~50px above its
+     rowmates — leaving the three parallel CTAs on ragged baselines. Let each
+     column's form fill the column and drop its submit to the bottom, so Assign /
+     Create / Update line up on one shared action baseline. On mobile the columns
+     stack (no shared row height, see the 900px query below), so each form is
+     content-sized and the button stays snug beneath its inputs — no floating. */
+  .decision-action > form {
+    flex: 1;
+  }
+  .decision-action > form > .button {
+    margin-top: auto;
   }
   .decision-action h3 {
     color: var(--ink-muted);
