@@ -7,14 +7,6 @@
   </div>
 </section>
 
-<% if current_user.admin? %>
-  <section class="panel narrow">
-    <h2>Admin</h2>
-    <p class="muted small">Manage users and module permissions for the whole workspace.</p>
-    <%= link_to "Manage users", admin_users_path, class: "button" %>
-  </section>
-<% end %>
-
 <section class="panel narrow">
   <h2>Profile</h2>
   <p class="muted small">Update the name and email address tied to your account.</p>
@@ -95,6 +87,19 @@
     </div>
   <% end %>
 </section>
+
+<%# The Account page's subject is the signed-in user's own account, so the
+    personal panels (Profile, notifications, password) lead. This admin shortcut
+    manages the whole workspace — a different, secondary scope that also has its
+    own top-level "Users" nav — so it sits below the personal settings rather than
+    above Profile, where it displaced the page's actual subject. Admin-only. %>
+<% if current_user.admin? %>
+  <section class="panel narrow">
+    <h2>Admin</h2>
+    <p class="muted small">Manage users and module permissions for the whole workspace.</p>
+    <%= link_to "Manage users", admin_users_path, class: "button" %>
+  </section>
+<% end %>
 
 <section class="panel narrow">
   <h2>Sign out</h2>
