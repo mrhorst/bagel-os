@@ -61,3 +61,11 @@ en:
         instructions: "Instructions"
         position: "Sort order"
         requires_photo_evidence: "Require one completion photo"
+      # Same rule for the recipe editor: a failed save humanized the raw columns
+      # ("Name", "Yield quantity"), but the form labels them "Recipe name" and
+      # "Yield amount" — so e.g. entering a 0 yield returned "Yield quantity must
+      # be greater than 0", naming a field the cook couldn't find on screen. Keep
+      # these in sync with the labels in app/views/recipes/_form.html.erb.
+      recipe:
+        name: "Recipe name"
+        yield_quantity: "Yield amount"
