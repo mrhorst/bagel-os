@@ -25,15 +25,19 @@ module Admin
     end
 
     def edit
-      # How many photos carry this tag, so the delete danger zone can name the
-      # blast radius of an irreversible action instead of a vague "all photos".
-      @photo_count = @tag.taggings.count
+      set_photo_count
     end
 
     def update
       if @tag.update(tag_params)
         redirect_to admin_tags_path, notice: "Tag updated."
       else
+        # A failed update re-renders :edit, whose delete danger zone reads
+        # @photo_count (@photo_count.zero?). Without this it renders with
+        # @photo_count = nil and 500s on nil.zero?, turning an ordinary
+        # validation error (blank/duplicate name, bad slug) into a hard crash
+        # that also discards everything the admin typed.
+        set_photo_count
         render :edit, status: :unprocessable_entity
       end
     end
@@ -51,6 +55,12 @@ module Admin
 
     def tag_params
       params.require(:tag).permit(:name, :slug, :instruction, :active, :position)
+    end
+
+    # How many photos carry this tag, so the delete danger zone can name the
+    # blast radius of an irreversible action instead of a vague "all photos".
+    def set_photo_count
+      @photo_count = @tag.taggings.count
     end
 
     def next_position

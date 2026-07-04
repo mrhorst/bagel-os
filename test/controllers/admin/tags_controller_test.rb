@@ -97,6 +97,25 @@ module Admin
       assert_equal "Anything edible or drinkable.", tags(:food).reload.instruction
     end
 
+    test "an invalid update re-renders the edit form instead of crashing on the delete danger zone" do
+      sign_in_as(users(:one))
+
+      # The edit view's delete danger zone reads @photo_count, which the update
+      # action must set before re-rendering :edit on a failed save. Otherwise a
+      # blank name (or any validation error) renders with @photo_count = nil and
+      # 500s on nil.zero? — turning an ordinary mistake into a hard crash that
+      # also discards the admin's edits. This exercises both a tag with photos
+      # and one without so both danger-zone branches render.
+      patch admin_tag_path(tags(:food)), params: { tag: { name: "" } }
+      assert_response :unprocessable_entity
+      assert_select "div.flash-alert li", text: /Name can't be blank/
+      assert_equal "Food", tags(:food).reload.name
+
+      patch admin_tag_path(tags(:product)), params: { tag: { name: "" } }
+      assert_response :unprocessable_entity
+      assert_select ".panel-danger-zone p", text: /isn't on any photos yet/
+    end
+
     test "the delete danger zone names how many photos carry the tag" do
       sign_in_as(users(:one))
       2.times do |i|
