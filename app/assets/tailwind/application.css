@@ -5099,8 +5099,19 @@
        fill the column. auto-fill keeps the empty phantom tracks, so two cards
        huddled in the left ~60% with a dead column on the right — reading as an
        unfinished layout. auto-fit collapses the empty tracks so the present
-       cards stretch edge to edge, matching the sibling .task-builder-menu grid. */
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+       cards stretch edge to edge, matching the sibling .task-builder-menu grid.
+
+       The 210px track floor is deliberately below the ~232px a four-up desktop
+       row lands on (the same width the dashboard surface cards use): the Stock
+       and More hubs carry four modules, and at the old 260px floor only three
+       columns fit the content width, stranding the fourth card alone in a second
+       row beside two empty tracks — the exact orphaned-last-row "unfinished
+       layout" this auto-fit rule exists to avoid. Dropping the floor lets all
+       four sit in one clean row, while the 1/2/3-card hubs are unaffected
+       (auto-fit still collapses their empty tracks and 1fr stretches them to
+       fill). No settings-hub screen carries more than four cards, so the floor
+       never has to admit a fifth column. */
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
   .settings-card {
     /* Within each (now content-sized — see .settings-hub) card, centre the icon
