@@ -1,59 +1,59 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bagel">
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bagel OS">
   <defs>
-    <radialGradient id="dough" cx="40%" cy="32%" r="80%">
-      <stop offset="0%" stop-color="#EAB76A"/>
-      <stop offset="45%" stop-color="#D29442"/>
-      <stop offset="100%" stop-color="#9A5C22"/>
+    <!-- Brand-orange field, derived from --accent oklch(0.57 0.17 50) -->
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E2832D"/>
+      <stop offset="52%" stop-color="#CA5B00"/>
+      <stop offset="100%" stop-color="#9F3700"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="18%" r="75%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="hole" cx="50%" cy="42%" r="62%">
-      <stop offset="0%" stop-color="#8A4F1E"/>
-      <stop offset="100%" stop-color="#BE7E38"/>
+
+    <!-- Cream dough: lightest on the puffed mid-band, toasted at both rims -->
+    <radialGradient id="dough" gradientUnits="userSpaceOnUse" cx="256" cy="248" r="170">
+      <stop offset="34%" stop-color="#EFCE9E"/>
+      <stop offset="46%" stop-color="#FDF2DC"/>
+      <stop offset="66%" stop-color="#FFF8E9"/>
+      <stop offset="88%" stop-color="#F6DDB4"/>
+      <stop offset="100%" stop-color="#E9BE86"/>
     </radialGradient>
-    
+
+    <!-- Shadow the ring casts into its own hole -->
+    <linearGradient id="holeShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6E2B00" stop-opacity="0.5"/>
+      <stop offset="80%" stop-color="#6E2B00" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="soften" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
   </defs>
 
-  <!-- transparent: bagel only -->
+  <!-- Full-bleed background (iOS masks the corners itself) -->
+  <rect width="512" height="512" fill="url(#field)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
 
-  <!-- Bagel ring (outer disc minus the hole) -->
-  <circle cx="256" cy="256" r="250" fill="url(#dough)" stroke="#7E4A18" stroke-width="3" stroke-opacity="0.35"/>
+  <!-- Grounding shadow -->
+  <path d="M256 108a160 160 0 1 0 0 320a160 160 0 1 0 0-320Z M256 196a72 72 0 1 1 0 144a72 72 0 1 1 0-144Z"
+        transform="translate(0 18)" fill="#671F00" opacity="0.38" filter="url(#soften)"/>
 
-  <circle cx="256" cy="256" r="78" fill="url(#hole)"/>
-  <circle cx="256" cy="256" r="78" fill="none" stroke="#6F4014" stroke-width="3" stroke-opacity="0.35"/>
+  <!-- Shadow visible through the hole -->
+  <circle cx="256" cy="252" r="62" fill="url(#holeShade)"/>
 
-  <!-- Top glaze highlight -->
-  <path d="M 118 118 a 210 210 0 0 1 286 -4" fill="none" stroke="#FCE6AE" stroke-width="22" stroke-linecap="round" opacity="0.5"/>
+  <!-- Bagel ring (hole is a true cutout) -->
+  <path fill-rule="evenodd" fill="url(#dough)"
+        d="M256 88a164 164 0 1 0 0 328a164 164 0 1 0 0-328Z M256 190a64 64 0 1 1 0 128a64 64 0 1 1 0-128Z"/>
 
-  <!-- Sesame seeds -->
-  <g transform="translate(471.2 212.4) rotate(104)"><ellipse rx="9.4" ry="5.4" fill="#F7EAC8"/><ellipse rx="9.4" ry="5.4" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(394.4 285.4) rotate(270)"><ellipse rx="10.5" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(418.5 337.8) rotate(294)"><ellipse rx="9.5" ry="5.0" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.0" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(404.8 374.4) rotate(19)"><ellipse rx="10.4" ry="5.1" fill="#F7EAC8"/><ellipse rx="10.4" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(374.3 422.9) rotate(44)"><ellipse rx="10.0" ry="5.6" fill="#F7EAC8"/><ellipse rx="10.0" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(345.9 415.4) rotate(207)"><ellipse rx="10.8" ry="5.6" fill="#F7EAC8"/><ellipse rx="10.8" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(317.1 384.5) rotate(301)"><ellipse rx="9.7" ry="4.8" fill="#F7EAC8"/><ellipse rx="9.7" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(298.3 404.7) rotate(106)"><ellipse rx="10.9" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.9" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(236.4 469.0) rotate(21)"><ellipse rx="9.5" ry="5.2" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(225.5 406.6) rotate(69)"><ellipse rx="10.8" ry="4.7" fill="#F7EAC8"/><ellipse rx="10.8" ry="4.7" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(208.3 391.3) rotate(239)"><ellipse rx="10.8" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.8" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(189.4 392.1) rotate(102)"><ellipse rx="9.7" ry="5.1" fill="#F7EAC8"/><ellipse rx="9.7" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(145.3 382.6) rotate(221)"><ellipse rx="9.5" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(81.8 376.7) rotate(228)"><ellipse rx="10.3" ry="5.2" fill="#F7EAC8"/><ellipse rx="10.3" ry="5.2" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(81.3 328.0) rotate(338)"><ellipse rx="9.8" ry="5.4" fill="#F7EAC8"/><ellipse rx="9.8" ry="5.4" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(88.2 307.2) rotate(126)"><ellipse rx="9.7" ry="5.0" fill="#F7EAC8"/><ellipse rx="9.7" ry="5.0" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(43.6 230.8) rotate(39)"><ellipse rx="10.6" ry="4.7" fill="#F7EAC8"/><ellipse rx="10.6" ry="4.7" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(139.2 237.3) rotate(28)"><ellipse rx="11.0" ry="4.8" fill="#F7EAC8"/><ellipse rx="11.0" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(150.4 205.6) rotate(164)"><ellipse rx="10.2" ry="4.8" fill="#F7EAC8"/><ellipse rx="10.2" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(100.0 108.4) rotate(320)"><ellipse rx="10.8" ry="5.6" fill="#F7EAC8"/><ellipse rx="10.8" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(171.4 151.6) rotate(3)"><ellipse rx="9.5" ry="4.7" fill="#F7EAC8"/><ellipse rx="9.5" ry="4.7" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(128.7 129.5) rotate(83)"><ellipse rx="10.5" ry="5.1" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(215.6 133.1) rotate(317)"><ellipse rx="9.5" ry="5.0" fill="#F7EAC8"/><ellipse rx="9.5" ry="5.0" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(251.6 142.5) rotate(176)"><ellipse rx="9.0" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.0" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(268.0 36.6) rotate(7)"><ellipse rx="10.8" ry="4.8" fill="#F7EAC8"/><ellipse rx="10.8" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(320.6 95.9) rotate(244)"><ellipse rx="9.5" ry="4.8" fill="#F7EAC8"/><ellipse rx="9.5" ry="4.8" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(303.1 90.0) rotate(18)"><ellipse rx="10.5" ry="5.4" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.4" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(358.3 128.1) rotate(11)"><ellipse rx="9.2" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.2" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(368.4 104.3) rotate(321)"><ellipse rx="9.1" ry="5.6" fill="#F7EAC8"/><ellipse rx="9.1" ry="5.6" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(462.8 157.5) rotate(343)"><ellipse rx="10.5" ry="5.1" fill="#F7EAC8"/><ellipse rx="10.5" ry="5.1" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(426.9 164.1) rotate(317)"><ellipse rx="9.8" ry="4.9" fill="#F7EAC8"/><ellipse rx="9.8" ry="4.9" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
-  <g transform="translate(465.2 206.0) rotate(201)"><ellipse rx="9.7" ry="5.3" fill="#F7EAC8"/><ellipse rx="9.7" ry="5.3" fill="none" stroke="#C79A57" stroke-width="0.9" opacity="0.5"/></g>
+  <!-- Sesame seeds — few, large, toasted -->
+  <g fill="#C97E37">
+    <ellipse cx="256" cy="141" rx="15" ry="8.5" transform="rotate(-8 256 141)"/>
+    <ellipse cx="352" cy="184" rx="15" ry="8.5" transform="rotate(38 352 184)"/>
+    <ellipse cx="371" cy="290" rx="14" ry="8" transform="rotate(104 371 290)"/>
+    <ellipse cx="302" cy="360" rx="15" ry="8.5" transform="rotate(150 302 360)"/>
+    <ellipse cx="196" cy="352" rx="14" ry="8" transform="rotate(28 196 352)"/>
+    <ellipse cx="145" cy="266" rx="15" ry="8.5" transform="rotate(78 145 266)"/>
+    <ellipse cx="180" cy="172" rx="14" ry="8" transform="rotate(130 180 172)"/>
+  </g>
 </svg>
