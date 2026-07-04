@@ -20,11 +20,13 @@
   </div>
   <div class="actions">
     <%= link_to "New count", new_inventory_count_path, class: "button primary" %>
-    <%# The mobile chevron returns to Inventory; mirror it with a desktop-visible
-        control so a wide-screen user isn't left clicking the already-active
-        "Inventory" sidebar item to get back — matching "All guides"/"All imports"
-        on the sibling Order Guides / Imports detail pages. %>
-    <%= link_to "Back to Inventory", inventory_path, class: "button" %>
+    <%# Desktop-only back control: a wide-screen user has no header chevron and
+        shouldn't have to click the already-active "Inventory" sidebar item to get
+        back — matching "Back to Inventory" on the sibling Items / Buy List pages.
+        Hidden on mobile (`hide-on-mobile`), where the header's "‹ Inventory"
+        chevron already returns here, so this doesn't become a redundant third
+        full-width button pushing the content below the fold. %>
+    <%= link_to "Back to Inventory", inventory_path, class: "button hide-on-mobile" %>
   </div>
 </div>
 
