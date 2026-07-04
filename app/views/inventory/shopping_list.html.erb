@@ -49,7 +49,7 @@
         <% @order_guides.each do |guide| %>
           <%= link_to inventory_shopping_list_path(order_guide_id: guide.id), class: "action-card" do %>
             <strong><%= guide.name %></strong>
-            <span><%= pluralize(guide.active_item_count, "active row") %></span>
+            <span><%= pluralize(guide.active_item_count, "active item") %></span>
           <% end %>
         <% end %>
       </div>
