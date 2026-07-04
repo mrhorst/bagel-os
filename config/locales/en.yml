@@ -69,3 +69,15 @@ en:
       recipe:
         name: "Recipe name"
         yield_quantity: "Yield amount"
+      # Same rule for the product editor: a failed save humanized the raw columns
+      # ("Canonical name", "Each weight value", "Each weight unit"), but the form
+      # labels them "Product name", "Average weight per unit", and "Weight unit" —
+      # so a blank name returned "Canonical name can't be blank" and a half-filled
+      # weight bridge returned "Each weight unit and the average weight must be
+      # filled in together", each naming a field the reviewer couldn't find on
+      # screen. Keep these in sync with the labels in
+      # app/views/products/edit.html.erb.
+      product:
+        canonical_name: "Product name"
+        each_weight_value: "Average weight per unit"
+        each_weight_unit: "Weight unit"
