@@ -26,7 +26,7 @@
         <tr>
           <td class="row-heading" data-label="Email">
             <strong><%= user.email_address %></strong>
-            <% if user.owner? %><span class="badge badge-ok">Owner</span><% end %>
+            <% if user.owner? %><span class="badge">Owner</span><% end %>
           </td>
           <td data-label="Name"><%= user.name.presence || content_tag(:span, "—", class: "muted") %></td>
           <td data-label="Role">
