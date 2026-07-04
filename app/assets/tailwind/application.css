@@ -3293,6 +3293,24 @@
   .manage-row-main p {
     margin: 4px 0 0;
   }
+  /* Schedule + status chips share one metadata line under the title — the same
+     arrangement as the dashboard task row's .task-row-meta. Grouping the
+     "Photo required" / "Archived" chips here, instead of inline with the title,
+     keeps them from wrapping between the title and its schedule on a narrow
+     card and holds every row to the same two-line rhythm. The text span is
+     sized to the demoted-helper scale (0.86rem / --ink-muted) that `p.small`
+     carried on the old `<p>`, since `.small` on a span lands no size. */
+  .manage-row-meta {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .manage-row-meta > span:not(.badge) {
+    color: var(--ink-muted);
+    font-size: 0.86rem;
+  }
   .manage-row-arrow {
     color: var(--ink-muted);
     flex-shrink: 0;
