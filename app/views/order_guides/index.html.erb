@@ -20,7 +20,13 @@
           class: "button", target: "_blank", rel: "noopener",
           data: { controller: "download", action: "download#save",
                   download_filename_value: "order-guide-import-example.csv" } %>
-    <%= link_to "Inventory", inventory_path, class: "button" %>
+    <%# "Inventory" is a desktop cross-link; on mobile the same destination is one
+        tap away on the bottom-tab nav (Stock), so hide it there rather than stack
+        a second full-width secondary button above the KPIs and guide list. Matches
+        the sibling Buy List / Inventory Counts headers, which mark their redundant
+        "Back to Inventory" nav .button hide-on-mobile for the same reason. The
+        unique "CSV example" utility (no mobile alternative) stays. %>
+    <%= link_to "Inventory", inventory_path, class: "button hide-on-mobile" %>
   </div>
 </div>
 
