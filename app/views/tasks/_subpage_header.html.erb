@@ -16,8 +16,13 @@
 %>
 
 <% content_for :mobile_left_action do %>
+  <%# Name the destination — "Back to <X>" — so the mobile chevron matches its own
+      desktop subpage-back twin below and every other module's back chevron
+      ("Back to Products", "Back to Log Book", the layout's "Back to <hub>"). A bare
+      "Back" left screen-reader / voice-control users on the app's primary (mobile)
+      viewport with no idea where the one back affordance leads. %>
   <%= link_to back_path, class: "mobile-header-action mobile-header-back",
-              aria: { label: "Back" } do %>
+              aria: { label: "Back to #{back_label}" } do %>
     <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
       <path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
