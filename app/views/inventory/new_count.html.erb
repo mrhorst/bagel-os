@@ -25,7 +25,14 @@
 <div class="page-heading">
   <div>
     <h1><%= @order_guide ? "Count #{@order_guide.name}" : "New Inventory Count" %></h1>
-    <p>Choose a guide, then walk its sections and enter only what you counted.</p>
+    <%# Describe the count flow rather than repeat the pick instruction: the
+        "Choose guide" panel heading below already owns "choose a guide" in the
+        chooser state (matching the sibling Buy List, whose subtitle likewise
+        describes the feature and lets that heading give the instruction). A
+        static "Choose a guide, then…" also mis-described the count-form state,
+        where a guide is already picked — "Walk each section…" reads correctly in
+        both states. %>
+    <p>Walk each section and enter only what you counted.</p>
   </div>
   <%# Desktop-only path to the counts list: a wide-screen user has no header
       chevron, so this is their only in-page way back to Counts. Hidden on mobile
