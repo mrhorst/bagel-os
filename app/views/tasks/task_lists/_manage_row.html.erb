@@ -8,14 +8,19 @@
   <div class="manage-row-main">
     <div class="manage-row-title">
       <h3><%= task_list.name %></h3>
+    </div>
+    <%# Display window + task count and the "Archived" chip share one metadata
+        line under the title, mirroring the sibling Manage Tasks row's
+        .manage-row-meta. Keeping the chip off the title line stops it wrapping
+        between the name and its window/count on a narrow card — which left an
+        archived row a line taller than its rowmates — and holds both management
+        screens to the same row anatomy. %>
+    <div class="manage-row-meta">
+      <span class="tnum"><%= task_list_display_window_label(task_list) %> · <%= pluralize(task_count, "active task") %></span>
       <% unless task_list.active? %>
         <span class="badge">Archived</span>
       <% end %>
     </div>
-    <p class="muted small tnum">
-      <%= task_list_display_window_label(task_list) %>
-      · <%= pluralize(task_count, "active task") %>
-    </p>
   </div>
   <svg class="manage-row-arrow" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
     <path d="m5 3 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
