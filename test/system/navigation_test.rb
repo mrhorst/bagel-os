@@ -502,6 +502,48 @@ class NavigationTest < ApplicationSystemTestCase
     click_through_to(tasks_manage_lists_path) { find("a.subpage-back").click }
   end
 
+  test "the mobile back chevron on a focused task list names its destination, not a bare Back" do
+    # Every other module's mobile back chevron names where it goes ("Back to
+    # Products", "Back to Inventory", …), the layout's own auto-chevron does too
+    # ("Back to <hub>"), and THIS page's desktop subpage-back already says "Back to
+    # Tasks". Only the Tasks mobile chevron announced a bare "Back" — leaving a
+    # screen-reader / voice-control user on the app's primary (mobile) viewport with
+    # no idea where the one back affordance leads. It must name its destination like
+    # every sibling. Earlier tasks nav tests only checked the desktop subpage-back
+    # (they never resized to mobile), so this gap slipped through.
+    list = TaskList.create!(name: "Prep", position: 1)
+    page.current_window.resize_to(414, 896)
+    visit tasks_list_path(list)
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to Tasks", chevron["aria-label"]
+    assert_equal tasks_root_path, URI(chevron[:href]).path
+
+    click_mobile_back_to tasks_root_path
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "the mobile back chevron on a task occurrence names the list it resolves to" do
+    # The occurrence detail page resolves its back target server-side (to the list
+    # the user came from) and its desktop subpage-back already announces "Back to
+    # <list>". The mobile chevron must carry that same resolved label, not a bare
+    # "Back" — proving the fix propagates the real back_label, not a hardcoded
+    # "Tasks". Arrive with an explicit ?back so the target resolves deterministically.
+    occurrence = build_open_occurrence
+    list = occurrence.task_list
+    page.current_window.resize_to(414, 896)
+    visit tasks_occurrence_path(occurrence, back: tasks_list_path(list))
+
+    chevron = find(".mobile-header-back")
+    assert_equal "Back to #{list.name}", chevron["aria-label"]
+    assert_equal tasks_list_path(list), URI(chevron[:href]).path
+
+    click_mobile_back_to tasks_list_path(list)
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "navigating to the account page works through Turbo" do
     # Headless Chrome intermittently drops the click that kicks off Turbo
     # navigation (the same flake ApplicationSystemTestCase handles for form
@@ -556,6 +598,30 @@ class NavigationTest < ApplicationSystemTestCase
     end
     visit path unless has_current_path?(path, wait: 1)
     assert_current_path path
+  end
+
+  # A single open occurrence today (list + task + occurrence) so the occurrence
+  # detail page renders without seeding the whole tasks demo data.
+  def build_open_occurrence
+    list = TaskList.create!(name: "Prep", position: 1)
+    task = list.tasks.create!(
+      title: "Clean slicer",
+      recurrence_type: "daily",
+      starts_on: Date.current,
+      due_time: Time.zone.parse("23:59"),
+      requires_photo_evidence: false
+    )
+    task.task_occurrences.create!(
+      task_list: list,
+      period_kind: "day",
+      period_starts_on: Date.current,
+      period_ends_on: Date.current,
+      due_at: 1.hour.from_now,
+      completion_window_ends_at: 1.week.from_now,
+      snapshot_title: task.title,
+      snapshot_list_name: list.name,
+      requires_photo_evidence: false
+    )
   end
 
   # A minimal product (plus the supplier it must belong to) so the show/edit
