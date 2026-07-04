@@ -3405,6 +3405,20 @@
     white-space: nowrap;
   }
 
+  /* Period ("Jul 4, 2026") and Due ("11:59 PM") are date/time data columns, so
+     their figures get tabular numerals — the design-system rule for every data
+     surface, and the same treatment the sibling date columns already carry
+     (.tnum on the Follow-ups opened/resolved dates and .log-book-recent-date).
+     Locking the digits to a fixed advance width lets the day/year and hour/minute
+     columns align vertically down the table instead of drifting with proportional
+     figures. font-variant-numeric only touches digits, so month names, the "PM"
+     and the range en-dash are unaffected. Scoped to the data-labelled (index)
+     table, so the occurrence-page .history-table is untouched — zero cascade. */
+  .history-table td[data-label="Period"],
+  .history-table td[data-label="Due"] {
+    font-variant-numeric: tabular-nums;
+  }
+
   /* The "Not completed" placeholder is two short words that still wrapped to two
      lines in every incomplete row (the dominant case), starved by the same
      seven-column layout. Keep just the placeholder on one line; the genuinely
