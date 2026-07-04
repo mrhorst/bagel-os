@@ -81,6 +81,32 @@ class TagTest < ActiveSupport::TestCase
     end
   end
 
+  test "a name with underscores derives a valid slug, not a leaked Slug-format error" do
+    # The gap the blank/emoji cases above miss: a name whose derived slug is
+    # NON-blank but invalid. parameterize preserves underscores, so a plausible
+    # name like "Gluten_Free" derived to "gluten_free" — which the format forbids
+    # — and the admin who left the slug blank (as the form instructs) was scolded
+    # "Slug must be lowercase words separated by dashes" for a field they never
+    # touched. Deriving must fold underscores into dashes so the slug is valid and
+    # no Slug-field error leaks.
+    [ [ "Gluten_Free", "gluten-free" ], [ "Front_of_House", "front-of-house" ], [ "a__b", "a-b" ] ].each do |name, expected_slug|
+      tag = Tag.new(name: name)
+      assert tag.valid?, "expected #{name.inspect} to be valid, got: #{tag.errors.full_messages.to_sentence}"
+      assert_equal expected_slug, tag.slug
+      assert_empty tag.errors[:slug], "expected no leaked Slug field error for #{name.inspect}"
+      assert_not_includes tag.errors.full_messages.to_sentence, "Slug"
+    end
+  end
+
+  test "a typed slug with an underscore is still scolded (format check preserved for typed input)" do
+    # The flip side: when the admin actually TYPES a slug, the format validation
+    # must still catch a malformed one — the fix only spares the derived case, it
+    # doesn't silently rewrite what someone deliberately entered.
+    tag = Tag.new(name: "Drinks", slug: "cold_brew")
+    assert_not tag.valid?
+    assert_includes tag.errors[:slug], "must be lowercase words separated by dashes"
+  end
+
   test "active scope excludes inactive tags" do
     assert_includes Tag.active, tags(:food)
     assert_not_includes Tag.active, tags(:inactive_promo)

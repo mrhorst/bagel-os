@@ -27,8 +27,25 @@ class Tag < ApplicationRecord
 
   # Derive the machine slug from the name when one isn't given, so admins can
   # just type a label (e.g. "Plated Food" -> "plated-food").
+  #
+  # A *typed* slug is normalized as-is: parameterize tidies case/spacing but
+  # keeps an underscore intact, so the format validation above can still scold a
+  # genuinely malformed value the admin entered. A *derived* slug, though, must
+  # never trip that format check — the admin left the field blank exactly as the
+  # form's "Leave blank to derive it from the name" hint instructs, so a raw
+  # "Slug must be lowercase words separated by dashes" names a field they never
+  # touched and can't see. parameterize preserves underscores (e.g. "Gluten_Free"
+  # -> "gluten_free", which the format forbids), so when deriving, treat them as
+  # word separators ("Gluten_Free" -> "gluten-free") and hand back a slug that
+  # already satisfies the format instead of leaking an invalid one into the
+  # typed-only format error.
   def normalize_slug
-    self.slug = (slug.presence || name).to_s.parameterize
+    self.slug =
+      if slug.present?
+        slug.to_s.parameterize
+      else
+        name.to_s.tr("_", " ").parameterize
+      end
   end
 
   # A blank *derived* slug means the name had no letters or numbers to build a
