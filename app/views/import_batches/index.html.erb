@@ -33,7 +33,7 @@
             <td class="numeric" data-label="Imported"><%= batch.rows_imported %></td>
             <td class="numeric" data-label="Failed"><%= batch.rows_failed %></td>
             <td class="numeric" data-label="Needs review"><%= @review_counts.fetch(batch.id, 0) %></td>
-            <td data-label="Imported at"><%= batch.imported_at&.strftime("%Y-%m-%d %I:%M %p") %></td>
+            <td data-label="Imported at"><%= batch.imported_at&.strftime("%b %-d, %Y %-I:%M %p") %></td>
           </tr>
         <% end %>
       </tbody>
