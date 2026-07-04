@@ -6162,6 +6162,17 @@
       align-items: stretch;
       gap: 0;
     }
+    /* The stacked filter toggles are the screen's interactive commit controls,
+       but the app-wide ≤640px .check override drops each row to 32px — under the
+       44px touch floor — and gap:0 sits them flush. Restore a 44px tap height so
+       every full-width toggle also clears the touch minimum (the glyph is
+       unchanged; .check already centres its contents, so only the hit area
+       grows), matching the .log-book-section-card .check touch fix. Scoped to
+       .filter-checks (Products-only) so the app-wide compact .check stays
+       untouched. */
+    .filter-checks .check {
+      min-height: 44px;
+    }
 
     /* Mobile bottom tab bar — the signature floating glass surface. Detached
        from the screen edges so the glass reads as a pill hovering over content. */
