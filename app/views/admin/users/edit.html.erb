@@ -12,7 +12,7 @@
 <section class="page-heading">
   <div>
     <h1>Edit user</h1>
-    <p><%= @user.email_address %><% if @user.owner? %> · <span class="badge badge-ok">Owner</span><% end %></p>
+    <p><%= @user.email_address %><% if @user.owner? %> · <span class="badge">Owner</span><% end %></p>
   </div>
   <div class="actions">
     <%= link_to "Back to users", admin_users_path, class: "button small" %>
