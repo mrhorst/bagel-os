@@ -6501,6 +6501,23 @@
     .responsive-table td.row-heading[data-label]::before {
       display: none;
     }
+    /* A .row-heading may carry a <small> sub-line — the section description on
+       Log Sections, the "Photo required" flag on Tasks history. The rule above
+       gives the whole cell title weight/size/ink so the row name reads as the
+       card heading, but the <small> then inherits that 600 weight and 1.05rem
+       size, flattening it into the title and losing the title->description
+       hierarchy the desktop table keeps (base `small` is muted + smaller). Give
+       the sub-line back its muted, lighter treatment on its own line, matching
+       the desktop muted-subline house style (.date-cell/.task-builder-card
+       small). Scoped to `.row-heading small`, which only these two tables use. */
+    .responsive-table td.row-heading small {
+      color: var(--ink-muted);
+      display: block;
+      font-size: 0.86rem;
+      font-weight: 400;
+      line-height: 1.45;
+      margin-top: 3px;
+    }
     .responsive-table td.numeric {
       text-align: left !important;
     }
