@@ -4,6 +4,15 @@
   <div class="manage-row-main">
     <div class="manage-row-title">
       <h3><%= task.title %></h3>
+    </div>
+    <%# Schedule and the status chips ("Photo required" / "Archived") share one
+        metadata line under the title, mirroring the dashboard task row's
+        .task-row-meta. Keeping the chips out of the title line stops them
+        wrapping between the title and its schedule on a narrow (mobile) card —
+        which left that card a line taller than its rowmates — and groups every
+        task attribute on one rhythm-consistent row. %>
+    <div class="manage-row-meta">
+      <span class="tnum"><%= task_recurrence_label(task) %><% if show_list %> · <%= task.task_list.name %><% end %></span>
       <% if task.requires_photo_evidence? %>
         <span class="badge badge-compact">Photo required</span>
       <% end %>
@@ -11,9 +20,6 @@
         <span class="badge">Archived</span>
       <% end %>
     </div>
-    <p class="muted small tnum">
-      <%= task_recurrence_label(task) %><% if show_list %> · <%= task.task_list.name %><% end %>
-    </p>
   </div>
   <svg class="manage-row-arrow" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
     <path d="m5 3 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
