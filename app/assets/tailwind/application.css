@@ -3314,8 +3314,15 @@
     gap: 8px;
     margin-top: 4px;
   }
+  /* The recurrence/schedule line is the only per-row data distinguishing one
+     management row from the next, so it must clear WCAG AA as body text. At
+     --ink-muted (L0.52) on the near-white --surface-2 it grazed ~3.9:1 and
+     failed — read it one sanctioned step darker at --ink-2 (secondary ink,
+     ~8:1). Still lighter and lighter-weight than the --ink 600 title above it,
+     so the two-line hierarchy holds. Shared by both /tasks/manage rows (Manage
+     tasks + Task lists), which deliberately use one row anatomy. */
   .manage-row-meta > span:not(.badge) {
-    color: var(--ink-muted);
+    color: var(--ink-2);
     font-size: 0.86rem;
   }
   .manage-row-arrow {
