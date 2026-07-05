@@ -3777,9 +3777,14 @@
     display: inline-flex;
   }
   .collection-card-meta {
+    /* Name → count gap matches the sibling `.photo-card-meta` (6px) — the two
+       Marketing gallery cards share the same cover-over-meta-strip anatomy and
+       identical `8px 10px 10px` padding, so their internal vertical rhythm must
+       agree. At 2px the 600-weight name and the muted count sat nearly touching,
+       reading as one clot rather than a title with a supporting count. */
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px;
     padding: 8px 10px 10px;
   }
   .collection-card-name {
