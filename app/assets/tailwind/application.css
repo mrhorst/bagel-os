@@ -6830,6 +6830,20 @@
       min-height: 44px;
     }
 
+    /* A settings panel whose only control is a single standalone action button —
+       the Account screen's "Manage users", "Sign out", and "Enable notifications"
+       — is the sibling of the form-footer submit above, but as a bare .button
+       (link_to / button_to, not inside a .form-footer, .responsive-table cell, or
+       .decision-action) no touch-target rule reached it, so it stayed at the base
+       36px, under the 44px iOS/WCAG 2.5.5 mobile minimum the rest of the app's
+       primary controls already meet. Give it the same mobile-only 44px floor;
+       desktop keeps the denser 36px mouse target. Scoped to the .panel-action
+       marker so it lifts only these standalone section actions and cascades
+       nowhere else. */
+    .button.panel-action {
+      min-height: 44px;
+    }
+
     /* The Review-queue decision card's three action columns (Assign / Create /
        Resolve-ignore) are the screen's primary data-entry surface, and on mobile
        they stack full-width (the .decision-card-actions grid collapses to one

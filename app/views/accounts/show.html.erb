@@ -47,7 +47,7 @@
     <h2>Notifications</h2>
     <p class="muted small">Get push alerts on this device when tasks run late, a follow-up is assigned to you, or imported lines need review. Turn them off any time — this only affects the device you're using now.</p>
     <button type="button"
-            class="button"
+            class="button panel-action"
             data-push-subscriptions-target="button"
             data-action="push-subscriptions#toggle">Enable notifications</button>
   </section>
@@ -97,12 +97,12 @@
   <section class="panel narrow">
     <h2>Admin</h2>
     <p class="muted small">Manage users and module permissions for the whole workspace.</p>
-    <%= link_to "Manage users", admin_users_path, class: "button" %>
+    <%= link_to "Manage users", admin_users_path, class: "button panel-action" %>
   </section>
 <% end %>
 
 <section class="panel narrow">
   <h2>Sign out</h2>
   <p class="muted small">End this session on this device. You'll need to sign in again to come back.</p>
-  <%= button_to "Sign out", session_path, method: :delete, class: "button" %>
+  <%= button_to "Sign out", session_path, method: :delete, class: "button panel-action" %>
 </section>
