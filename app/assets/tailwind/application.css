@@ -2138,6 +2138,22 @@
     color: var(--ink-muted);
     max-width: 780px;
   }
+  /* Keep the hero's two actions on one row. Without this the 780px-wide
+     description shrinks the flex sibling below the two-button width, so
+     .hero-actions drops "Guide gaps" under "New count" as a ragged,
+     uneven-width stacked pair — even though the >900px hero has ample room for
+     them side by side. Pin the action cluster (flex-shrink: 0) and let the
+     text block absorb the shrink (min-width: 0) instead, mirroring the
+     `.page-heading > .hero-actions` guard above. flex-wrap stays `wrap` (not
+     nowrap) so the ≤900px column layout, where the hero stacks and each button
+     is width:100%, still wraps them into a full-width stack. Only bites in the
+     >900px row layout. Scoped to `.hero-panel` (inventory only). */
+  .hero-panel > div {
+    min-width: 0;
+  }
+  .hero-panel > .hero-actions {
+    flex-shrink: 0;
+  }
 
   .eyebrow {
     color: var(--ink-muted) !important;
