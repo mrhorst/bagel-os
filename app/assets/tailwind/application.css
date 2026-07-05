@@ -3549,7 +3549,13 @@
   }
 
   .photo-card {
-    background: var(--surface);
+    /* Elevated card fill (--surface-2), matching every other shadowed surface
+       (.panel / .metric / the sibling .collection-card). The card carries
+       --shadow-e1, so it must lift off the --surface page; filling it with
+       --surface (the body colour) gave the caption strip zero fill contrast and
+       made the card read as a floating image with a caption rather than one
+       raised surface. Same fix the sibling .collection-card already carries. */
+    background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-e1);
