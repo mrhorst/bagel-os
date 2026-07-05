@@ -6844,6 +6844,23 @@
       min-height: 44px;
     }
 
+    /* A `.filter-actions` band seats a filter form's submit — and sometimes a
+       Clear link — on its own full-width row beneath the labelled selects: the
+       "Filter" primary on Task History and the "Apply" / "Clear filters" pair on
+       Products. Like the .form-footer and .panel-action actions above, these
+       buttons inherit the base .button 36px height, under the 44px touch floor a
+       thumb needs, and no existing touch-target rule reaches .filter-actions (it
+       isn't a .form-footer, a .responsive-table cell, or an .actions cluster) —
+       so the filter panel's primary action stayed the last sub-44px control on
+       these two screens. Lift them to 44px on touch widths; they already sit on
+       their own band at intrinsic width (width:auto above), so only the tap
+       height grows and no layout shifts. Desktop keeps the denser 36px; .small
+       secondaries stay compact. */
+    .filter-actions .button:not(.small),
+    .filter-actions input[type='submit']:not(.small) {
+      min-height: 44px;
+    }
+
     /* The Review-queue decision card's three action columns (Assign / Create /
        Resolve-ignore) are the screen's primary data-entry surface, and on mobile
        they stack full-width (the .decision-card-actions grid collapses to one
