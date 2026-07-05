@@ -5560,7 +5560,12 @@
     align-items: center;
     display: grid;
     gap: 8px 10px;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    /* Two tracks only: the title+pager block (1fr) and the create action. A
+       stray third `auto` track left the action column short of the container
+       edge by one column-gap (10px), so the primary "Add task or list" button
+       sat inset from the KPI tiles and list cards below — which span the full
+       content width — reading as a misaligned CTA. */
+    grid-template-columns: minmax(0, 1fr) auto;
     margin-bottom: 14px;
   }
   .tasks-page-header-v2 > * {
@@ -6367,7 +6372,7 @@
     /* Tasks page header stays one row on mobile */
     .tasks-page-header-v2 {
       gap: 6px 8px;
-      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(0, 1fr) auto;
     }
     /* The create action lives in the floating .mobile-fab on a phone, so the
        in-header desktop button is hidden here to avoid two + affordances. */
