@@ -846,6 +846,19 @@
     background: color-mix(in oklch, var(--surface) 22%, transparent);
     color: var(--surface);
   }
+  /* Mobile: give the Open/Resolved status tabs a 44px min-height so each clears
+     the iOS/WCAG 2.5.5 touch-target floor. At the base 8px vertical padding and
+     0.92rem label they compute to ~36px — under the 44px minimum, so on a phone
+     the two primary filter controls are undersized taps. Mobile only; desktop
+     keeps the denser mouse target. Same mobile-only bump the library filter
+     chips and file-picker button use. The tab already centres its contents
+     (align-items:center), so only the hit area grows — label, count chip, and
+     radius are unchanged. */
+  @media (max-width: 640px) {
+    .follow-ups-tab {
+      min-height: 44px;
+    }
+  }
 
   .follow-ups-list {
     display: grid;
