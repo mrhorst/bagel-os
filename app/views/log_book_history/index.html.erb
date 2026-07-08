@@ -43,8 +43,13 @@
                 <span class="muted small">No open flags</span>
               <% else %>
                 <span class="badge badge-warning"><%= pluralize(open_flags, "follow-up") %></span>
+                <%# Urgent uses the danger (red) badge, not warn (amber): it mirrors
+                    the row's own warn→danger left-rule escalation (.log-book-recent-row-urgent
+                    is inset danger) and the app-wide urgency convention (.follow-up-card-urgent),
+                    and keeps the urgent count visually distinct from the amber open-follow-up
+                    count beside it instead of two identical amber chips. %>
                 <% if urgent_open.positive? %>
-                  <span class="badge badge-warning"><%= urgent_open %> urgent</span>
+                  <span class="badge badge-danger"><%= urgent_open %> urgent</span>
                 <% end %>
               <% end %>
             </span>
