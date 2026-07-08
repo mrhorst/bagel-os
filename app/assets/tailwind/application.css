@@ -4137,6 +4137,18 @@
   .review-card .decision-card-body p.small {
     font-variant-numeric: tabular-nums;
   }
+  /* Hold the review card's explanatory copy to a readable measure. The card
+     spans the full content width (~930px on desktop), so the description — the
+     one sentence that explains each conflict — runs past 100 characters per
+     line, well beyond the app's paragraph-measure convention (.home-hero p is
+     60ch). Cap it at the same 60ch so it stays scannable; the short SKU/source
+     line sits under 60ch already, so it's unaffected, and on mobile the card is
+     narrower than 60ch so the cap is a no-op there. Scoped under `.review-card`
+     (normalization only) so it never touches the Log Book card that shares the
+     base `.decision-card-body`. */
+  .review-card .decision-card-body p {
+    max-width: 60ch;
+  }
 
   .review-focus {
     display: grid;
