@@ -910,7 +910,14 @@
     align-items: baseline;
     display: flex;
     gap: 10px;
-    justify-content: space-between;
+    /* Seat the urgency badge immediately after the title, not flung to the far
+       card edge. `space-between` pushed the "Important"/"Urgent" flag ~500px away
+       from the title on a wide desktop card — stranded next to the trailing
+       disclosure chevron, where it read as a control rather than a label and
+       broke the flag→item proximity the badge depends on. flex-start keeps the
+       flag hugging the title it qualifies at every width; the title still wraps
+       and the badge still baseline-tracks its first line on mobile. */
+    justify-content: flex-start;
     margin-bottom: 4px;
   }
   .follow-up-card-head h2 {
