@@ -16,7 +16,15 @@
 <div class="page-heading">
   <div>
     <h1><%= @order_guide ? "#{@order_guide.name} Buy List" : "Shopping List" %></h1>
-    <p>Guide-specific recommendations use expected usage plus buffer, minus the latest count.</p>
+    <%# Subtitle tracks the H1's two states. The guide chooser is a pick-a-guide
+        landing state, so it gets a task-oriented prompt; the usage/buffer formula
+        only describes something on screen once a guide is chosen and its
+        recommended quantities render, so it's held back for the buy-list state. %>
+    <% if @order_guide %>
+      <p>Recommended quantities use expected usage plus buffer, minus the latest count.</p>
+    <% else %>
+      <p>Choose a guide to see its recommended quantities to buy.</p>
+    <% end %>
   </div>
   <div class="actions">
     <% if @order_guide %>
