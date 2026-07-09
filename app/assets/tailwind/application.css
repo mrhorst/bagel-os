@@ -98,11 +98,14 @@
   --line-2: oklch(0.85 0.006 265);
 
   /* ── Accent — brand orange as the iOS tint. Fill L tuned so white labels
-     clear WCAG AA (4.54:1); accent-text is deeper for links/selected text on
-     light surfaces (5.07:1). */
+     clear WCAG AA (4.54:1); accent-text is the deeper orange for the
+     selected-nav label. It only ever sits on the --accent-soft peach fill
+     (.nav-link.active), where at L0.55 it grazed 4.36:1 and failed AA for its
+     14px/600 label — deepen one step to clear AA on that fill (4.94:1). Same
+     hue/chroma, so the brand orange is unchanged, just a touch darker. */
   --accent: oklch(0.57 0.17 50);
   --accent-fg: oklch(0.99 0.002 60);
-  --accent-text: oklch(0.55 0.16 50);
+  --accent-text: oklch(0.52 0.16 50);
   --accent-soft: oklch(0.95 0.04 55);
 
   /* ── Status — iOS system hues (green/amber/red/blue), intentionally NOT orange */
