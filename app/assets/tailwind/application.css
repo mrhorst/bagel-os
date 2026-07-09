@@ -5258,6 +5258,21 @@
     justify-content: center;
     width: 36px;
   }
+  /* The nav hubs render their tile glyph through `nav_icon` — the shared flat
+     nav-list icon (18px, opacity 0.85) tuned for the untiled sidebar/tab rows.
+     Inside this filled --surface-3 chip that treatment is wrong: the sibling
+     chooser screens (Task settings, Log Book settings) fill the identical tile
+     with a crisp 20px full-opacity glyph, and the tile is documented as the
+     "same icon-tile atom" across all of them. Left as-is the hub glyphs read a
+     notch smaller and softer (0.85 opacity drops the glyph to ~9.6:1 vs the
+     ~14:1 the siblings show). Match them: full size and full weight in the chip.
+     Scoped to `.settings-card-icon` so the sidebar and mobile tabs — the other
+     two nav_icon callers — keep their flat-list 18px/0.85 treatment untouched. */
+  .settings-card-icon .nav-icon {
+    height: 20px;
+    opacity: 1;
+    width: 20px;
+  }
   .settings-card-secondary .settings-card-icon {
     color: var(--ink-muted);
   }
