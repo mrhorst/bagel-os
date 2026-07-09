@@ -4775,9 +4775,18 @@
      bottom-anchor (min-height + summary margin-top:auto, which aligns
      summaries across a grid row) has no row to align against — it just
      orphans the eyebrow above a dead gap. Let the card size to its content
-     and pack top-down instead. */
+     and pack top-down instead. The head's reserved chip-height (min-height:22px)
+     is the same desktop-row-alignment device: it keeps the eyebrow baseline
+     level across a row whether or not a card carries a count chip. With no row
+     to align against, on a chip-less card it just pads a dead gap above the
+     summary, loosening the eyebrow→summary rhythm past the card's own 8px gap.
+     Drop it too so the head sizes to its content; the one chip-bearing card's
+     head still sizes to its chip, so nothing shifts there. */
   @media (max-width: 640px) {
     .home-surface-card {
+      min-height: 0;
+    }
+    .home-surface-card-head {
       min-height: 0;
     }
     .home-surface-card-summary {
