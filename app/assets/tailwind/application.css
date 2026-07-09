@@ -6544,6 +6544,25 @@
       min-width: 0;
     }
 
+    /* Text inputs, selects, and textareas inherit the shared control rule's 40px
+       min-height — under the 44px iOS/WCAG 2.5.5 touch minimum, and the last gap
+       in the app's mobile touch-target coverage: buttons, the file-picker
+       button, filter chips, the date-pager arrows, the status tabs, and the
+       header/action buttons were each already lifted to 44px on mobile, but the
+       most common controls of all — the field on every filter panel and form
+       (Products' Category/Supplier/Sort/Per-page selects and search, Account's
+       name/email/password fields, every search box) — were left at 40px. Lift
+       them to 44px on mobile so a thumb clears the floor everywhere; desktop
+       keeps the denser 40px mouse target (the same split every other 44px rule
+       above uses). Checkbox/radio stay excluded exactly as the base rule
+       excludes them (their label carries the hit area). Pure min-height — no
+       layout shift, identical in light and dark. */
+    .app-main input:not([type='checkbox']):not([type='radio']),
+    .app-main select,
+    .app-main textarea {
+      min-height: 44px;
+    }
+
     .app-main img,
     .app-main svg,
     .app-main canvas,
