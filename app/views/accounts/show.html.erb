@@ -22,7 +22,11 @@
 
     <div class="field">
       <%= form.label :name %>
-      <%= form.text_field :name, autocomplete: "name" %>
+      <%# Name is optional, so this field renders blank for anyone who never set
+          one — beside the pre-filled required Email it reads as an unset field,
+          not a rendering glitch, only once it carries a hint. Generic, tenant-safe
+          placeholder (no real proper noun). %>
+      <%= form.text_field :name, autocomplete: "name", placeholder: "Your name" %>
     </div>
 
     <div class="field">
