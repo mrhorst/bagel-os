@@ -1485,11 +1485,18 @@
     width: 36px;
   }
   .log-book-date-arrow:hover { background: var(--surface-3); }
+  /* Disabled next-day arrow — shown whenever the view sits on today, which is
+     the default arrival, so this is the pager's resting-state appearance. Keep
+     the inherited 1px --line border and dim the whole control with opacity,
+     exactly like the sibling .tasks-date-pager-arrow-disabled, so the pager
+     reads as a balanced stepper (bordered box | label | bordered box). Dropping
+     the border (border-color: transparent) left a lone bordered arrow beside a
+     box-less floating glyph — a lopsided stepper and a divergence from the Tasks
+     date pager the two steppers are meant to share. */
   .log-book-date-arrow-disabled {
-    border-color: transparent;
     color: var(--ink-muted);
     cursor: not-allowed;
-    opacity: 0.35;
+    opacity: 0.5;
   }
   .log-book-date-arrow-disabled:hover { background: transparent; }
 
