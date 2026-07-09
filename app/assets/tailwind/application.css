@@ -5246,6 +5246,15 @@
   }
   .settings-card p {
     margin: 0;
+    /* Let the browser pick the least-ragged break for these 1–3-line module
+       descriptions instead of greedy first-fit. Greedy wrapping split the
+       hyphenated compound in "Daily notes, counts, and follow-ups." across the
+       line at its own hyphen, orphaning "ups." alone on line 2 at the 3-up
+       desktop width; `pretty` optimises the last lines and avoids that short
+       trailing orphan. Purely presentational, degrades to normal wrapping where
+       unsupported, and helps every settings-card chooser (hubs, Task/Log Book
+       settings) that renders the same wrapping descriptions. */
+    text-wrap: pretty;
   }
   .settings-card-icon {
     align-items: center;
