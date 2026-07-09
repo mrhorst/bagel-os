@@ -1927,6 +1927,19 @@
     margin-top: 4px;
     width: fit-content;
   }
+  /* Report names are short, fixed strings, but the Report column is starved by
+     the wide Description beside it, so the longest ("Category spend summary")
+     wraps — pushing that row to three lines and breaking the intended
+     title-over-filename pair the .report-file block above sets up. Keep the
+     title on one line and let the variable-length Description absorb the width
+     and wrap instead — the same "pin the short, fixed column; let the long one
+     wrap" strategy the Task history table uses on its sibling columns. Scoped to
+     the reports table so the other .row-heading tables (whose names legitimately
+     wrap) are untouched. On mobile the .responsive-table stacked card already
+     gives the title its own full-width line, so nowrap is a no-op there. */
+  .reports-table td.row-heading strong {
+    white-space: nowrap;
+  }
 
   /* ── Buttons ──────────────────────────────────────────────────────── */
   .button,
