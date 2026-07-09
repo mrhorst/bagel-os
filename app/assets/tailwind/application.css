@@ -4136,6 +4136,23 @@
   .review-card {
     overflow: visible;
   }
+  /* The card's left rule is a STATUS marker — "this row needs your review" — so
+     it takes the amber `--warn` status token like every other needs-attention
+     left rule in the app (`.needs-review-row`, `.warning-row`, `.task-row-late`
+     all use `--warn`; `.danger-row` / `.dashboard-block-urgent` use `--danger`).
+     The base `.decision-card` paints this rule with `--accent` (orange), but
+     orange is reserved for the single primary action — which on this card is the
+     "Assign" button — so the base left rule put orange in two roles at once
+     (status AND action) on the same card, diluting the one-meaning accent rule.
+     Recolor to `--warn` so status reads amber and orange stays the sole primary.
+     Scoped to `.review-card.decision-card` (compound = wins over the base rule
+     regardless of source order) so the shared Log Book decision cards — which
+     zero this shadow out or switch it to `--danger` on error — are untouched. */
+  .review-card.decision-card {
+    box-shadow:
+      inset 2px 0 0 var(--warn),
+      var(--shadow-e1);
+  }
   /* Tabular numerals on the review card's data lines. The receipt meta
      (quantity + price, e.g. "1 unit · $32.50") and the SKU/source-file line
      are data surfaces, so their digits must align in fixed-width columns like
