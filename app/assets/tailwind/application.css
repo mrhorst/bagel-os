@@ -6939,6 +6939,22 @@
       min-height: 44px;
     }
 
+    /* The guide cards' Count / Buy list / Setup trio (Inventory overview) is the
+       card's everyday operational surface — "the two operating actions" the
+       guide-workflow-card layout comment names — but they're rendered `.button
+       small` (min-height 30px) so three fit per card. The mobile 44px floors
+       above all guard `:not(.small)` because in header/footer/filter clusters a
+       small button is a SECONDARY control; here the small buttons ARE the card's
+       primary actions, and no touch-target rule reaches them, leaving them the
+       last sub-44px primary controls on this screen at 30px — under the 44px iOS
+       /WCAG 2.5.5 minimum a thumb needs, two-up on a 390px card. Lift only these
+       to 44px on touch widths; scoped to .guide-workflow-card (Inventory only),
+       so the shared `.button.small` stays compact everywhere else and desktop
+       keeps its denser 30px. Layout is unchanged — only the tap height grows. */
+    .guide-workflow-card .button-row .button {
+      min-height: 44px;
+    }
+
     .panel {
       padding: 14px;
     }
