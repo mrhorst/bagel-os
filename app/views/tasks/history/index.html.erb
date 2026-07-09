@@ -46,8 +46,8 @@
     <table class="history-table responsive-table">
       <thead>
         <tr>
-          <th>Status</th>
           <th>Task</th>
+          <th>Status</th>
           <th>List</th>
           <th>Period</th>
           <th>Due</th>
@@ -58,13 +58,13 @@
       <tbody>
         <% @occurrences.each do |occurrence| %>
           <tr class="<%= task_status_row_class(occurrence) %>">
-            <td data-label="Status"><%= task_status_badge(occurrence) %></td>
             <td class="row-heading" data-label="Task">
               <strong><%= occurrence.snapshot_title %></strong>
               <% if occurrence.requires_photo_evidence? %>
                 <small>Photo required</small>
               <% end %>
             </td>
+            <td data-label="Status"><%= task_status_badge(occurrence) %></td>
             <td data-label="List"><%= occurrence.snapshot_list_name %></td>
             <td data-label="Period"><%= task_period_label(occurrence) %></td>
             <td data-label="Due"><%= task_due_label(occurrence, prefix: false) %></td>
