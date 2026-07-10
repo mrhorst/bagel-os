@@ -5324,9 +5324,18 @@
   .settings-card-secondary .settings-card-icon {
     color: var(--ink-muted);
   }
+  /* The active count ("9 active tasks" / "3 active lists") is the one live data
+     point on the card — what a returning user actually scans for — yet it sat at
+     --ink-muted and 0.82rem: fainter (same muted color) AND smaller than the
+     boilerplate .small description above it (--ink-muted, 0.86rem), burying the
+     data beneath the prose. Lift it to the same "real data earns secondary, not
+     tertiary, weight" treatment the sibling .action-card count subtitle already
+     documents — --ink-2 at the shared 0.86rem helper size — so the count reads
+     as the scannable anchor and the description recedes to supporting copy.
+     Tabular figures come from the .tnum in markup. */
   .settings-card-count {
-    color: var(--ink-muted);
-    font-size: 0.82rem;
+    color: var(--ink-2);
+    font-size: 0.86rem;
     margin-top: 6px;
   }
 
