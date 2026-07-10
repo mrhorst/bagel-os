@@ -6367,12 +6367,18 @@
       justify-content: flex-start;
     }
 
+    /* Pair the labelled selects two-up on phones so the filter form stops
+       consuming the whole first screen and the results (products / task
+       history) surface with far less scrolling. minmax(0,1fr) lets a long
+       option label ellipsize inside its cell instead of blowing the track out
+       past the viewport. The primary search field, the toggle band, and the
+       action band each still span the full width via their `grid-column:
+       1 / -1` rules, so only the short refinement selects share a row. */
     .filters {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    /* Stack the filter toggles one per row on phones (matching the single-column
-       fields) so each checkbox keeps a full-width tap target rather than packing
-       two-up. */
+    /* Stack the filter toggles one per row on phones so each checkbox keeps a
+       full-width tap target rather than packing two-up. */
     .filter-checks {
       flex-direction: column;
       align-items: stretch;
