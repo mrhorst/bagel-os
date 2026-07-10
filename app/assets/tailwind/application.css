@@ -4378,6 +4378,19 @@
     position: sticky;
     text-align: right;
   }
+  /* The bar right-aligns its single primary (text-align: right), but the generic
+     form-control rule gives every <input> — including this submit — width:100%,
+     so on desktop "Save count" ballooned edge-to-edge across the panel instead of
+     sitting as a right-aligned primary like every sibling form footer. The
+     text-align was dead against a full-width block. Cap the submit to its content
+     on desktop so it matches the .form-footer footers; mobile keeps the full-width
+     thumb-reach CTA (a sticky bottom action bar is the mobile primary-action zone)
+     via the base rule. Same latent bug, same reset as .form-footer above. */
+  @media (min-width: 641px) {
+    .sticky-actions input[type="submit"] {
+      width: auto;
+    }
+  }
 
   /* ── Block- prefixed classes (newer scaffold) ─────────────────────── */
   .block-page-header,
