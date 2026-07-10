@@ -71,6 +71,33 @@ class InventoryCountsTest < ActionDispatch::IntegrationTest
     assert_equal "tub", line.unit
   end
 
+  test "the saved-count confirmation is grammatical for a single line and for several" do
+    # The success flash names how many lines were saved. It must read "1 Weekly
+    # count" for a single line, not "1 Weekly counts" — a single-item spot check
+    # or a one-row guide is a common case, and the ungrammatical plural undercuts
+    # the confirmation. The count sheet itself already pluralizes ("N items to
+    # count"); the save message should match that convention.
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      counts: { @cream_membership.id => "4.5" }
+    }
+    assert_equal "Saved 1 Weekly count.", flash[:notice]
+
+    post inventory_counts_path, params: {
+      order_guide_id: @guide.id,
+      counts: { @cream_membership.id => "4.5", @egg_membership.id => "2" }
+    }
+    assert_equal "Saved 2 Weekly counts.", flash[:notice]
+  end
+
+  test "the saved legacy-count confirmation is grammatical for a single line and for several" do
+    post inventory_counts_path, params: { counts: { @cream_cheese.id => "3" } }
+    assert_equal "Saved 1 inventory count.", flash[:notice]
+
+    post inventory_counts_path, params: { counts: { @cream_cheese.id => "3", @eggs.id => "2" } }
+    assert_equal "Saved 2 inventory counts.", flash[:notice]
+  end
+
   test "an empty guide inventory count re-renders the form keeping the notes instead of redirecting them away" do
     # An empty submit is a recoverable mistake like any other on this form: the
     # guide is still active, so the form can be kept. Redirecting to a fresh form
