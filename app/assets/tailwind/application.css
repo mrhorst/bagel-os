@@ -98,11 +98,14 @@
   --line-2: oklch(0.85 0.006 265);
 
   /* ── Accent — brand orange as the iOS tint. Fill L tuned so white labels
-     clear WCAG AA (4.54:1); accent-text is deeper for links/selected text on
-     light surfaces (5.07:1). */
+     clear WCAG AA (4.54:1); accent-text is the deeper orange for the
+     selected-nav label. It only ever sits on the --accent-soft peach fill
+     (.nav-link.active), where at L0.55 it grazed 4.36:1 and failed AA for its
+     14px/600 label — deepen one step to clear AA on that fill (4.94:1). Same
+     hue/chroma, so the brand orange is unchanged, just a touch darker. */
   --accent: oklch(0.57 0.17 50);
   --accent-fg: oklch(0.99 0.002 60);
-  --accent-text: oklch(0.55 0.16 50);
+  --accent-text: oklch(0.52 0.16 50);
   --accent-soft: oklch(0.95 0.04 55);
 
   /* ── Status — iOS system hues (green/amber/red/blue), intentionally NOT orange */
@@ -910,7 +913,14 @@
     align-items: baseline;
     display: flex;
     gap: 10px;
-    justify-content: space-between;
+    /* Seat the urgency badge immediately after the title, not flung to the far
+       card edge. `space-between` pushed the "Important"/"Urgent" flag ~500px away
+       from the title on a wide desktop card — stranded next to the trailing
+       disclosure chevron, where it read as a control rather than a label and
+       broke the flag→item proximity the badge depends on. flex-start keeps the
+       flag hugging the title it qualifies at every width; the title still wraps
+       and the badge still baseline-tracks its first line on mobile. */
+    justify-content: flex-start;
     margin-bottom: 4px;
   }
   .follow-up-card-head h2 {
@@ -1478,11 +1488,18 @@
     width: 36px;
   }
   .log-book-date-arrow:hover { background: var(--surface-3); }
+  /* Disabled next-day arrow — shown whenever the view sits on today, which is
+     the default arrival, so this is the pager's resting-state appearance. Keep
+     the inherited 1px --line border and dim the whole control with opacity,
+     exactly like the sibling .tasks-date-pager-arrow-disabled, so the pager
+     reads as a balanced stepper (bordered box | label | bordered box). Dropping
+     the border (border-color: transparent) left a lone bordered arrow beside a
+     box-less floating glyph — a lopsided stepper and a divergence from the Tasks
+     date pager the two steppers are meant to share. */
   .log-book-date-arrow-disabled {
-    border-color: transparent;
     color: var(--ink-muted);
     cursor: not-allowed;
-    opacity: 0.35;
+    opacity: 0.5;
   }
   .log-book-date-arrow-disabled:hover { background: transparent; }
 
@@ -1909,6 +1926,19 @@
     display: block;
     margin-top: 4px;
     width: fit-content;
+  }
+  /* Report names are short, fixed strings, but the Report column is starved by
+     the wide Description beside it, so the longest ("Category spend summary")
+     wraps — pushing that row to three lines and breaking the intended
+     title-over-filename pair the .report-file block above sets up. Keep the
+     title on one line and let the variable-length Description absorb the width
+     and wrap instead — the same "pin the short, fixed column; let the long one
+     wrap" strategy the Task history table uses on its sibling columns. Scoped to
+     the reports table so the other .row-heading tables (whose names legitimately
+     wrap) are untouched. On mobile the .responsive-table stacked card already
+     gives the title its own full-width line, so nowrap is a no-op there. */
+  .reports-table td.row-heading strong {
+    white-space: nowrap;
   }
 
   /* ── Buttons ──────────────────────────────────────────────────────── */
@@ -3549,7 +3579,13 @@
   }
 
   .photo-card {
-    background: var(--surface);
+    /* Elevated card fill (--surface-2), matching every other shadowed surface
+       (.panel / .metric / the sibling .collection-card). The card carries
+       --shadow-e1, so it must lift off the --surface page; filling it with
+       --surface (the body colour) gave the caption strip zero fill contrast and
+       made the card read as a floating image with a caption rather than one
+       raised surface. Same fix the sibling .collection-card already carries. */
+    background: var(--surface-2);
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-e1);
@@ -4113,6 +4149,23 @@
   .review-card {
     overflow: visible;
   }
+  /* The card's left rule is a STATUS marker — "this row needs your review" — so
+     it takes the amber `--warn` status token like every other needs-attention
+     left rule in the app (`.needs-review-row`, `.warning-row`, `.task-row-late`
+     all use `--warn`; `.danger-row` / `.dashboard-block-urgent` use `--danger`).
+     The base `.decision-card` paints this rule with `--accent` (orange), but
+     orange is reserved for the single primary action — which on this card is the
+     "Assign" button — so the base left rule put orange in two roles at once
+     (status AND action) on the same card, diluting the one-meaning accent rule.
+     Recolor to `--warn` so status reads amber and orange stays the sole primary.
+     Scoped to `.review-card.decision-card` (compound = wins over the base rule
+     regardless of source order) so the shared Log Book decision cards — which
+     zero this shadow out or switch it to `--danger` on error — are untouched. */
+  .review-card.decision-card {
+    box-shadow:
+      inset 2px 0 0 var(--warn),
+      var(--shadow-e1);
+  }
   /* Tabular numerals on the review card's data lines. The receipt meta
      (quantity + price, e.g. "1 unit · $32.50") and the SKU/source-file line
      are data surfaces, so their digits must align in fixed-width columns like
@@ -4123,6 +4176,18 @@
   .review-card .decision-card-meta,
   .review-card .decision-card-body p.small {
     font-variant-numeric: tabular-nums;
+  }
+  /* Hold the review card's explanatory copy to a readable measure. The card
+     spans the full content width (~930px on desktop), so the description — the
+     one sentence that explains each conflict — runs past 100 characters per
+     line, well beyond the app's paragraph-measure convention (.home-hero p is
+     60ch). Cap it at the same 60ch so it stays scannable; the short SKU/source
+     line sits under 60ch already, so it's unaffected, and on mobile the card is
+     narrower than 60ch so the cap is a no-op there. Scoped under `.review-card`
+     (normalization only) so it never touches the Log Book card that shares the
+     base `.decision-card-body`. */
+  .review-card .decision-card-body p {
+    max-width: 60ch;
   }
 
   .review-focus {
@@ -4740,9 +4805,18 @@
      bottom-anchor (min-height + summary margin-top:auto, which aligns
      summaries across a grid row) has no row to align against — it just
      orphans the eyebrow above a dead gap. Let the card size to its content
-     and pack top-down instead. */
+     and pack top-down instead. The head's reserved chip-height (min-height:22px)
+     is the same desktop-row-alignment device: it keeps the eyebrow baseline
+     level across a row whether or not a card carries a count chip. With no row
+     to align against, on a chip-less card it just pads a dead gap above the
+     summary, loosening the eyebrow→summary rhythm past the card's own 8px gap.
+     Drop it too so the head sizes to its content; the one chip-bearing card's
+     head still sizes to its chip, so nothing shifts there. */
   @media (max-width: 640px) {
     .home-surface-card {
+      min-height: 0;
+    }
+    .home-surface-card-head {
       min-height: 0;
     }
     .home-surface-card-summary {
@@ -5211,6 +5285,15 @@
   }
   .settings-card p {
     margin: 0;
+    /* Let the browser pick the least-ragged break for these 1–3-line module
+       descriptions instead of greedy first-fit. Greedy wrapping split the
+       hyphenated compound in "Daily notes, counts, and follow-ups." across the
+       line at its own hyphen, orphaning "ups." alone on line 2 at the 3-up
+       desktop width; `pretty` optimises the last lines and avoids that short
+       trailing orphan. Purely presentational, degrades to normal wrapping where
+       unsupported, and helps every settings-card chooser (hubs, Task/Log Book
+       settings) that renders the same wrapping descriptions. */
+    text-wrap: pretty;
   }
   .settings-card-icon {
     align-items: center;
@@ -5222,6 +5305,21 @@
     height: 36px;
     justify-content: center;
     width: 36px;
+  }
+  /* The nav hubs render their tile glyph through `nav_icon` — the shared flat
+     nav-list icon (18px, opacity 0.85) tuned for the untiled sidebar/tab rows.
+     Inside this filled --surface-3 chip that treatment is wrong: the sibling
+     chooser screens (Task settings, Log Book settings) fill the identical tile
+     with a crisp 20px full-opacity glyph, and the tile is documented as the
+     "same icon-tile atom" across all of them. Left as-is the hub glyphs read a
+     notch smaller and softer (0.85 opacity drops the glyph to ~9.6:1 vs the
+     ~14:1 the siblings show). Match them: full size and full weight in the chip.
+     Scoped to `.settings-card-icon` so the sidebar and mobile tabs — the other
+     two nav_icon callers — keep their flat-list 18px/0.85 treatment untouched. */
+  .settings-card-icon .nav-icon {
+    height: 20px;
+    opacity: 1;
+    width: 20px;
   }
   .settings-card-secondary .settings-card-icon {
     color: var(--ink-muted);
@@ -6509,6 +6607,25 @@
       min-width: 0;
     }
 
+    /* Text inputs, selects, and textareas inherit the shared control rule's 40px
+       min-height — under the 44px iOS/WCAG 2.5.5 touch minimum, and the last gap
+       in the app's mobile touch-target coverage: buttons, the file-picker
+       button, filter chips, the date-pager arrows, the status tabs, and the
+       header/action buttons were each already lifted to 44px on mobile, but the
+       most common controls of all — the field on every filter panel and form
+       (Products' Category/Supplier/Sort/Per-page selects and search, Account's
+       name/email/password fields, every search box) — were left at 40px. Lift
+       them to 44px on mobile so a thumb clears the floor everywhere; desktop
+       keeps the denser 40px mouse target (the same split every other 44px rule
+       above uses). Checkbox/radio stay excluded exactly as the base rule
+       excludes them (their label carries the hit area). Pure min-height — no
+       layout shift, identical in light and dark. */
+    .app-main input:not([type='checkbox']):not([type='radio']),
+    .app-main select,
+    .app-main textarea {
+      min-height: 44px;
+    }
+
     .app-main img,
     .app-main svg,
     .app-main canvas,
@@ -6882,6 +6999,22 @@
     .decision-action input[type='submit']:not(.small),
     .decision-action select,
     .decision-action input[type='text'] {
+      min-height: 44px;
+    }
+
+    /* The guide cards' Count / Buy list / Setup trio (Inventory overview) is the
+       card's everyday operational surface — "the two operating actions" the
+       guide-workflow-card layout comment names — but they're rendered `.button
+       small` (min-height 30px) so three fit per card. The mobile 44px floors
+       above all guard `:not(.small)` because in header/footer/filter clusters a
+       small button is a SECONDARY control; here the small buttons ARE the card's
+       primary actions, and no touch-target rule reaches them, leaving them the
+       last sub-44px primary controls on this screen at 30px — under the 44px iOS
+       /WCAG 2.5.5 minimum a thumb needs, two-up on a 390px card. Lift only these
+       to 44px on touch widths; scoped to .guide-workflow-card (Inventory only),
+       so the shared `.button.small` stays compact everywhere else and desktop
+       keeps its denser 30px. Layout is unchanged — only the tap height grows. */
+    .guide-workflow-card .button-row .button {
       min-height: 44px;
     }
 

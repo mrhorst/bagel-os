@@ -64,7 +64,11 @@
           <th>Name</th>
           <th class="numeric">Active items</th>
           <th>Status</th>
-          <th>Items</th>
+          <%# Verb header for this action column, parallel to the "Rename" and
+              "Archive" columns beside it — and distinct from the numeric
+              "Active items" count column, so the row no longer carries two
+              adjacent "…items" headers (one a count, one a nav button). %>
+          <th>Open</th>
           <th>Rename</th>
           <th>Archive</th>
         </tr>
@@ -75,7 +79,7 @@
             <td class="row-heading" data-label="Name"><strong><%= guide.name %></strong></td>
             <td class="numeric" data-label="Active items"><%= guide.active_item_count %></td>
             <td data-label="Status"><span class="badge <%= guide.active? ? 'badge-ok' : '' %>"><%= guide.active? ? "Active" : "Archived" %></span></td>
-            <td data-label="Items"><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
+            <td data-label="Open"><%= link_to "View items", order_guide_path(guide), class: "button small" %></td>
             <td data-label="Rename">
               <%# When a rename is rejected (e.g. a duplicate name) the controller
                   re-renders this index with the failed guide in @order_guide; use
@@ -246,6 +250,6 @@
       </tbody>
     </table>
   <% else %>
-    <p class="empty-state">No missing receipt products found for the current guide import.</p>
+    <p class="empty-state">No off-guide products — every receipt product is already on a current guide.</p>
   <% end %>
 </section>

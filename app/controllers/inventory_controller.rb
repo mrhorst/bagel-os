@@ -166,7 +166,8 @@ class InventoryController < ApplicationController
       end
     end
 
-    redirect_to inventory_shopping_list_path(order_guide_id: order_guide.id), notice: "Saved #{inventory_count.inventory_count_lines.count} #{order_guide.name} counts."
+    saved_lines = inventory_count.inventory_count_lines.count
+    redirect_to inventory_shopping_list_path(order_guide_id: order_guide.id), notice: "Saved #{saved_lines} #{order_guide.name} #{"count".pluralize(saved_lines)}."
   end
 
   def create_legacy_count
@@ -197,7 +198,8 @@ class InventoryController < ApplicationController
       end
     end
 
-    redirect_to inventory_counts_path, notice: "Saved #{inventory_count.inventory_count_lines.count} inventory counts."
+    saved_lines = inventory_count.inventory_count_lines.count
+    redirect_to inventory_counts_path, notice: "Saved #{saved_lines} inventory #{"count".pluralize(saved_lines)}."
   rescue ArgumentError, ActiveRecord::RecordInvalid
     # ArgumentError = a value that didn't parse; RecordInvalid = a value that
     # parsed but the count line rejects (e.g. a negative quantity). Either way,

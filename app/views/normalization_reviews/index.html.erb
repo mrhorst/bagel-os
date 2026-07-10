@@ -7,7 +7,13 @@
   </div>
   <div class="actions">
     <% if @pending_count.positive? %>
-      <span class="badge"><%= pluralize(@pending_count, "open review") %></span>
+      <%# The open-review count is a data surface, so its digits get tabular
+          figures via the shared .tnum utility — matching every other count/price
+          in the app and keeping the badge aligned as the queue grows into
+          double digits (a real restaurant's import queue routinely has 10-50
+          pending). At a single digit the effect is invisible; it earns its
+          place at 2+. %>
+      <span class="badge tnum"><%= pluralize(@pending_count, "open review") %></span>
     <% end %>
     <% if @view == "focus" && @pending_count > 1 %>
       <%= link_to "Show all", normalization_reviews_path(view: "list"), class: "button small" %>

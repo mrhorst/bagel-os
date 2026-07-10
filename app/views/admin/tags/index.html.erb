@@ -48,7 +48,7 @@
       <tbody>
         <% @tags.each do |tag| %>
           <tr>
-            <td data-label="Tag"><%= tag.name %></td>
+            <td class="row-heading" data-label="Tag"><%= tag.name %></td>
             <td data-label="Slug"><code><%= tag.slug %></code></td>
             <td data-label="Rule" class="muted"><%= tag.instruction.presence || "—" %></td>
             <td data-label="Photos" class="tnum"><%= @usage.fetch(tag.id, 0) %></td>
