@@ -11,8 +11,12 @@
   <% elsif local_assigns[:editable] %>
     <%# Resting state for a fresh, never-saved entry. Without it the strip
         renders empty and the "Saves automatically as you type" promise has no
-        visible status until the first keystroke. The autosave controller
-        replaces this with "Saving…"/"Saved …" once the user starts typing. %>
-    <span class="log-book-save-status-idle">Not saved yet</span>
+        visible status until the first keystroke. "No changes yet" states the
+        actual condition (nothing has been entered, so there is nothing to
+        save) — where the old "Not saved yet" read as pending/at-risk unsaved
+        work and quietly contradicted the autosave promise directly above it.
+        The autosave controller replaces this with "Saving…"/"Saved …" once the
+        user starts typing. %>
+    <span class="log-book-save-status-idle">No changes yet</span>
   <% end %>
 </div>
