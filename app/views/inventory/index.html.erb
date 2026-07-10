@@ -71,7 +71,7 @@
         <p class="muted">Top items to review against the current daily and weekly guides.</p>
       </div>
       <%# Only offer "Review" when there are gaps to act on — over the empty state
-          ("No receipt-backed gaps found") it invited review of work that isn't there,
+          ("No gaps to review") it invited review of work that isn't there,
           and duplicated the hero's "Guide gaps" link to the same destination. %>
       <% if @missing_products.any? %>
         <%= link_to "Review", order_guides_path, class: "button" %>
@@ -103,7 +103,10 @@
         </tbody>
       </table>
     <% else %>
-      <p class="empty-state">No receipt-backed gaps found after the latest guide import.</p>
+      <p class="empty-state">
+        <strong>No gaps to review</strong>
+        <span>Every receipt-backed product is already on a current guide.</span>
+      </p>
     <% end %>
   </div>
 </section>
