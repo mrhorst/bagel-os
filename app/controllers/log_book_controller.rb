@@ -90,6 +90,15 @@ class LogBookController < ApplicationController
         [ log_book_path, "Log Book" ]
       end
 
+    # Carry the History origin through the date pager too. A manager reviewing
+    # past days from History naturally steps to the day before/after to compare;
+    # without this the pager links drop from=history and the very next day resets
+    # the chevron above to "Back to Log Book" → today, stranding them away from
+    # the History list — the same stranding the origin was added to prevent. Only
+    # ever echo the sanctioned internal flag, never arbitrary params, matching the
+    # never-user-supplied rule the back path above follows.
+    @day_origin = "history" if params[:from] == "history"
+
     @open_follow_up_count = FollowUp.open.count
 
     @response_errors = build_response_errors(error_record)

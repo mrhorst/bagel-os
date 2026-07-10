@@ -36,6 +36,33 @@ class LogBookHistoryBackContextTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "paging to an adjacent day from a History-drilled day keeps the History origin" do
+    # A manager reviewing past days from History naturally uses the date pager to
+    # step to the day before/after to compare. The pager arrows must carry the
+    # from=history origin forward, or the very first page step silently drops the
+    # chevron back to "Back to Log Book" → today — stranding the manager away from
+    # the History list they were working, the exact failure the origin was added
+    # to prevent.
+    LogBookEntry.create!(operating_date: Date.current - 3)
+    LogBookEntry.create!(operating_date: Date.current - 4)
+
+    page.current_window.resize_to(414, 896)
+    visit log_book_path(date: Date.current - 3, from: "history")
+
+    assert_equal "Back to History", find(".mobile-header-back")["aria-label"]
+
+    prev_arrow = find(".log-book-date-arrow[aria-label='Previous day']")
+    assert_includes prev_arrow[:href], "from=history",
+      "the date pager must carry the History origin so paging doesn't strand the manager"
+
+    prev_arrow.click
+    assert_current_path log_book_path(date: Date.current - 4, from: "history")
+    assert_equal "Back to History", find(".mobile-header-back")["aria-label"],
+      "the back chevron must still point at History after paging"
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "a past day reached without an origin keeps its back chevron on today" do
     # The deliberate default for the date pager / a bookmark / a deep link / the
     # post-save redirect must not change: only the History drill-in is rerouted.

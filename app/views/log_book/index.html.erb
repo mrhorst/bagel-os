@@ -70,14 +70,14 @@
 <%# ── Date pager + saved status ──────────────────────────────────────── %>
 <header class="log-book-header">
   <nav class="log-book-date-nav" aria-label="Log Book date">
-    <%= link_to log_book_path(date: @prev_date), class: "log-book-date-arrow", aria: { label: "Previous day" } do %>
+    <%= link_to log_book_path(date: @prev_date, from: @day_origin), class: "log-book-date-arrow", aria: { label: "Previous day" } do %>
       <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
         <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </svg>
     <% end %>
     <span class="log-book-date-nav-label"><%= @operating_date.strftime("%a %b %-d, %Y") %></span>
     <% if @next_date %>
-      <%= link_to log_book_path(date: @next_date), class: "log-book-date-arrow", aria: { label: "Next day" } do %>
+      <%= link_to log_book_path(date: @next_date, from: @day_origin), class: "log-book-date-arrow", aria: { label: "Next day" } do %>
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
           <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
