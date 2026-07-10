@@ -1970,6 +1970,21 @@
     background: var(--surface-3);
     border-color: color-mix(in oklch, var(--ink) 25%, var(--line-2));
   }
+  /* Mobile: raise every button to the 44px iOS/WCAG 2.5.5 touch minimum the base
+     36px sits under. The file-picker button, the Open/Resolved status tabs, and
+     the photo-library filter chips already take this exact mobile-only bump —
+     buttons were the gap, so a page's own primary CTA (e.g. "Add task") shipped
+     below the floor the rest of the control set clears. Height-only, so it can't
+     reflow a row; the denser desktop target is kept. `.button.small` (table row
+     actions, pagination) keeps its explicit 30px by specificity — dense
+     utility rows stay dense. */
+  @media (max-width: 640px) {
+    .button,
+    button,
+    input[type='submit'] {
+      min-height: 44px;
+    }
+  }
 
   /* Primary = the accent "tint" as a lit control: specular top highlight and
      a soft accent glow lift it off the surface. */
