@@ -83,6 +83,14 @@
       </tbody>
     </table>
   <% else %>
-    <p class="empty-state">No task history matches these filters.</p>
+    <%# Match the app-wide empty-state anatomy (a bold headline + a helper span,
+        the two blocks `.empty-state strong`/`span` are styled for) that every
+        sibling index uses — Imports, Log Sections, Manage tasks. This is a
+        filter-driven view, so the zero-result state is a primary state: name it,
+        then point the way out (widen the range / reset the filters). %>
+    <p class="empty-state">
+      <strong>No occurrences match these filters.</strong>
+      <span>Try a wider date range, or reset the status and list filters.</span>
+    </p>
   <% end %>
 </section>
