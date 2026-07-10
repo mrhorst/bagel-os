@@ -7045,6 +7045,25 @@
       min-height: 44px;
     }
 
+    /* The standard labelled form field — a `.field` inside a `.stacked-form` — is
+       the app's most common data-entry control: Account's name/email/password,
+       admin users & tags, recipes, task lists, collections, log book sections,
+       sign-in and password reset. Its text/select/textarea controls inherit the
+       base 40px input height (L393), under the 44px iOS/WCAG 2.5.5 touch floor the
+       rest of the app's controls already meet — the last big gap after the button,
+       form-footer, panel-action, filter-actions, inline-guide-form and
+       decision-action fixes above lifted every surrounding control. Lift these
+       fields to 44px on touch widths; they're already full-width block inputs, so
+       only the tap height grows and no layout shifts. Checkbox/radio are excluded
+       (44px would balloon the control), and the dense inline
+       `.compact-input`/`.compact-select` live outside `.field`, so they keep their
+       compact height. Desktop keeps the denser 40px. */
+    .stacked-form .field input:not([type='checkbox']):not([type='radio']),
+    .stacked-form .field select,
+    .stacked-form .field textarea {
+      min-height: 44px;
+    }
+
     /* The guide cards' Count / Buy list / Setup trio (Inventory overview) is the
        card's everyday operational surface — "the two operating actions" the
        guide-workflow-card layout comment names — but they're rendered `.button
