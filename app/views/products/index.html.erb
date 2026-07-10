@@ -56,7 +56,11 @@
 
 <article class="panel" data-async-frame="products">
   <div class="panel-heading">
-    <p class="muted">
+    <%# The result count and page position are a data surface — their figures
+        reflow as you filter and page (e.g. "10 of 10" → "25 of 143 · Page 2 of
+        6"), so they carry the shared .tnum utility for tabular figures, matching
+        every other count/price in the app (see the normalization index). %>
+    <p class="muted tnum">
       Showing <%= @products.size %> of <%= @total_products %> products
       <% if @total_pages > 1 %>
         · Page <%= @page %> of <%= @total_pages %>
