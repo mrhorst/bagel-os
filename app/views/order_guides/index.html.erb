@@ -129,7 +129,14 @@
       <%= form.label :notes, "Notes" %>
       <%= form.text_area :notes, rows: 3, placeholder: "Optional staff note for how this guide is used." %>
     </div>
-    <%= form.submit "Create guide", class: "button primary" %>
+    <%# Cap the submit to its content on desktop (full-width on mobile) via the
+        shared .form-footer, matching every other create/edit form card (Account,
+        admin users/tags, recipes, collections, log sections, task lists). Without
+        it the generic input rule stretches the primary full-width across the
+        narrow panel — the lone screen where the create CTA broke that convention. %>
+    <div class="form-footer">
+      <%= form.submit "Create guide", class: "button primary" %>
+    </div>
   <% end %>
 </section>
 
