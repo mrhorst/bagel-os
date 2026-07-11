@@ -16,14 +16,17 @@
 <div class="page-heading">
   <div>
     <h1><%= @order_guide ? "#{@order_guide.name} Buy List" : "Shopping List" %></h1>
-    <%# Subtitle tracks the H1's two states. The guide chooser is a pick-a-guide
-        landing state, so it gets a task-oriented prompt; the usage/buffer formula
-        only describes something on screen once a guide is chosen and its
-        recommended quantities render, so it's held back for the buy-list state. %>
+    <%# Subtitle describes the feature in BOTH states and lets the "Choose guide"
+        panel heading own the pick instruction — the copy rule the sibling New
+        Count screen documents (new_count.html.erb) and cites this Buy List as the
+        exemplar of. The chooser-state line had drifted to lead with "Choose a
+        guide", merely echoing that heading a few px below it; describing the
+        recommended-quantities payoff instead keeps both states purely descriptive
+        and non-redundant. %>
     <% if @order_guide %>
       <p>Recommended quantities use expected usage plus buffer, minus the latest count.</p>
     <% else %>
-      <p>Choose a guide to see its recommended quantities to buy.</p>
+      <p>Recommended quantities to buy, based on each guide's expected usage and buffer.</p>
     <% end %>
   </div>
   <div class="actions">
