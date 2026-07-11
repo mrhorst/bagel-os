@@ -3858,6 +3858,21 @@
     color: var(--ink);
     font-weight: 600;
   }
+  /* The photo count is supporting metadata below the name, so it must read one
+     clear step down from the 600-weight title rather than at the same body
+     scale. The old `muted small` markup meant to demote it, but `.small` on a
+     <span> lands no font-size (only `p.small` carries one — see the note by
+     `p.small`), so the count silently inherited full body size and sat level
+     with the name, flattening the title/metadata hierarchy. Mirror the sibling
+     `.photo-card-caption` (0.84rem / --ink-2): the two Marketing gallery cards
+     already share the cover-over-meta-strip anatomy and padding (see the
+     `.collection-card-meta` note), so their supporting text must agree — and
+     --ink-2 clears WCAG AA on the near-white --surface-2 fill where the old
+     --ink-muted only grazed it. */
+  .collection-card-count {
+    color: var(--ink-2);
+    font-size: 0.84rem;
+  }
 
   /* ── Bulk multi-select ────────────────────────────────────────────── */
   /* The bar stays hidden until the photo-select controller marks the form
