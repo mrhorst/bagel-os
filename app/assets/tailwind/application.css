@@ -4806,7 +4806,18 @@
     background: var(--surface-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
-    color: var(--ink);
+    /* --ink-2, not --ink: this count chip is a decorative glance-badge — it's
+       aria-hidden and its number is repeated verbatim by the summary below it,
+       so it must not carry full primary-text weight. At near-black --ink it
+       out-shouted its own --ink-muted eyebrow label in the same head row (the
+       redundant badge reading louder than the category it sits beside) and
+       diverged from the sibling count chips that model themselves on this one:
+       .tasks-completed-disclosure-count (whose comment calls this "the canonical
+       .home-surface-card-count") and .follow-ups-tab-count both render their
+       number on --ink-2. One ink step down seats the badge as the secondary
+       signal it is and unifies the count-chip convention. The urgent variant
+       below overrides colour to --danger-fg, so the flagged card is unaffected. */
+    color: var(--ink-2);
     font-size: 0.78rem;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
